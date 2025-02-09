@@ -1,0 +1,49 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+*.log
+
+# Entornos y credenciales
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/
+
+# Docker
+docker-compose.override.yml
+docker-compose.override.yaml
+docker-compose.prod.yml
+docker-compose.prod.yaml
+Dockerfile
+.dockerignore
+
+# PostgreSQL (si usas volúmenes locales)
+pgdata/
+*.sql
+*.dump
+
+# Swagger (Documentación generada)
+docs/swagger.json
+docs/swagger.yaml
+
+# TypeScript
+*.tsbuildinfo
+*.d.ts
+dist/
+
+# Cache y dependencias del editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace

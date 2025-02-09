@@ -9,7 +9,7 @@ export class UserService {
 
   async login(loginData: LoginDTO): Promise<User | null> {
     const user = await this.userRepository.findByEmail(loginData.email);
-    // En producción, deberías comparar contraseñas hasheadas
+    // TODO: hash password
     if (user && user.password === loginData.password) {
       return user;
     }
@@ -17,7 +17,7 @@ export class UserService {
   }
 
   async register(data: RegisterDTO): Promise<User> {
-    // Recuerda hashear la contraseña antes de guardarla
+    // TODO: hash password
     return this.userRepository.create({
       ...data,
       isActive: true,

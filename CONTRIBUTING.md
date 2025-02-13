@@ -49,32 +49,43 @@ Arxatec Service follows **Clean Architecture**, ensuring modularity and separati
 
 ```
 src/
-│── docs/
-│── middlewares/
-│   ├── async_handler/
-│   │   ├── index.ts
-│   ├── index.ts
-│── modules/
-│   ├── cases/
-│   ├── user/
-│   │   ├── data/repository/
-│   │   │   ├── user.repository.ts
-│   │   ├── domain/
-│   │   │   ├── dtos/
-│   │   │   │   ├── login.dto.ts
+│── docs/      
+|    └── swagger.ts                # Documentación Swagger
+│── middlewares/                   # Middlewares (ej. manejo de errores, validaciones, autenticación)
+│   ├── async_handler/             
+│   │   └── index.ts               
+│   └── index.ts                  
+│── modules/                       # Módulos que representan las funcionalidades principales
+│   ├── cases/                     # Módulo de casos (si aplica)
+│   ├── user/                      # Módulo de usuario
+│   │   ├── data/                  
+│   │   │   └── repository/        
+│   │   │       └── user.repository.ts  # Interacciones con la base de datos
+│   │   ├── domain/                
+│   │   │   ├── dtos/              
+│   │   │   │   ├── login.dto.ts   # DTOs para manejar la validación de datos
 │   │   │   │   ├── register.dto.ts
-│   │   │   │   ├── update_user.dto.ts
-│   │   │   ├── entities/
-│   │   │   │   ├── user.entity.ts
-│   │   ├── presentation/
-│   │   │   ├── controllers/
-│   │   │   │   ├── user.controller.ts
-│   │   │   ├── routes/
-│   │   │   │   ├── user.routes.ts
-│   │   ├── services/
-│   │   │   ├── user.service.ts
-│── index.ts
-│── routes.ts
+│   │   │   │   └── update_user.dto.ts
+│   │   │   ├── entities/          
+│   │   │   │   └── user.entity.ts  # Entidad principal del usuario
+│   │   ├── presentation/          
+│   │   │   ├── controllers/       
+│   │   │   │   └── user.controller.ts  # Lógica de presentación (controladores)
+│   │   │   ├── routes/            
+│   │   │       └── user.routes.ts  # Rutas de usuario
+|   |   |── services/ 
+│   │           └── user.service.ts    # Lógica de negocio (uso de servicios)
+│   │   
+│   └── index.ts                   # Punto de entrada del módulo de usuario
+│── shared/                        # Lógica compartida entre módulos
+│   ├── config/                    # Configuración central (manejador de llaves, JWT, etc.)
+│   │   └── jwt.ts                 # Archivo para manejar las llaves JWT
+│   ├── utils/                     # Funciones utilitarias (validaciones, helpers)
+│   │   └── asyncHandler.ts        # Manejador de errores de las promesas
+|   |── prismaClient.ts            # Conexión a Prisma Client
+│── index.ts                       # Punto de entrada principal (servidor Express)
+│── routes.ts                      # Punto central de rutas                     
+
 ```
 
 ### Explanation:

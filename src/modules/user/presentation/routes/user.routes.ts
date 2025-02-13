@@ -1,10 +1,7 @@
-import { Router } from "express";
-import { asyncHandler } from "../../../../middlewares";
-import { UserController } from "../controllers/user.controller";
+import { Router } from 'express';
+import { registerController, loginController } from '../controllers/user.controller';
 
 const router = Router();
-const userController = new UserController();
-
 /**
  * @openapi
  * /login:
@@ -49,21 +46,7 @@ const userController = new UserController();
  *      500:
  *        description: Internal server error
  */
-router.post(
-  "/login",
-  asyncHandler((req, res) => userController.login(req, res))
-);
-router.post(
-  "/register",
-  asyncHandler((req, res) => userController.register(req, res))
-);
-router.put(
-  "/:id",
-  asyncHandler((req, res) => userController.updateAccount(req, res))
-);
-router.delete(
-  "/:id",
-  asyncHandler((req, res) => userController.deactivateAccount(req, res))
-);
+router.post('/register', registerController);
+router.post('/login', loginController);
 
 export default router;

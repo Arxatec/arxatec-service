@@ -1,28 +1,55 @@
-import { PrismaClient } from "@prisma/client";
-import { User } from "../../domain/entities/user.entity";
+import { PrismaClient } from '@prisma/client';
+import { RegisterDTO } from '../../domain/dtos/register.dto';
+import { LoginDTO } from '../../domain/dtos/login.dto';
 
 const prisma = new PrismaClient();
+export const createUser = async (data: RegisterDTO) => {
+  if (data.rol === 'ABOGADO') {
+    // Crear el usuario ABROGADO
+    const user = await prisma.usuario.create({
+      data: {
+        nombres: data.nombres,
+        apellidos: data.apellidos,
+        correo_electronico: data.correo_electronico,
+        password: data.password,
+        rol: data.rol,
+        abogado_detalle: {
+          create: {
+            registro_nacional: data.registro_nacional || "", 
+            especialidades: data.especialidades || [],
+          },
+        },
+      },
 
-export class UserRepository {
-  async findByEmail(email: string): Promise<User | null> {
-    return prisma.user.findUnique({ where: { email } });
-  }
+      include: {
+        abogado_detalle: true, 
+      },
+    });
 
-  async findById(id: string): Promise<User | null> {
-    return prisma.user.findUnique({ where: { id } });
-  }
+    return user;
+  } else {
+    const user = await prisma.usuario.create({
+      data: {
+        nombres: data.nombres,
+        apellidos: data.apellidos,
+        correo_electronico: data.correo_electronico,
+        password: data.password,
+        rol: data.rol,
+      },
+    });
 
-  async create(
-    user: Omit<User, "id" | "createdAt" | "updatedAt">
-  ): Promise<User> {
-    return prisma.user.create({ data: user });
+    return user;
   }
+};
 
-  async update(id: string, data: Partial<User>): Promise<User> {
-    return prisma.user.update({ where: { id }, data });
+export const loginUser = async (data: LoginDTO) => {
+  const user = await prisma.usuario.findUnique({
+    where: {
+      correo_electronico: data.correo_electronico
+    }
+  });
+  if (user && user.password === data.password) {
+    return user;
   }
-
-  async deactivate(id: string): Promise<User> {
-    return prisma.user.update({ where: { id }, data: { isActive: false } });
-  }
-}
+  return null;
+};

@@ -2,11 +2,10 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
-import userRoutes from "./modules/user/presentation/routes/user.routes"; 
+import router from "./routes";
+import swaggerSetup from "./docs/swagger";
 
 const app = express();
-const swaggerDocument = YAML.load("./docs/swagger.yaml");
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
@@ -15,10 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 // Swagger Docs
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSetup));
 
-// Rutas
-app.use("/auth", userRoutes);
+// All routes
+app.use(router);
 
 // Test route
 app.get("/ping", (_, res) => {
@@ -27,6 +26,6 @@ app.get("/ping", (_, res) => {
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Swagger Docs disponibles en http://localhost:${PORT}/api-docs`);
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Swagger available at http://localhost:${PORT}/api-docs`);
 });

@@ -1,10 +1,13 @@
-import { Router } from 'express';
-import { registerController, loginController } from '../controllers/user.controller';
+import { Router } from "express";
+import {
+  registerController,
+  loginController,
+} from "../controllers/user.controller";
 
 const router = Router();
 /**
  * @openapi
- * /login:
+ * /register:
  *  post:
  *    tags:
  *      - Users
@@ -46,7 +49,8 @@ const router = Router();
  *      500:
  *        description: Internal server error
  */
-router.post('/register', registerController);
-router.post('/login', loginController);
+router.post("/register", registerController);
+
+router.post("/login", loginController);
 
 export default router;

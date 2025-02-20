@@ -1,11 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Este es tu archivo de esquema de Prisma,
+// puedes aprender más sobre él en la documentación: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ¿Buscas formas de acelerar tus consultas o escalar fácilmente con tus funciones serverless o edge?
+// Prueba Prisma Accelerate: https://pris.ly/cli/accelerate-init
 // npx prisma migrate reset
 // npx prisma migrate dev --name agregar_especialidades_abogado
 // npx prisma generate
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,48 +16,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuario {
-  id                 Int         @id @default(autoincrement())
-  nombres            String
-  apellidos          String
-  correo_electronico String      @unique
-  dni                String?      @unique
-  telefono           String?
-  password           String
-  rol                Rol_Usuario @default(CLIENTE)
-  habilitado         Boolean     @default(true)
+model user {
+  id                 Int         @id @default(autoincrement()) // ID único del usuario (autoincremental)
+  first_name         String      // Nombre del usuario
+  last_name          String      // Apellido del usuario
+  email              String      @unique // Correo electrónico único
+  phone              String?     // Número de teléfono (opcional)
+  password_hash      String      // Hash de la contraseña
+  role               user_role   @default(CLIENT) // Rol del usuario (cliente, abogado o admin)
+  is_active          Boolean     @default(true) // Estado del usuario (activo o inactivo)
 
-  abogado_detalle    Abogado_Detalle?
-
-  consultas_cliente  Consulta[]  @relation("Consultas_cliente")
-  consultas_abogado  Consulta[]  @relation("Consultas_abogado")
+  client_detail      client_detail? // Relación con detalles de cliente (si aplica)
+  lawyer_detail      lawyer_detail? // Relación con detalles de abogado (si aplica)
 }
 
-model Abogado_Detalle {
-  id                Int       @id @default(autoincrement())
-  usuario_id        Int       @unique
-  registro_nacional String    @unique
-  especialidades    String[]
+model client_detail {
+  id            Int             @id @default(autoincrement()) // ID único del detalle de cliente
+  user_id       Int             @unique // ID del usuario (cliente)
+  consultation  consultation[]  // Relación con consultas legales realizadas por el cliente
 
-  usuario           Usuario   @relation(fields: [usuario_id], references: [id])
+  user          user            @relation(fields: [user_id], references: [id]) // Relación con el usuario
 }
 
-model Consulta {
-  id                 Int      @id @default(autoincrement())
-  cliente_id         Int
-  abogado_id         Int
-  asunto             String
-  mensaje            String
-  fecha_hora         DateTime  
-  estado             String
-  archivada          Boolean  @default(false)
+model lawyer_detail {
+  id                Int             @id @default(autoincrement()) // ID único del detalle de abogado
+  user_id           Int             @unique // ID del usuario (abogado)
+  national_registry String          @unique // Número de registro del abogado
+  specialty         String[]        // Especialidades del abogado
+  consultation      consultation[]  // Relación con consultas legales en las que participa
 
-  cliente            Usuario  @relation("Consultas_cliente", fields: [cliente_id], references: [id])
-  abogado            Usuario  @relation("Consultas_abogado", fields: [abogado_id], references: [id])
+  user              user            @relation(fields: [user_id], references: [id]) // Relación con el usuario
 }
 
-enum Rol_Usuario {
-  CLIENTE
-  ABOGADO
+model consultation {
+  id            Int             @id @default(autoincrement()) // ID único de la consulta legal
+  client_id     Int             // ID del cliente asociado al caso
+  lawyer_id     Int?            // ID del abogado asociado al caso (puede ser nulo si aún no se asigna)
+  subject       String          // Asunto del caso legal
+  message       String          // Mensaje o descripción del caso
+  created_at    DateTime        @default(now()) // Fecha y hora de creación del caso
+  status        String          // Estado del caso (pendiente, en proceso, cerrado, etc.)
+  is_archived   Boolean         @default(false) // Indica si la consulta está archivada o no
+
+  client_detail  client_detail?  @relation(fields: [client_id], references: [user_id]) // Relación con el cliente
+  lawyer_detail  lawyer_detail?  @relation(fields: [lawyer_id], references: [user_id]) // Relación con el abogado
 }
 
+enum user_role {
+  CLIENT // Usuario con rol de cliente
+  LAWYER // Usuario con rol de abogado
+  ADMIN  // Usuario con rol de administrador
+}

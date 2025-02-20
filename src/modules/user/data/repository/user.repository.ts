@@ -1,54 +1,53 @@
 import { PrismaClient } from '@prisma/client';
 import { RegisterDTO } from '../../domain/dtos/register.dto';
 import { LoginDTO } from '../../domain/dtos/login.dto';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
 export const createUser = async (data: RegisterDTO) => {
-  if (data.rol === 'ABOGADO') {
-    // Crear el usuario ABROGADO
-    const user = await prisma.usuario.create({
+  const hashedPassword = await bcrypt.hash(data.password_hash, 10);
+
+  if (data.role === 'LAWYER') {
+    return await prisma.user.create({
       data: {
-        nombres: data.nombres,
-        apellidos: data.apellidos,
-        correo_electronico: data.correo_electronico,
-        password: data.password,
-        rol: data.rol,
-        abogado_detalle: {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        password_hash: hashedPassword,
+        role: data.role,
+        lawyer_detail: {
           create: {
-            registro_nacional: data.registro_nacional || "", 
-            especialidades: data.especialidades || [],
+            national_registry: data.national_registry || "",
+            specialty: data.specialty || [],
           },
         },
       },
-
       include: {
-        abogado_detalle: true, 
+        lawyer_detail: true,
       },
     });
-
-    return user;
   } else {
-    const user = await prisma.usuario.create({
+    return await prisma.user.create({
       data: {
-        nombres: data.nombres,
-        apellidos: data.apellidos,
-        correo_electronico: data.correo_electronico,
-        password: data.password,
-        rol: data.rol,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        password_hash: hashedPassword,
+        role: data.role,
       },
     });
-
-    return user;
   }
 };
 
 export const loginUser = async (data: LoginDTO) => {
-  const user = await prisma.usuario.findUnique({
+  const user = await prisma.user.findUnique({
     where: {
-      correo_electronico: data.correo_electronico
-    }
+      email: data.email,
+    },
   });
-  if (user && user.password === data.password) {
+
+  if (user && await bcrypt.compare(data.password_hash, user.password_hash)) {
     return user;
   }
   return null;

@@ -1,15 +1,13 @@
-import jwt from "jsonwebtoken";
+// src/shared/config/jwt.ts
+import jwt from 'jsonwebtoken';
 
-export const generateToken = (id: number, tipo: string): string => {
-  const secretKey = process.env.JWT_SECRET || "supersecretkey";
-  return jwt.sign({ id, tipo }, secretKey, { expiresIn: "1h" });
+const JWT_SECRET = 'clave_secreta';
+const JWT_EXPIRES_IN = '7d';
+
+export const generateToken = (payload: any): string => {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
 export const verifyToken = (token: string): any => {
-  const secretKey = process.env.JWT_SECRET || "supersecretkey";
-  try {
-    return jwt.verify(token, secretKey);
-  } catch (error) {
-    throw new Error("Token inválido");
-  }
+  return jwt.verify(token, JWT_SECRET);
 };

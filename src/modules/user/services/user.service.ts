@@ -1,39 +1,49 @@
+import { sendEmail } from "../../../shared/utils/emailSender";
 import { createUser as createUserRepository, loginUser as loginUserRepository } from '../data/repository/user.repository';
 import { RegisterDTO } from '../domain/dtos/register.dto';
 import { LoginDTO } from '../domain/dtos/login.dto';
-import { user } from '@prisma/client';
-import { generateToken } from '../../../shared/config/jwt';
+import { User } from '@prisma/client';
+import { generateVerificationToken, generateToken } from '../../../shared/config/jwt';
 
-export const registerUser = async (data: RegisterDTO): Promise<user> => {
+export const registerUser = async (data: RegisterDTO): Promise<User> => {
   try {
-    if (!data.email || !data.password_hash || !data.first_name || !data.last_name || !data.role) {
-      throw new Error('Faltan campos obligatorios');
-    }
-
     const user = await createUserRepository(data);
+
+    // Generar token de verificación
+    const token = generateVerificationToken(user.email);
+
+    // Enlace de verificación
+    const verificationLink = `http://localhost:3000/auth/verify-email?token=${token}`;
+
+    // Enviar correo de verificación
+    await sendEmail(
+      user.email,
+      "Verifica tu cuenta",
+      `Por favor, confirma tu cuenta haciendo clic en este enlace: ${verificationLink}`,
+      `<h1>Verificación de cuenta</h1><p>Haz clic en el siguiente enlace para verificar tu cuenta:</p><a href="${verificationLink}">Verificar cuenta</a>`
+    );
+
     return user;
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Error al registrar el usuario: ${error.message}`);
     } else {
-      throw new Error('Error desconocido al registrar el usuario');
+      throw new Error("Error desconocido al registrar el usuario");
     }
   }
 };
 
-export const loginUser = async (data: LoginDTO): Promise<{ user: user; token: string }> => {
+export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: string }> => {
   try {
     const user = await loginUserRepository(data);
 
-    if (!user) {
-      throw new Error('Credenciales incorrectas');
-    }
+    if (!user) throw new Error("Credenciales incorrectas");
+    if (user.status !== "active") throw new Error("Debes verificar tu cuenta antes de iniciar sesión");
 
-    // Generar el token JWT
     const token = generateToken({
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.user_type,
       first_name: user.first_name,
       last_name: user.last_name,
     });
@@ -43,7 +53,7 @@ export const loginUser = async (data: LoginDTO): Promise<{ user: user; token: st
     if (error instanceof Error) {
       throw new Error(`Error al iniciar sesión: ${error.message}`);
     } else {
-      throw new Error('Error desconocido al iniciar sesión');
+      throw new Error("Error desconocido al iniciar sesión");
     }
   }
 };

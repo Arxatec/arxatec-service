@@ -60,7 +60,7 @@
   │   │   │   └── repository/        
   │   │   │       └── user.repository.ts  # Interacciones con la base de datos; por ahora el login y register del usuario
   │   │   ├── domain/                
-  │   │   │   ├── dtos/              
+  │   │   │   ├── dtos/         
   │   │   │   │   ├── login.dto.ts   # DTOs para manejar la validación de datos
   │   │   │   │   ├── register.dto.ts
   │   │   │   │   └── update_user.dto.ts
@@ -77,10 +77,12 @@
   │   └── index.ts                   # Punto de entrada del módulo de usuario
   │── shared/                        # Lógica compartida entre módulos
   │   ├── config/                    # Configuración central (manejador de llaves, JWT, etc.)
-  │   │   └── jwt.ts                 # Archivo para manejar las llaves JWT
+  │   │   ├── jwt.ts                 # Archivo para manejar las llaves JWT
+  │   │   └── email.ts
   │   ├── utils/                     # Funciones utilitarias (validaciones, helpers)
-  │   │   └── asyncHandler.ts        # Manejador de errores de las promesas
-  |   |── prismaClient.ts            # Conexión a Prisma Client
+  │   │   ├── emailSender.ts
+  │   │   └── testEmail
+  |   └── prismaClient.ts            # Conexión a Prisma Client
   │── index.ts                       # Punto de entrada principal (servidor Express)
   │── routes.ts                      # Punto central de rutas                     
 

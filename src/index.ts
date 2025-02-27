@@ -25,6 +25,7 @@ app.get("/ping", (_, res) => {
   res.send("pong");
 });
 
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

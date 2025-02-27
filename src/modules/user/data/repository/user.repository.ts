@@ -39,6 +39,20 @@ export const updateUserStatus = async (email: string, status: user_status) => {
   });
 };
 
+export const getAllUsersEmails = async (): Promise<string[]> => {
+  const users = await prisma.user.findMany({
+    where: {
+      status: {
+        in: ['active', 'pending'],
+      },
+    },
+    select: {
+      email: true,
+    },
+  });
+  return users.map(user => user.email);
+};
+
 export const loginUser = async (data: LoginDTO) => {
   const user = await prisma.user.findUnique({
     where: {

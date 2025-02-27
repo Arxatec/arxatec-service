@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { registerController, loginController } from '../controllers/user.controller';
 import { verifyEmailController } from "../controllers/email.controller";
 const router = Router();
+
+
 /*
   @openapi
-  /auth/verify-email:
+  /auth/verify_email:
     get:
       tags:
         - Users
@@ -59,7 +61,7 @@ const router = Router();
                     type: string
                     example: "Error al verificar la cuenta"
  */
-router.get("/verify-email", verifyEmailController);
+router.get("/verify_email", verifyEmailController);
 /*
   @openapi
   /auth/register:

@@ -11,9 +11,9 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Correo enviado a: ${to} - ID: ${info.messageId}`);
+    console.log(`Correo enviado a: ${to} - ID: ${info.messageId}`);
   } catch (error) {
-    console.error("❌ Error al enviar el correo:", error);
+    console.error("Error al enviar el correo:", error);
     throw new Error("Error al enviar el correo");
   }
 };

@@ -45,46 +45,52 @@
 
   ## Project Architecture
 
+    ##ENDPOINT creation process
+
+  -1st the DTOs are created (format is established), 2nd the service is created (using the defined DTOs), 3rd the repository is created (Data Access, if CRUD is necessary), 4th the presentation (Controllers and Routes) where the controllers and the route are assigned (ENDPOINT)
+
   Arxatec Service follows **Clean Architecture**, ensuring modularity and separation of concerns. Below is the structure:
 
   ```
   src/
-  │── middlewares/                   # Middlewares (ej.manejo de errores, validaciones autenticación; aun falta configurar)
+  │── middlewares/                   # Middlewares ej.manejo de errores, validaciones autenticación; en desuso
   │   ├── async_handler/             
   │   │   └── index.ts               
   │   └── index.ts                  
   │── modules/                       # Módulos que representan las funcionalidades principales
   │   ├── cases/                     # Módulo de casos; aun falta configurar
-  │   ├── user/                      # Módulo de usuario
-  │   │   ├── data/                  
-  │   │   │   └── repository/        
-  │   │   │       └── user.repository.ts  # Interacciones con la base de datos; por ahora el login y register del usuario
-  │   │   ├── domain/                
-  │   │   │   ├── dtos/         
-  │   │   │   │   ├── login.dto.ts   # DTOs para manejar la validación de datos
-  │   │   │   │   ├── register.dto.ts
-  │   │   │   │   └── update_user.dto.ts
-  │   │   │   ├── entities/          
-  │   │   │   │   └── user.entity.ts  # Entidad principal del usuario; falta configurar
-  │   │   ├── presentation/          
-  │   │   │   ├── controllers/       
-  │   │   │   │   └── user.controller.ts  # Lógica de presentación (controladores)
-  │   │   │   ├── routes/            
-  │   │   │       └── user.routes.ts  # Rutas de usuario
-  |   |   |── services/               # Implementa lógica de negocios e interactúa con repositorios.
-  │   │           └── user.service.ts    
-  │   │   
-  │   └── index.ts                   # Punto de entrada del módulo de usuario
+  │   └── user/                      # Módulo de usuario
+  │       ├── data/                  
+  │       │   └── repository/        
+  │       │       └── user.repository.ts  # Interacciones con la base de datos,
+  │       ├── domain/                
+  │       │   ├── dtos/                   # DTOs para manejar la validación/formato de datos
+  │       │   │   ├── email.dto.ts         
+  │       │   │   ├── login.dto.ts   
+  │       │   │   ├── register.dto.ts
+  │       │   │   └── update_user.dto.ts
+  │       │   ├── entities/          
+  │       │   │   └── user.entity.ts       # Entidad principal del usuario; En desuso
+  │       ├── presentation/          
+  │       │   ├── controllers/             # Lógica de presentación (controladores)
+  │       │   │   ├── email.controller.ts 
+  │       │   │   └── user.controller.ts  
+  │       │   └── routes/            
+  │       │       └── user.routes.ts  # Rutas de usuario
+  │       └── services/               # Implementa lógica de negocios e interactúa con repositorios.
+  │               └── user.service.ts    
+  │       
+  │  
   │── shared/                        # Lógica compartida entre módulos
   │   ├── config/                    # Configuración central (manejador de llaves, JWT, etc.)
   │   │   ├── jwt.ts                 # Archivo para manejar las llaves JWT
-  │   │   └── email.ts
+  │   │   └── email.ts               # Configuracion del servicio de correo/Conexion
   │   ├── utils/                     # Funciones utilitarias (validaciones, helpers)
-  │   │   ├── emailSender.ts
-  │   │   └── testEmail
+  │   │   ├── emailSender.ts         # Construccion del correo/plantilla del mensaje
+  │   │   └── testEmail              # Testeo que se envia el correo
   |   └── prismaClient.ts            # Conexión a Prisma Client
-  │── index.ts                       # Punto de entrada principal (servidor Express)
-  │── routes.ts                      # Punto central de rutas                     
+  │── index.ts                       # Punto de entrada principal(servidor Express)
+  └── routes.ts                      # Manejador de las rutas                
 
   ```
 

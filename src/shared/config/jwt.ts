@@ -11,8 +11,6 @@ if (!JWT_SECRET) {
 }
 const JWT_EXPIRES_IN = '7d'; 
 
-
-
 // Token del Email
 export const generateVerificationToken = (email: string): string => {
   return jwt.sign({ email }, JWT_SECRET, { expiresIn: "1h" });

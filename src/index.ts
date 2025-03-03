@@ -1,31 +1,35 @@
 import express from "express";
-import swaggerUi from "swagger-ui-express";
-import swaggerSetup from "./docs/swagger";
-import morgan from "morgan";
 import cors from "cors";
-import router from "./routes";
+import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import routes from "./routes";  // Importas el archivo centralizado
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const swaggerDocument = YAML.load("./docs/swagger.yaml");
+const PORT = process.env.PORT;
+const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
 
 // Middlewares
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
-// Docs
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSetup));
+// Swagger Docs
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Usar rutas centralizadas
+app.use(routes);
 
 // Test route
 app.get("/ping", (_, res) => {
   res.send("pong");
 });
 
-// All routes
-app.use(router);
-
-// Listen server
+// Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Swagger available at http://localhost:${PORT}/api-docs`);
+  console.log(`Servidor corriendo en ${appUrl}`);
+  console.log(`Swagger Docs disponibles en ${appUrl}/api-docs`);
 });

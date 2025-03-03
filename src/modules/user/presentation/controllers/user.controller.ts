@@ -1,75 +1,39 @@
-// src/modules/user/presentation/controllers/user.controller.ts
-import { Request, Response } from 'express';
-import { registerUser, loginUser, forgotPassword, resetPassword  } from '../../services/user.service';
-import { RegisterDTO } from '../../domain/dtos/register.dto';
-import { LoginDTO } from '../../domain/dtos/login.dto';
+import { Request, Response } from "express";
+import { UserService } from "../services/user.service";
+import { UserRepository } from "../../data/repository/user.repository";
+import { LoginDTO } from "../../domain/dtos/login.dto";
+import { RegisterDTO } from "../../domain/dtos/register.dto";
+import { UpdateUserDTO } from "../../domain/dtos/udpate_user.dto";
 
-import { ForgotPasswordSchema  } from "../../domain/dtos/forgot_password.dto";
-import { ResetPasswordSchema } from "../../domain/dtos/reset_password.dto";
+const userRepository = new UserRepository();
+const userService = new UserService(userRepository);
 
-
-
-export const registerController = async (req: Request, res: Response) => {
-  try {
-    const userData: RegisterDTO = req.body;
-    const user = await registerUser(userData);
-    res.status(201).json(user);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Error desconocido' });
-    }
-  }
-};
-  
-export const loginController = async (req: Request, res: Response) => {
-  try {
-    const loginData: LoginDTO = req.body;
-    const { user, token } = await loginUser(loginData);
-
+export class UserController {
+  async login(req: Request, res: Response): Promise<Response> {
+    const loginData = req.body as LoginDTO;
+    const user = await userService.login(loginData);
     if (user) {
-      res.status(200).json({ message: 'Login exitoso', user, token });
-    } else {
-      res.status(401).json({ message: 'Credenciales incorrectas' });
+      return res.status(200).json(user);
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Error desconocido' });
-    }
+    return res.status(401).json({ message: "Credenciales inválidas" });
   }
-};
 
-export const forgotPasswordController = async (req: Request, res: Response) => {
-  try {
-    const data = ForgotPasswordSchema.parse(req.body);
-    const resultMessage = await forgotPassword(data);
-
-    res.status(200).json({ message: resultMessage });
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : "Error desconocido" });
+  async register(req: Request, res: Response): Promise<Response> {
+    const registerData = req.body as RegisterDTO;
+    const user = await userService.register(registerData);
+    return res.status(201).json(user);
   }
-};
 
-
-export const resetPasswordController = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const token = req.query.token as string;
-    if (!token) {
-      res.status(400).json({ error: "Token no proporcionado en la query." });
-      return;
-    }
-    const { newPassword, confirmPassword } = ResetPasswordSchema.omit({ token: true }).parse(req.body);
-    const data = { token, newPassword, confirmPassword };
-
-    const message = await resetPassword(data);
-    res.status(200).json({ message });
-    return;
-  } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : "Error desconocido" });
-    return;
+  async updateAccount(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+    const updateData = req.body as UpdateUserDTO;
+    const user = await userService.updateAccount(id, updateData);
+    return res.status(200).json(user);
   }
-};
 
+  async deactivateAccount(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+    const user = await userService.deactivateAccount(id);
+    return res.status(200).json(user);
+  }
+}

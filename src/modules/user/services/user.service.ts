@@ -1,64 +1,116 @@
-  import { sendEmail } from "../../../shared/utils/emailSender";
-  import { createUser as createUserRepository, loginUser as loginUserRepository } from '../data/repository/user.repository';
-  import { RegisterDTO } from '../domain/dtos/register.dto';
-  import { LoginDTO } from '../domain/dtos/login.dto';
-  import { User } from '@prisma/client';
-  import { generateVerificationToken, generateToken } from '../../../shared/config/jwt';
+// src/modules/user/services/user.service.ts
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
-  export const registerUser = async (data: RegisterDTO): Promise<User> => {
-    try {
-      const user = await createUserRepository(data);
+import { sendEmail } from "../../../shared/utils/emailSender";
+import { User } from "@prisma/client";
 
-      // Generar token de verificación
-      const token = generateVerificationToken(user.email);
+import { RegisterDTO } from "../domain/dtos/register.dto";
+import { LoginDTO } from "../domain/dtos/login.dto";
+import { ForgotPasswordDTO } from "../domain/dtos/forgot_password.dto";
+import { ResetPasswordDTO } from '../domain/dtos/reset_password.dto';
 
-      // Obtener la URL base de las variables de entorno
-      const PORT = process.env.PORT;
-      const baseUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+import {createUser as createUserRepository,
+        loginUser as loginUserRepository,
+        getUserByEmail,
+        updateUserPassword } from "../data/repository/user.repository";
 
-      // Enlace de verificación dinámico
-      const verificationLink = `${baseUrl}/api/v1/auth/verify_email?token=${token}`;
+import {generateVerificationToken,
+        generateToken,
+        generateResetPasswordToken } from "../../../shared/config/jwt";
 
-      // Enviar correo de verificación
-      await sendEmail(
-        user.email,
-        "Verifica tu cuenta",
-        `Por favor, confirma tu cuenta haciendo clic en este enlace: ${verificationLink}`,
-        `<h1>Verificación de cuenta</h1><p>Haz clic en el siguiente enlace para verificar tu cuenta:</p><a href="${verificationLink}">Verificar cuenta</a>`
-      );
+const JWT_SECRET = process.env.JWT_SECRET as string;
+const getBaseUrl = () => {
+  const PORT = process.env.PORT;
+  return process.env.APP_URL || `http://localhost:${PORT}`;
+};
 
-      return user;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error al registrar el usuario: ${error.message}`);
-      } else {
-        throw new Error("Error desconocido al registrar el usuario");
-      }
-    }
-  };
+export const registerUser = async (data: RegisterDTO): Promise<User> => {
+  try {
+    const user = await createUserRepository(data);
+    const token = generateVerificationToken(user.email);
+    const verificationLink = `${getBaseUrl()}/api/v1/auth/verify_email?token=${token}`;
 
-  export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: string }> => {
-    try {
-      const user = await loginUserRepository(data);
+    await sendEmail(
+      user.email,
+      "Verifica tu cuenta",
+      `Por favor, confirma tu cuenta haciendo clic en este enlace: ${verificationLink}`,
+      `<h1>Verificación de cuenta</h1><p>Haz clic en el siguiente enlace para verificar tu cuenta:</p><a href="${verificationLink}">Verificar cuenta</a>`
+    );
 
-      if (!user) throw new Error("Credenciales incorrectas");
-      if (user.status !== "active") throw new Error("Debes verificar tu cuenta antes de iniciar sesión");
+    return user;
+  } catch (error) {
+    throw new Error(error instanceof Error ? `Error al registrar el usuario: ${error.message}` : "Error desconocido al registrar el usuario");
+  }
+};
 
-      const token = generateToken({
-        id: user.id,
-        email: user.email,
-        role: user.user_type,
-        first_name: user.first_name,
-        last_name: user.last_name,
-      });
+export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: string }> => {
+  try {
+    const user = await loginUserRepository(data);
+    if (!user) throw new Error("Credenciales incorrectas");
+    if (user.status !== "active") throw new Error("Debes verificar tu cuenta antes de iniciar sesión");
 
-      return { user, token };
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error al iniciar sesión: ${error.message}`);
-      } else {
-        throw new Error("Error desconocido al iniciar sesión");
-      }
-    }
-  };
-  
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.user_type,
+      first_name: user.first_name,
+      last_name: user.last_name,
+    });
+
+    return { user, token };
+  } catch (error) {
+    throw new Error(error instanceof Error ? `Error al iniciar sesión: ${error.message}` : "Error desconocido al iniciar sesión");
+  }
+};
+
+export const forgotPassword = async (data: ForgotPasswordDTO): Promise<string> => {
+  const user = await getUserByEmail(data.email);
+  if (!user) {
+    return "No se encontró el correo o no existe, inténtelo de nuevo.";
+  }
+
+  const token = generateResetPasswordToken(user.email, "5m");
+  const resetPasswordLink = `${getBaseUrl()}/api/v1/auth/reset_password?token=${token}`;
+
+  const subject = "Recuperación de contraseña";
+  const text = `Tu código de recuperación es: ${token}. Este código expira en 5 minutos.`;
+  const html = `
+    <h1>Recuperación de contraseña</h1>
+    <p>Tu código de recuperación es: <strong>${token}</strong></p>
+    <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+    <a href="${resetPasswordLink}">Restablecer contraseña</a>
+    <p>Este enlace expira en 5 minutos. Si no solicitaste este cambio, ignora este mensaje.</p>
+  `;
+  await sendEmail(user.email, subject, text, html);
+
+  return "Se envió un código de recuperación a tu correo.";
+};
+
+export const resetPassword = async (data: ResetPasswordDTO): Promise<string> => {
+
+  if (data.newPassword !== data.confirmPassword) {
+    throw new Error("Las contraseñas no coinciden");
+  }
+
+  let payload: any;
+  try {
+    payload = jwt.verify(data.token, JWT_SECRET);
+  } catch (error) {
+    throw new Error("Token inválido o expirado");
+  }
+
+  const { email } = payload;
+  if (!email) {
+    throw new Error("Token inválido: no se encontró el email");
+  }
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    throw new Error("Usuario no encontrado");
+  }
+
+  const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+  await updateUserPassword(email, hashedPassword);
+  return "Contraseña actualizada exitosamente";
+};

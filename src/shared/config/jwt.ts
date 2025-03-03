@@ -1,15 +1,17 @@
 // src/shared/config/jwt.ts
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import dotenv from "dotenv";
+import ms from 'ms';
 
 dotenv.config();
 
-// Asegúrate de que JWT_SECRET esté definido en el entorno
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("Revisa el .env");
 }
 const JWT_EXPIRES_IN = '7d'; 
+
+
 
 // Token del Email
 export const generateVerificationToken = (email: string): string => {
@@ -28,4 +30,9 @@ export const verifyToken = (token: string): any => {
   } catch (error) {
     return null; 
   }
+};
+// Token de recuperar contraseña
+export const generateResetPasswordToken = (email: string, expiresIn: number | ms.StringValue): string => {
+  const options: SignOptions = { expiresIn };
+  return jwt.sign({ email }, process.env.JWT_SECRET as string, options);
 };

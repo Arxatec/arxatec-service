@@ -1,7 +1,13 @@
+// src/modules/user/presentation/controllers/user.controller.ts
 import { Request, Response } from 'express';
-import { registerUser, loginUser } from '../../services/user.service';
+import { registerUser, loginUser, forgotPassword, resetPassword  } from '../../services/user.service';
 import { RegisterDTO } from '../../domain/dtos/register.dto';
 import { LoginDTO } from '../../domain/dtos/login.dto';
+
+import { ForgotPasswordSchema  } from "../../domain/dtos/forgot_password.dto";
+import { ResetPasswordSchema } from "../../domain/dtos/reset_password.dto";
+
+
 
 export const registerController = async (req: Request, res: Response) => {
   try {
@@ -35,3 +41,35 @@ export const loginController = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const forgotPasswordController = async (req: Request, res: Response) => {
+  try {
+    const data = ForgotPasswordSchema.parse(req.body);
+    const resultMessage = await forgotPassword(data);
+
+    res.status(200).json({ message: resultMessage });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Error desconocido" });
+  }
+};
+
+
+export const resetPasswordController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const token = req.query.token as string;
+    if (!token) {
+      res.status(400).json({ error: "Token no proporcionado en la query." });
+      return;
+    }
+    const { newPassword, confirmPassword } = ResetPasswordSchema.omit({ token: true }).parse(req.body);
+    const data = { token, newPassword, confirmPassword };
+
+    const message = await resetPassword(data);
+    res.status(200).json({ message });
+    return;
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Error desconocido" });
+    return;
+  }
+};
+

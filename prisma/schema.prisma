@@ -3,7 +3,7 @@
 
 // ¿Buscas formas de acelerar tus consultas o escalar fácilmente con tus funciones serverless o edge?
 // Prueba Prisma Accelerate: https://pris.ly/cli/accelerate-init
-// npx prisma migrate reset //VACIA LA BASE DE DATOS
+// npx prisma migrate reset 
 // npx prisma migrate dev --name agregar_especialidades_abogado
 // npx prisma generate
 // npx prisma studio 

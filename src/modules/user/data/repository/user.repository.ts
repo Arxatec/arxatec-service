@@ -1,3 +1,4 @@
+// src/modules/user/data/repository/user.repository.ts
 import { PrismaClient, user_status } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { RegisterDTO } from '../../domain/dtos/register.dto';
@@ -63,4 +64,15 @@ export const loginUser = async (data: LoginDTO) => {
     return user;
   }
   return null;
+};
+export const getUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: { email },
+  });
+};
+export const updateUserPassword = async (email: string, newHashedPassword: string) => {
+  return await prisma.user.update({
+    where: { email },
+    data: { password: newHashedPassword },
+  });
 };

@@ -1,6 +1,6 @@
 // src/modules/user/presentation/controllers/user.controller.ts
 import { Request, Response } from 'express';
-import { registerUser, loginUser, forgotPassword, resetPassword  } from '../../services/user.service';
+import { registerUser, loginUser, forgotPassword, resetPassword  } from '../services/user.service';
 import { RegisterDTO } from '../../domain/dtos/register.dto';
 import { LoginDTO } from '../../domain/dtos/login.dto';
 

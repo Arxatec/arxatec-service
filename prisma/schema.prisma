@@ -96,6 +96,14 @@ model Plan {
   @@map("plans")
 }
 
+//Usuarios que se suscriban
+ model ArxatecSubscribers {
+  id        Int      @id @default(autoincrement())  /// Identificador único del suscriptor
+  name      String   @db.VarChar(100)              /// Nombre del suscriptor
+  email     String   @unique @db.VarChar(255)      /// Email único del suscriptor
+  createdAt DateTime @default(now())              /// Fecha de suscripción
+}
+
 // Tabla de usuarios generales
 model User {
   id                 Int         @id @default(autoincrement())/// Identificador único del usuario
@@ -177,7 +185,20 @@ model ClientsServices {
 
   @@map("clients_services")
 }
+// Historial de compras de planes realizados por clientes
+model PlanPurchaseHistory {
+  id            Int            @id @default(autoincrement())/// Identificador único del historial
+  client_id     Int                                         /// Identificador del cliente
+  plan_id       Int                                         /// Identificador del plan comprado
+  purchase_date DateTime       @db.Date                     /// Fecha de compra del plan
+  status        history_status                              /// Estado de la compra (paid, pending, cancelled, refunded)
 
+  // Relaciones
+  client User @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  plan   Plan @relation(fields: [plan_id], references: [id])
+
+  @@map("plan_purchase_history")
+}
 // Registro de servicios de videollamada
 model VideoCallService {
   id                Int               @id @default(autoincrement())/// Identificador único del servicio
@@ -223,20 +244,7 @@ model ConsultationService {
   @@map("consultation_services")
 }
 
-// Historial de compras de planes realizados por clientes
-model PlanPurchaseHistory {
-  id            Int            @id @default(autoincrement())/// Identificador único del historial
-  client_id     Int                                         /// Identificador del cliente
-  plan_id       Int                                         /// Identificador del plan comprado
-  purchase_date DateTime       @db.Date                     /// Fecha de compra del plan
-  status        history_status                              /// Estado de la compra (paid, pending, cancelled, refunded)
 
-  // Relaciones
-  client User @relation(fields: [client_id], references: [id], onDelete: Cascade)
-  plan   Plan @relation(fields: [plan_id], references: [id])
-
-  @@map("plan_purchase_history")
-}
 
 // Tabla de artículos publicados por los usuarios
 model Article {

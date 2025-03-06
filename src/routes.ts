@@ -5,18 +5,16 @@ import passwordRoutes from "./modules/user/presentation/routes/user.routes";
 import emailRoutes from "./modules/user/presentation/routes/email.routes";
 import SubNewRoutes from "./modules/sub_new/presentation/routes/sub_information.routes";
 import clientRoutes from "./modules/client/presentation/routes/profile.routes";
+import articleRoutes from "./modules/article/presentation/routes/article.routes";
 
 const router = Router();
 const API_VERSION = "/api/v1";
 
 router.use(`${API_VERSION}/auth`, authRoutes);
 router.use(`${API_VERSION}/auth`, passwordRoutes);
-
 router.use(`${API_VERSION}/email`, emailRoutes);
-
 router.use(`${API_VERSION}/news`, SubNewRoutes);
-
 router.use(`${API_VERSION}/client`, clientRoutes);
-
+router.use(`${API_VERSION}/articles`, articleRoutes);
 
 export default router;

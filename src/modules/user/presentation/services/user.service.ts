@@ -2,22 +2,22 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-import { sendEmail } from "../../../shared/utils/emailSender";
+import { sendEmail } from "../../../../shared/utils/emailSender";
 import { User } from "@prisma/client";
 
-import { RegisterDTO } from "../domain/dtos/register.dto";
-import { LoginDTO } from "../domain/dtos/login.dto";
-import { ForgotPasswordDTO } from "../domain/dtos/forgot_password.dto";
-import { ResetPasswordDTO } from '../domain/dtos/reset_password.dto';
+import { RegisterDTO } from "../../domain/dtos/register.dto";
+import { LoginDTO } from "../../domain/dtos/login.dto";
+import { ForgotPasswordDTO } from "../../domain/dtos/forgot_password.dto";
+import { ResetPasswordDTO } from '../../domain/dtos/reset_password.dto';
 
 import {createUser as createUserRepository,
         loginUser as loginUserRepository,
-        getUserByEmail,
-        updateUserPassword } from "../data/repository/user.repository";
+        findUserByEmail,
+        updateUserPassword } from "../../data/repository/user.repository";
 
 import {generateVerificationToken,
         generateToken,
-        generateResetPasswordToken } from "../../../shared/config/jwt";
+        generateResetPasswordToken } from "../../../../shared/config/jwt";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const getBaseUrl = () => {
@@ -25,6 +25,7 @@ const getBaseUrl = () => {
   return process.env.APP_URL || `http://localhost:${PORT}`;
 };
 
+//Registro de usuario con verificación por email
 export const registerUser = async (data: RegisterDTO): Promise<User> => {
   try {
     const user = await createUserRepository(data);
@@ -43,7 +44,7 @@ export const registerUser = async (data: RegisterDTO): Promise<User> => {
     throw new Error(error instanceof Error ? `Error al registrar el usuario: ${error.message}` : "Error desconocido al registrar el usuario");
   }
 };
-
+//Inicio de sesión con validación de cuenta
 export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: string }> => {
   try {
     const user = await loginUserRepository(data);
@@ -53,9 +54,10 @@ export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: st
     const token = generateToken({
       id: user.id,
       email: user.email,
-      role: user.user_type,
+      user_type: user.user_type,
       first_name: user.first_name,
       last_name: user.last_name,
+      status: user.status, 
     });
 
     return { user, token };
@@ -63,9 +65,9 @@ export const loginUser = async (data: LoginDTO): Promise<{ user: User; token: st
     throw new Error(error instanceof Error ? `Error al iniciar sesión: ${error.message}` : "Error desconocido al iniciar sesión");
   }
 };
-
+// Recuperación de contraseña con un token
 export const forgotPassword = async (data: ForgotPasswordDTO): Promise<string> => {
-  const user = await getUserByEmail(data.email);
+  const user = await findUserByEmail(data.email);
   if (!user) {
     return "No se encontró el correo o no existe, inténtelo de nuevo.";
   }
@@ -86,7 +88,7 @@ export const forgotPassword = async (data: ForgotPasswordDTO): Promise<string> =
 
   return "Se envió un código de recuperación a tu correo.";
 };
-
+//Restablecimiento de contraseña con validación
 export const resetPassword = async (data: ResetPasswordDTO): Promise<string> => {
 
   if (data.newPassword !== data.confirmPassword) {
@@ -105,7 +107,7 @@ export const resetPassword = async (data: ResetPasswordDTO): Promise<string> => 
     throw new Error("Token inválido: no se encontró el email");
   }
 
-  const user = await getUserByEmail(email);
+  const user = await findUserByEmail(email);
   if (!user) {
     throw new Error("Usuario no encontrado");
   }

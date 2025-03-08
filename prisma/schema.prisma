@@ -78,63 +78,71 @@ enum article_status {
 
 // Tabla de planes disponibles
 model Plan {
-  id                       Int       @id @default(autoincrement())/// Identificador único del plan
-  plan_name                String                                 /// Nombre del plan
-  description              String?                                /// Descripción del plan (opcional)
-  price                    Decimal                                /// Precio del plan
-  video_call_consultations Int                                    /// Número de consultas por videollamada incluidas
-  message_consultations    Int                                    /// Número de consultas por mensaje incluidas
-  advisories               Int                                    /// Número de asesorías incluidas
-  procedures               Int                                    /// Número de procedimientos incluidos
-  creation_date            DateTime? @db.Date                     /// Fecha de creación del plan
-  creation_time            DateTime? @db.Time                     /// Hora de creación del plan
+  id                       Int       @id @default(autoincrement()) /// Identificador único del plan
+  plan_name                String /// Nombre del plan
+  description              String? /// Descripción del plan (opcional)
+  price                    Decimal /// Precio del plan
+  video_call_consultations Int /// Número de consultas por videollamada incluidas
+  message_consultations    Int /// Número de consultas por mensaje incluidas
+  advisories               Int /// Número de asesorías incluidas
+  procedures               Int /// Número de procedimientos incluidos
+  creation_date            DateTime? @db.Date /// Fecha de creación del plan
+  creation_time            DateTime? @db.Time /// Hora de creación del plan
 
   // Relaciones
-  clients           ClientsData[]                                 /// Relación con clientes que poseen este plan
-  purchaseHistories PlanPurchaseHistory[]                         /// Historial de compras de este plan
+  clients           ClientsData[] /// Relación con clientes que poseen este plan
+  purchaseHistories PlanPurchaseHistory[] /// Historial de compras de este plan
 
   @@map("plans")
 }
 
+//Usuarios que se suscriban
+model ArxatecSubscribers {
+  id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
+  name      String   @db.VarChar(100) /// Nombre del suscriptor
+  email     String   @unique @db.VarChar(255) /// Email único del suscriptor
+  createdAt DateTime @default(now()) /// Fecha de suscripción
+}
+
 // Tabla de usuarios generales
 model User {
-  id                 Int         @id @default(autoincrement())/// Identificador único del usuario
-  first_name         String                                   /// Nombre del usuario
-  last_name          String                                   /// Apellido del usuario
-  email              String      @unique                      /// Email único
-  password           String                                   /// Contraseña (almacenada hasheada)
-  user_type          user_type                                /// Tipo de usuario (admin, client, lawyer)
-  profile_image      String?                                  /// URL de la imagen de perfil
-  address            String?                                  /// Dirección del usuario
-  phone              String?                                  /// Teléfono principal
-  additional_phone   String?                                  /// Teléfono secundario
-  gender             String?                                  /// Género del usuario
-  birth_date         DateTime?   @db.Date                     /// Fecha de nacimiento
-  status             user_status                              /// Estado del usuario (active, suspended)
-  creation_timestamp DateTime?                                /// Timestamp de creación del registro
+  id                           Int                   @id @default(autoincrement()) /// Identificador único del usuario
+  first_name                   String /// Nombre del usuario
+  last_name                    String /// Apellido del usuario
+  email                        String                @unique /// Email único
+  password                     String /// Contraseña (almacenada hasheada)
+  user_type                    user_type /// Tipo de usuario (admin, client, lawyer)
+  profile_image                String? /// URL de la imagen de perfil
+  address                      String? /// Dirección del usuario
+  phone                        String? /// Teléfono principal
+  additional_phone             String? /// Teléfono secundario
+  gender                       String? /// Género del usuario
+  birth_date                   DateTime?             @db.Date /// Fecha de nacimiento
+  status                       user_status /// Estado del usuario (active, suspended)
+  creation_timestamp           DateTime? /// Timestamp de creación del registro
   // Relaciones
-  lawyerData                LawyersData?                      /// Datos adicionales para usuarios tipo abogado
-  clientData                ClientsData?                      /// Datos adicionales para usuarios tipo cliente
-  adminData                 AdminsData?                       /// Datos adicionales para usuarios tipo administrador
-  clientServices            ClientsServices?                  /// Servicios contratados por el cliente
+  lawyerData                   LawyersData? /// Datos adicionales para usuarios tipo abogado
+  clientData                   ClientsData? /// Datos adicionales para usuarios tipo cliente
+  adminData                    AdminsData? /// Datos adicionales para usuarios tipo administrador
+  clientServices               ClientsServices? /// Servicios contratados por el cliente
   ///////////////////////////////////////////////
-  videoCallServicesAsClient VideoCallService[]    @relation("VideoCallClient")/// Videollamadas solicitadas como cliente
-  videoCallServicesAsLawyer VideoCallService[]    @relation("VideoCallLawyer")/// Videollamadas asignadas como abogado
+  videoCallServicesAsClient    VideoCallService[]    @relation("VideoCallClient") /// Videollamadas solicitadas como cliente
+  videoCallServicesAsLawyer    VideoCallService[]    @relation("VideoCallLawyer") /// Videollamadas asignadas como abogado
   ///////////////////////////////////////////////
-  consultationServicesAsClient   ConsultationService[]      @relation("ConsultationClient")/// Consultas enviadas como cliente
-  consultationServicesAsLawyer   ConsultationService[]      @relation("ConsultationLawyer")/// Consultas asignadas como abogado
+  consultationServicesAsClient ConsultationService[] @relation("ConsultationClient") /// Consultas enviadas como cliente
+  consultationServicesAsLawyer ConsultationService[] @relation("ConsultationLawyer") /// Consultas asignadas como abogado
   ///////////////////////////////////////////////
-  articles                  Article[]                         /// Artículos publicados por el usuario
-  planPurchaseHistories     PlanPurchaseHistory[]             /// Historial de compras de planes
+  articles                     Article[] /// Artículos publicados por el usuario
+  planPurchaseHistories        PlanPurchaseHistory[] /// Historial de compras de planes
 
   @@map("users")
 }
 
 // Datos adicionales para abogados (relación uno a uno con User)
 model LawyersData {
-  id             Int    @id                /// Identificador (igual al id del usuario)
-  license_number String                    /// Número de licencia del abogado
-   
+  id             Int    @id /// Identificador (igual al id del usuario)
+  license_number String /// Número de licencia del abogado
+
   // Relación: cada registro se vincula a un usuario
   user User @relation(fields: [id], references: [id], onDelete: Cascade)
 
@@ -143,8 +151,8 @@ model LawyersData {
 
 // Datos adicionales para clientes (relación uno a uno con User)
 model ClientsData {
-  id      Int @id                         /// Identificador (igual al id del usuario)
-  plan_id Int                             /// Identificador del plan adquirido
+  id      Int @id /// Identificador (igual al id del usuario)
+  plan_id Int /// Identificador del plan adquirido
 
   // Relaciones
   user User @relation(fields: [id], references: [id], onDelete: Cascade)
@@ -155,8 +163,8 @@ model ClientsData {
 
 // Datos adicionales para administradores (relación uno a uno con User)
 model AdminsData {
-  id    Int     @id                       /// Identificador (igual al id del usuario)
-  notes String?                           /// Notas adicionales sobre el administrador
+  id    Int     @id /// Identificador (igual al id del usuario)
+  notes String? /// Notas adicionales sobre el administrador
 
   // Relación: vincula el registro a un usuario
   user User @relation(fields: [id], references: [id], onDelete: Cascade)
@@ -166,11 +174,11 @@ model AdminsData {
 
 // Servicios específicos contratados por clientes (uno a uno con User)
 model ClientsServices {
-  id                                 Int @id                /// Identificador (igual al id del usuario)
-  video_call_consultations_available Int                    /// Consultas por videollamada disponibles
-  message_consultations_available    Int                    /// Consultas por mensaje disponibles
-  advisories_available               Int                    /// Asesorías disponibles
-  procedures_available               Int                    /// Procedimientos disponibles
+  id                                 Int @id /// Identificador (igual al id del usuario)
+  video_call_consultations_available Int /// Consultas por videollamada disponibles
+  message_consultations_available    Int /// Consultas por mensaje disponibles
+  advisories_available               Int /// Asesorías disponibles
+  procedures_available               Int /// Procedimientos disponibles
 
   // Relación: cada registro se vincula a un usuario
   user User @relation(fields: [id], references: [id], onDelete: Cascade)
@@ -178,58 +186,13 @@ model ClientsServices {
   @@map("clients_services")
 }
 
-// Registro de servicios de videollamada
-model VideoCallService {
-  id                Int               @id @default(autoincrement())/// Identificador único del servicio
-  client_id         Int                                            /// Identificador del cliente solicitante
-  lawyer_id         Int?                                           /// Identificador del abogado asignado (opcional)
-  subject           String                                         /// Asunto o motivo de la consulta
-  service_date      DateTime          @db.Date                     /// Fecha programada para la consulta
-  service_time      DateTime          @db.Time                     /// Hora programada para la consulta
-  description       String                                         /// Descripción detallada del servicio
-  consultation_type consultation_type                              /// Tipo de consulta (public, private, own)
-  status            video_call_status                              /// Estado actual de la videollamada
-  creation_date     DateTime?         @db.Date                     /// Fecha de creación del registro
-  creation_time     DateTime?         @db.Time                     /// Hora de creación del registro
-  video_call_link   String?                                        /// Enlace para unirse a la videollamada
-  message           String?                                        /// Mensaje adicional o notas
-
-  // Relaciones
-  client User  @relation("VideoCallClient", fields: [client_id], references: [id], onDelete: Cascade)
-  lawyer User? @relation("VideoCallLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
-
-  @@map("video_call_services")
-}
-
-
-// Registro de servicios de consulta
-model ConsultationService {
-  id                Int            @id @default(autoincrement())/// Identificador único de la consulta
-  client_id         Int                                         /// Identificador del cliente que envía la consulta
-  lawyer_id         Int?                                        /// Identificador del abogado asignado (opcional)
-  subject           String                                      /// Asunto de la consulta
-  message           String                                      /// Contenido de la consulta enviada
-  response          String?                                     /// Respuesta del abogado (opcional)
-  consultation_date DateTime       @db.Date                     /// Fecha de la consulta
-  consultation_time DateTime       @db.Time                     /// Hora de la consulta
-  status            message_status                              /// Estado actual de la consulta
-  creation_date     DateTime?      @db.Date                     /// Fecha de creación del registro
-  creation_time     DateTime?      @db.Time                     /// Hora de creación del registro
-
-  // Relaciones
-  client User  @relation("ConsultationClient", fields: [client_id], references: [id], onDelete: Cascade)
-  lawyer User? @relation("ConsultationLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
-
-  @@map("consultation_services")
-}
-
 // Historial de compras de planes realizados por clientes
 model PlanPurchaseHistory {
-  id            Int            @id @default(autoincrement())/// Identificador único del historial
-  client_id     Int                                         /// Identificador del cliente
-  plan_id       Int                                         /// Identificador del plan comprado
-  purchase_date DateTime       @db.Date                     /// Fecha de compra del plan
-  status        history_status                              /// Estado de la compra (paid, pending, cancelled, refunded)
+  id            Int            @id @default(autoincrement()) /// Identificador único del historial
+  client_id     Int /// Identificador del cliente
+  plan_id       Int /// Identificador del plan comprado
+  purchase_date DateTime       @db.Date /// Fecha de compra del plan
+  status        history_status /// Estado de la compra (paid, pending, cancelled, refunded)
 
   // Relaciones
   client User @relation(fields: [client_id], references: [id], onDelete: Cascade)
@@ -238,18 +201,77 @@ model PlanPurchaseHistory {
   @@map("plan_purchase_history")
 }
 
+// Registro de servicios de videollamada
+model VideoCallService {
+  id                Int               @id @default(autoincrement()) /// Identificador único del servicio
+  client_id         Int /// Identificador del cliente solicitante
+  lawyer_id         Int? /// Identificador del abogado asignado (opcional)
+  subject           String /// Asunto o motivo de la consulta
+  service_date      DateTime          @db.Date /// Fecha programada para la consulta
+  service_time      DateTime          @db.Time /// Hora programada para la consulta
+  description       String /// Descripción detallada del servicio
+  consultation_type consultation_type /// Tipo de consulta (public, private, own)
+  status            video_call_status /// Estado actual de la videollamada
+  creation_date     DateTime?         @db.Date /// Fecha de creación del registro
+  creation_time     DateTime?         @db.Time /// Hora de creación del registro
+  video_call_link   String? /// Enlace para unirse a la videollamada
+  message           String? /// Mensaje adicional o notas
+
+  // Relaciones
+  client User  @relation("VideoCallClient", fields: [client_id], references: [id], onDelete: Cascade)
+  lawyer User? @relation("VideoCallLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
+
+  @@map("video_call_services")
+}
+
+// Registro de servicios de consulta
+model ConsultationService {
+  id                Int            @id @default(autoincrement()) /// Identificador único de la consulta
+  client_id         Int /// Identificador del cliente que envía la consulta
+  lawyer_id         Int? /// Identificador del abogado asignado (opcional)
+  subject           String /// Asunto de la consulta
+  message           String /// Contenido de la consulta enviada
+  response          String? /// Respuesta del abogado (opcional)
+  consultation_date DateTime       @db.Date /// Fecha de la consulta
+  consultation_time DateTime       @db.Time /// Hora de la consulta
+  status            message_status /// Estado actual de la consulta
+  creation_date     DateTime?      @db.Date /// Fecha de creación del registro
+  creation_time     DateTime?      @db.Time /// Hora de creación del registro
+
+  // Relaciones
+  client User  @relation("ConsultationClient", fields: [client_id], references: [id], onDelete: Cascade)
+  lawyer User? @relation("ConsultationLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
+
+  @@map("consultation_services")
+}
+
 // Tabla de artículos publicados por los usuarios
 model Article {
-  id               Int            @id @default(autoincrement())/// Identificador único del artículo
-  user_id          Int                                         /// Identificador del autor (usuario)
-  title            String                                      /// Título del artículo
-  content          String                                      /// Contenido completo del artículo
-  publication_date DateTime       @db.Date                     /// Fecha de publicación
-  publication_time DateTime       @db.Time                     /// Hora de publicación
-  status           article_status                              /// Estado del artículo (pending, accepted, rejected)
+  id               Int            @id @default(autoincrement()) /// Identificador único del artículo
+  user_id          Int /// Identificador del autor (usuario)
+  title            String /// Título del artículo
+  content          String /// Contenido completo del artículo
+  banner           String? /// URL o path del banner del artículo
+  category_id      Int /// Identificador de la categoría del artículo
+  publication_date DateTime       @db.Date /// Fecha de publicación
+  publication_time DateTime       @db.Time /// Hora de publicación
+  status           article_status /// Estado del artículo (pending, accepted, rejected)
 
-  // Relación: cada artículo pertenece a un usuario
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Relaciones
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  articleCategory ArticleCategory @relation(fields: [category_id], references: [id], onDelete: Cascade)
 
   @@map("article")
+}
+
+// Nueva tabla para categorías de artículos
+model ArticleCategory {
+  id          Int     @id @default(autoincrement()) /// Identificador único de la categoría
+  name        String /// Nombre de la categoría
+  description String? /// Descripción opcional de la categoría
+
+  // Relación
+  articles Article[] /// Lista de artículos asociados a esta categoría
+
+  @@map("article_categories")
 }

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { verifyToken } from "../../../../shared/config/jwt";
 import { updateUserStatus, findUserByEmail } from "../../data/repository/user.repository";
-import { sendBulkEmail } from '../../services/email.service';
+import { sendBulkEmail } from '../services/email.service';
 import { BulkEmailDTO } from '../../domain/dtos/bulk_email.dto'; 
 
 export const verifyEmailController = async (req: Request, res: Response): Promise<void> => {

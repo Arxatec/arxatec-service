@@ -1,6 +1,6 @@
-import { BulkEmailDTO } from '../domain/dtos/bulk_email.dto';
-import { getAllUsersEmails } from '../data/repository/user.repository';
-import { sendEmail } from '../../../shared/utils/emailSender';
+import { BulkEmailDTO } from '../../domain/dtos/bulk_email.dto';
+import { getAllUsersEmails } from '../../data/repository/user.repository';
+import { sendEmail } from '../../../../shared/utils/emailSender';
 
 export const sendBulkEmail = async (data: BulkEmailDTO): Promise<void> => {
 

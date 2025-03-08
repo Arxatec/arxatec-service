@@ -31,10 +31,6 @@ pgdata/
 *.sql
 *.dump
 
-# Swagger (Documentación generada)
-docs/swagger.json
-docs/swagger.yaml
-
 # TypeScript
 *.tsbuildinfo
 *.d.ts

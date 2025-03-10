@@ -30,9 +30,9 @@ export class WaitlistService {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-  <title>Mail Body</title>
+  <title>¡Gracias por suscribirte a la lista de espera de Arxatec!</title>
 </head>
-<body style="font-family: 'DM Sans', Arial, sans-serif; background-color: #f1f5f9;">
+<body style="font-family: 'DM Sans', Arial, sans-serif; ">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
@@ -43,7 +43,8 @@ export class WaitlistService {
   </style>
 
   <div style="width: 100%; max-width: 600px; margin: 1rem auto; background-color: #fff; padding: 1rem; border-radius: 0.5rem">
-    <h1 style="font-size: 1.2rem; color: #111827; font-weight: 900; font-family: 'DM Sans', Arial, sans-serif;">¡Gracias por suscribirte a la lista de espera de Arxatec!</h1>
+    <img src="https://www.arxatec.net/assets/logo.png" alt="logo" width="150" style="margin: 0 auto; display: block; ">
+    <h1 style="font-size: 1.2rem; color: #111827; font-weight: 900; font-family: 'DM Sans', Arial, sans-serif; text-align: center; margin-top: 2rem; ">¡Gracias por suscribirte a la lista de espera de Arxatec!</h1>
     <p style="font-size: 0.8rem; margin-top: 0.2rem; color: #4b5563; font-family: 'DM Sans', Arial, sans-serif;">
       ¡Queremos agradecerte por suscribirte a nuestro newsletter!  Estamos emocionados de que te hayas unido a nuestra comunidad de personas interesadas en la innovación de servicios legales laborales.
       <br/><br/>
@@ -73,6 +74,10 @@ export class WaitlistService {
       Atentamente, 
     </p>
     <b style="font-size: 0.8rem; margin-top: 0.2rem; color: #4b5563; font-weight: 900; font-family: 'DM Sans', Arial, sans-serif; ">El equipo de Arxatec</b>
+    <div style="border-top: 1px solid #d1d5db; margin-top: 32px; padding-top: 10px; font-size: 12px; color: #9ca3af;">
+      <p style="font-family: 'DM Sans', Arial, sans-serif;">Si no has enviado tus datos a Arxatec, por favor ignora este mensaje o contáctanos para aclarar la situación.</p> 
+    </div>
+  </div>
   </div>
 </body>
 </html>

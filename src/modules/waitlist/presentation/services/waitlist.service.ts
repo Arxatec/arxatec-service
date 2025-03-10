@@ -16,7 +16,7 @@ export class WaitlistService {
         throw new AppError(
           MESSAGES.WAITLIST.SUBSCRIBE_ERROR_ALREADY_SUBSCRIBED,
           HttpStatusCodes.BAD_REQUEST.code
-        );  
+        );
       }
 
       await this.waitlistRepository.subscribeUser(data.name, data.email);
@@ -87,6 +87,9 @@ export class WaitlistService {
 
       return MESSAGES.WAITLIST.SUBSCRIBE_SUCCESS;
     } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
       throw new AppError(
         MESSAGES.WAITLIST.SUBSCRIBE_ERROR_INTERNAL_SERVER_ERROR,
         HttpStatusCodes.INTERNAL_SERVER_ERROR.code

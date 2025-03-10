@@ -19,11 +19,11 @@ export class ArticleRepository {
         user_id: userId,
         title: data.title,
         content: data.content,
-        banner: data.banner, 
-        publication_date: new Date(), 
-        publication_time: new Date(), 
+        banner: data.banner,
+        publication_date: new Date(),
+        publication_time: new Date(),
         status: "pending" as article_status,
-        category_id: data.categoryId, 
+        category_id: data.categoryId,
       },
     });
 
@@ -74,9 +74,15 @@ export class ArticleRepository {
     });
   }
 
-  async update(articleId: number, userId: number, data: UpdateArticleDTO): Promise<any> {
+  async update(
+    articleId: number,
+    userId: number,
+    data: UpdateArticleDTO
+  ): Promise<any> {
     // Primero, se puede verificar que el artículo pertenezca al usuario (esto también se podría hacer en el service)
-    const article = await this.prisma.article.findUnique({ where: { id: articleId } });
+    const article = await this.prisma.article.findUnique({
+      where: { id: articleId },
+    });
     if (!article || article.user_id !== userId) {
       throw new Error("Acceso denegado o artículo no encontrado");
     }
@@ -107,7 +113,9 @@ export class ArticleRepository {
 
   async delete(articleId: number, userId: number): Promise<any> {
     // Verificar propiedad antes de borrar
-    const article = await this.prisma.article.findUnique({ where: { id: articleId } });
+    const article = await this.prisma.article.findUnique({
+      where: { id: articleId },
+    });
     if (!article || article.user_id !== userId) {
       throw new Error("Acceso denegado o artículo no encontrado");
     }

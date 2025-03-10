@@ -3,7 +3,7 @@ export interface Article {
   userId: number;
   title: string;
   content: string;
-  banner?: string; 
+  banner?: string;
   categoryId: number;
   publicationDate: Date;
   publicationTime: Date;

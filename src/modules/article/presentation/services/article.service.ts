@@ -1,12 +1,18 @@
 import { PrismaClient } from "@prisma/client";
-import { ArticleRepository, UpdateArticleDTO } from "../../data/repository/article.repository";
+import {
+  ArticleRepository,
+  UpdateArticleDTO,
+} from "../../data/repository/article.repository";
 import { CreateArticleDTO } from "../../domain/dtos/create_article.dto";
 import { Article } from "../../domain/entities/article.entity";
 
 export class ArticleService {
   constructor(private articleRepository: ArticleRepository) {}
 
-  async createArticle(userId: number, data: CreateArticleDTO): Promise<Article> {
+  async createArticle(
+    userId: number,
+    data: CreateArticleDTO
+  ): Promise<Article> {
     const prisma = new PrismaClient();
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.status !== "active") {
@@ -27,7 +33,11 @@ export class ArticleService {
     return article;
   }
 
-  async updateArticle(articleId: number, userId: number, data: UpdateArticleDTO): Promise<any> {
+  async updateArticle(
+    articleId: number,
+    userId: number,
+    data: UpdateArticleDTO
+  ): Promise<any> {
     return this.articleRepository.update(articleId, userId, data);
   }
 

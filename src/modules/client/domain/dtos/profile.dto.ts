@@ -8,8 +8,8 @@ export const UpdateClientSchema = z.object({
   phone: z.string().optional(),
   additional_phone: z.string().optional(),
   gender: z.enum(["male", "female", "other"]).optional(),
-  
-  birth_date: z.string().optional()
+
+  birth_date: z.string().optional(),
 });
 
 export type UpdateClientDTO = z.infer<typeof UpdateClientSchema>;

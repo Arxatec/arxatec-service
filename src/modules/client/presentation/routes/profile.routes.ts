@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { updateClientProfileController } from "../controllers/profile.controller";
-import { authenticateToken } from "../../../../middlewares/auth"; // Ajusta la ruta a tu estructura
+import { authenticateToken } from "../../../../middlewares/authenticate_token"; // Ajusta la ruta a tu estructura
 
 const router = Router();
 

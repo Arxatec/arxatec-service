@@ -12,7 +12,7 @@ export const UpdateArticleSchema = z.object({
   categoryId: z.number().optional(),
 });
 
-const articleRepository = new ArticleRepository();
+const articleRepository = new ArticleRepository(); 
 const articleService = new ArticleService(articleRepository);
 
 interface AuthenticatedRequest extends Request {

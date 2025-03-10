@@ -1,10 +1,16 @@
 import { Request, Response } from "express";
-import { verifyToken } from "../../../../shared/config/jwt";
-import { updateUserStatus, findUserByEmail } from "../../data/repository/user.repository";
-import { sendBulkEmail } from '../services/email.service';
-import { BulkEmailDTO } from '../../domain/dtos/bulk_email.dto'; 
+import { verifyToken } from "../../../../config/jwt";
+import {
+  updateUserStatus,
+  findUserByEmail,
+} from "../../data/repository/user.repository";
+import { sendBulkEmail } from "../services/email.service";
+import { BulkEmailDTO } from "../../domain/dtos/bulk_email.dto";
 
-export const verifyEmailController = async (req: Request, res: Response): Promise<void> => {
+export const verifyEmailController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { token } = req.query;
     if (!token) {
@@ -28,7 +34,11 @@ export const verifyEmailController = async (req: Request, res: Response): Promis
 
     await updateUserStatus(decoded.email, "active");
 
-    res.status(200).json({ message: `Cuenta verificada con éxito. Bienvenido, ${user.first_name}!` });
+    res
+      .status(200)
+      .json({
+        message: `Cuenta verificada con éxito. Bienvenido, ${user.first_name}!`,
+      });
   } catch (error) {
     res.status(500).json({ message: "Error al verificar la cuenta" });
   }
@@ -39,8 +49,12 @@ export const sendBulkEmailController = async (req: Request, res: Response) => {
   try {
     const data: BulkEmailDTO = req.body;
     await sendBulkEmail(data);
-    res.status(200).json({ message: 'Correos enviados correctamente' });
+    res.status(200).json({ message: "Correos enviados correctamente" });
   } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Error desconocido' });
+    res
+      .status(500)
+      .json({
+        error: error instanceof Error ? error.message : "Error desconocido",
+      });
   }
 };

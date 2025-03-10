@@ -79,7 +79,6 @@
   │       │       └── user.routes.ts  # Rutas de usuario
   │       └── services/               # Implementa lógica de negocios e interactúa con repositorios.
   │               └── user.service.ts    
-  │       
   │  
   │── shared/                        # Lógica compartida entre módulos
   │   ├── config/                    # Configuración central (manejador de llaves, JWT, etc.)

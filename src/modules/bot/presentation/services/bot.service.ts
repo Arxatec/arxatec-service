@@ -6,5 +6,4 @@ export class BotService {
   async sendMessage(message: string) {
     return this.botRepository.sendMessage(message);
   }
-
 }

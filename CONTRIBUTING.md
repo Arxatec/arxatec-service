@@ -52,44 +52,100 @@
   Arxatec Service follows **Clean Architecture**, ensuring modularity and separation of concerns. Below is the structure:
 
   ```
-  src/
-  │── middlewares/                   # Middlewares ej.manejo de errores, validaciones autenticación; en desuso
-  │   ├── async_handler/             
-  │   │   └── index.ts               
-  │   └── index.ts                  
-  │── modules/                       # Módulos que representan las funcionalidades principales
-  │   ├── cases/                     # Módulo de casos; aun falta configurar
-  │   └── user/                      # Módulo de usuario
-  │       ├── data/                  
-  │       │   └── repository/        
-  │       │       └── user.repository.ts  # Interacciones con la base de datos,
-  │       ├── domain/                
-  │       │   ├── dtos/                   # DTOs para manejar la validación/formato de datos
-  │       │   │   ├── email.dto.ts         
-  │       │   │   ├── login.dto.ts   
-  │       │   │   ├── register.dto.ts
-  │       │   │   └── update_user.dto.ts
-  │       │   ├── entities/          
-  │       │   │   └── user.entity.ts       # Entidad principal del usuario; En desuso
-  │       ├── presentation/          
-  │       │   ├── controllers/             # Lógica de presentación (controladores)
-  │       │   │   ├── email.controller.ts 
-  │       │   │   └── user.controller.ts  
-  │       │   └── routes/            
-  │       │       └── user.routes.ts  # Rutas de usuario
-  │       └── services/               # Implementa lógica de negocios e interactúa con repositorios.
-  │               └── user.service.ts    
-  │  
-  │── shared/                        # Lógica compartida entre módulos
-  │   ├── config/                    # Configuración central (manejador de llaves, JWT, etc.)
-  │   │   ├── jwt.ts                 # Archivo para manejar las llaves JWT
-  │   │   └── email.ts               # Configuracion del servicio de correo/Conexion
-  │   ├── utils/                     # Funciones utilitarias (validaciones, helpers)
-  │   │   ├── emailSender.ts         # Construccion del correo/plantilla del mensaje
-  │   │   └── testEmail              # Testeo que se envia el correo
-  |   └── prismaClient.ts            # Conexión a Prisma Client
-  │── index.ts                       # Punto de entrada principal(servidor Express)
-  └── routes.ts                      # Manejador de las rutas                
+  └── src
+    ├── index.ts                                  # Punto de entrada de la aplicación.
+    ├── prismaClient.ts                           # Inicialización y configuración del cliente Prisma.
+    ├── routes.ts                                 # Definición principal de rutas (importa rutas de cada módulo).
+    ├── config/                                   # Configuración general del proyecto
+    │   ├── index.ts                              # Archivo principal de configuración
+    │   ├── email/
+    │   │   ├── index.ts                          # Configuración de Nodemailer
+    │   │   ├── email_sender.ts                   # Función para enviar emails
+    │   ├── external_services/
+    │   │   └── index.ts                          # Configuración de servicios externos
+    │   ├── jwt/
+    │   │   ├── index.ts                          # Configuración de JWT (generación/verificación)
+    │   ├── env.ts                                # Validación de variables de entorno
+    ├── constants/                                # Constantes del sistema
+    │   ├── index.ts                              # Archivo principal de constantes
+    │   ├── http_status_codes/
+    │   │   └── index.ts                          # Códigos HTTP centralizados
+    │   ├── messages/
+    │   │   ├── index.ts                          # Mensajes generales
+    │   │   ├── auth.ts                           # Mensajes de autenticación
+    │   │   ├── bot.ts                            # Mensajes del bot
+    │   │   └── waitlist.ts                       # Mensajes de la lista de espera
+    ├── docs/
+    │   └── swagger.ts                            # Documentación API con Swagger
+    ├── middlewares/                              # Middlewares de Express
+    │   ├── index.ts                              # Archivo principal de middlewares
+    │   ├── async_handler/
+    │   │   └── index.ts                          # Middleware para manejar async/await
+    │   ├── authenticate_token/
+    │   │   └── index.ts                          # Middleware de autenticación JWT
+    ├── modules/                                  # Módulos de la aplicación
+    │   ├── auth/                                 # Módulo de autenticación
+    │   │   ├── data/
+    │   │   │   ├── repository/
+    │   │   │   │   ├── auth.repository.ts        # Repositorio de autenticación
+    │   │   ├── domain/
+    │   │   │   ├── dtos/
+    │   │   │   │   ├── forgot_password.dto.ts    # DTO para olvido de contraseña
+    │   │   │   │   ├── login.dto.ts              # DTO para login
+    │   │   │   │   ├── register.dto.ts           # DTO para registro
+    │   │   │   │   ├── reset_password.dto.ts     # DTO para reset de contraseña
+    │   │   │   ├── entities/
+    │   │   │   │   ├── user.entity.ts            # Entidad usuario
+    │   │   ├── presentation/
+    │   │   │   ├── controllers/
+    │   │   │   │   ├── auth.controller.ts        # Controlador de autenticación
+    │   │   │   ├── routes/
+    │   │   │   │   ├── auth.routes.ts            # Rutas de autenticación
+    │   │   │   ├── services/
+    │   │   │   │   ├── auth.service.ts           # Lógica de negocio de autenticación
+    │   ├── email/                                # Módulo de emails
+    │   │   ├── data/
+    │   │   │   ├── repository/
+    │   │   │   │   ├── email.repository.ts       # Repositorio de emails
+    │   │   ├── domain/
+    │   │   │   ├── dtos/
+    │   │   │   │   ├── bulk_email.dto.ts         # DTO para emails masivos
+    │   │   │   │   ├── email.dto.ts              # DTO para emails individuales
+    │   │   ├── presentation/
+    │   │   │   ├── controllers/
+    │   │   │   │   ├── email.controller.ts       # Controlador de emails
+    │   │   │   ├── routes/
+    │   │   │   │   ├── email.routes.ts           # Rutas de emails
+    │   │   │   ├── services/
+    │   │   │   │   ├── email.service.ts          # Lógica de negocio para emails
+    │   ├── user/                                 # Módulo de usuarios
+    │   │   ├── data/
+    │   │   │   ├── repository/
+    │   │   │   │   ├── user.repository.ts        # Repositorio de usuarios
+    │   │   ├── domain/
+    │   │   │   ├── dtos/
+    │   │   │   │   ├── update_user.dto.ts        # DTO para actualizar usuario
+    │   │   │   ├── entities/
+    │   │   │   │   ├── user.entity.ts            # Entidad usuario (extendida)
+    │   │   ├── presentation/
+    │   │   │   ├── controllers/
+    │   │   │   │   ├── user.controller.ts        # Controlador de usuario
+    │   │   │   ├── routes/
+    │   │   │   │   ├── user.routes.ts            # Rutas de usuario
+    │   │   │   ├── services/
+    │   │   │   │   ├── user.service.ts           # Lógica de negocio de usuarios
+    ├── utils/                                    # Utilidades generales
+    │   ├── index.ts                              # Archivo principal de utilidades
+    │   ├── build_http_response/
+    │   │   ├── index.ts                          # Helper para formatear respuestas HTTP
+    │   ├── errors/
+    │   │   ├── index.ts                          # Manejo de errores globales
+    │   ├── error_handler/
+    │   │   ├── index.ts                          # Middleware de manejo de errores
+    │   ├── test_email/
+    │   │   ├── index.ts                          # Prueba de envío de emails
+
+
 
   ```
 

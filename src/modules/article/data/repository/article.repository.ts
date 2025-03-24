@@ -1,124 +1,112 @@
 import { PrismaClient, article_status } from "@prisma/client";
 import { Article } from "../../domain/entities/article.entity";
 import { CreateArticleDTO } from "../../domain/dtos/create_article.dto";
-
-// (Si se requiere, puedes definir también un DTO para actualizar, por ejemplo:)
-export interface UpdateArticleDTO {
-  title?: string;
-  content?: string;
-  banner?: string;
-  categoryId?: number;
-}
+import { UpdateArticleDTO } from "../../domain/dtos/update_article.dto";
+import { MESSAGES } from "../../../../constants/messages";
 
 export class ArticleRepository {
   private prisma = new PrismaClient();
 
   async create(userId: number, data: CreateArticleDTO): Promise<Article> {
-    const created = await this.prisma.article.create({
+    const created = await this.prisma.articles.create({
       data: {
         user_id: userId,
         title: data.title,
         content: data.content,
         banner: data.banner,
-        publication_date: new Date(),
-        publication_time: new Date(),
+        publication_timestamp: new Date(),
         status: "pending" as article_status,
         category_id: data.categoryId,
       },
     });
-
     return {
       id: created.id,
       userId: created.user_id,
       title: created.title,
       content: created.content,
-      banner: created.banner ?? undefined,
+      banner: created.banner ?? "",
       categoryId: created.category_id,
-      publicationDate: created.publication_date,
-      publicationTime: created.publication_time,
+      publication_timestamp: created.publication_timestamp,
       status: created.status,
     };
   }
 
   async getAll(): Promise<any[]> {
-    // Trae todos los artículos incluyendo el autor, la categoría y la especialidad (si existe)
-    return await this.prisma.article.findMany({
+    return await this.prisma.articles.findMany({
       include: {
-        user: {
+        userDetails: {
           select: {
-            first_name: true,
-            last_name: true,
-          },
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
         },
-        articleCategory: {
-          select: { name: true },
-        },
+        articleCategory: { select: { name: true } },
       },
     });
   }
 
   async getById(articleId: number): Promise<any | null> {
-    return await this.prisma.article.findUnique({
+    return await this.prisma.articles.findUnique({
       where: { id: articleId },
       include: {
-        user: {
+        userDetails: {
           select: {
-            first_name: true,
-            last_name: true,
-          },
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
         },
-        articleCategory: {
-          select: { name: true },
-        },
+        articleCategory: { select: { name: true } },
       },
     });
   }
 
-  async update(
-    articleId: number,
-    userId: number,
-    data: UpdateArticleDTO
-  ): Promise<any> {
-    // Primero, se puede verificar que el artículo pertenezca al usuario (esto también se podría hacer en el service)
-    const article = await this.prisma.article.findUnique({
+  async update(articleId: number, userId: number, data: UpdateArticleDTO): Promise<any> {
+    const article = await this.prisma.articles.findUnique({
       where: { id: articleId },
     });
     if (!article || article.user_id !== userId) {
-      throw new Error("Acceso denegado o artículo no encontrado");
+      throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
     }
-
-    const updated = await this.prisma.article.update({
+    const updated = await this.prisma.articles.update({
       where: { id: articleId },
       data: {
         title: data.title,
         content: data.content,
         banner: data.banner,
         category_id: data.categoryId,
-        // Si se necesita actualizar la fecha/hora, se puede agregar lógica aquí.
       },
       include: {
-        user: {
+        userDetails: {
           select: {
-            first_name: true,
-            last_name: true,
-          },
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
         },
-        articleCategory: {
-          select: { name: true },
-        },
+        articleCategory: { select: { name: true } },
       },
     });
     return updated;
   }
 
   async delete(articleId: number, userId: number): Promise<any> {
-    // Verificar propiedad antes de borrar
-    const article = await this.prisma.article.findUnique({
+    const article = await this.prisma.articles.findUnique({
       where: { id: articleId },
     });
     if (!article || article.user_id !== userId) {
-      throw new Error("Acceso denegado o artículo no encontrado");
+      throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
     }
-    return await this.prisma.article.delete({ where: { id: articleId } });
+    return await this.prisma.articles.delete({ where: { id: articleId } });
   }
 }

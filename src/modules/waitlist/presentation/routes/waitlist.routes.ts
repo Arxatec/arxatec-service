@@ -7,7 +7,7 @@ const router = Router();
 /**
  * Suscripción a actualizaciones de Arxatec
  * @openapi
- * /api/v1/news/sub_new_news:
+ * /api/v1/waitlist:
  *    post:
  *      tags:
  *        - Subscribe

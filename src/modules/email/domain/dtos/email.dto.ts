@@ -1,3 +1,4 @@
+// src/modules/email/domain/dtos/email.dto.ts
 import { z } from "zod";
 
 export const EmailSchema = z.object({

@@ -5,7 +5,6 @@ import { RegisterDTO } from "../../domain/dtos/register.dto";
 import { LoginDTO } from "../../domain/dtos/login.dto";
 import { ForgotPasswordDTO } from "../../domain/dtos/forgot_password.dto";
 import { ResetPasswordDTO } from "../../domain/dtos/reset_password.dto";
-import { OnboardingDTO } from "../../domain/dtos/onboarding.dto";
 import { User } from "../../domain/entities/user.entity";
 import {
   generateCodeToken,
@@ -13,31 +12,71 @@ import {
   generateToken,
 } from "../../../../config/jwt";
 import { sendEmail } from "../../../../utils/email_sender";
+import { AppError } from "../../../../utils";
+import { MESSAGES, HttpStatusCodes } from "../../../../constants";
 
 export class AuthService {
-  private authRepository: AuthRepository;
-
-  constructor(authRepository: AuthRepository) {
-    this.authRepository = authRepository;
-  }
+  constructor(private readonly authRepository: AuthRepository) {}
 
   // Registro de usuario y envío del código de verificación
   async registerUser(
     data: RegisterDTO
-  ): Promise<{ user: User; token: string }> {
+  ): Promise<{ user: User; token?: string; message: string }> {
     const existingUser = await this.authRepository.getEmail(data.email);
-    if (existingUser) {
-      throw new Error("Email is already in use");
+
+    // Si ya existe y está activo
+    if (existingUser && existingUser.status === "active") {
+      throw new AppError(
+        MESSAGES.AUTH.EMAIL_IN_USE_VERIFIED,
+        HttpStatusCodes.CONFLICT.code
+      );
     }
 
+    // Si ya existe y está pendiente
+    if (existingUser && existingUser.status === "pending") {
+      const newToken = generateCodeToken(existingUser.email, "verification");
+
+      // Intentamos verificar el token recién generado para extraer su payload
+      const payload = verifyCodeToken(newToken);
+
+      if (!payload?.code) {
+        throw new AppError(
+          MESSAGES.AUTH.CODE_GENERATION_FAILED,
+          HttpStatusCodes.INTERNAL_SERVER_ERROR.code
+        );
+      }
+
+      try {
+        // Enviamos nuevo código si llegó hasta aquí
+        await sendEmail(
+          existingUser.email,
+          "Verify your account",
+          `Your verification code is: ${payload.code}`
+        );
+
+        return {
+          user: existingUser,
+          token: newToken,
+          message: MESSAGES.AUTH.EMAIL_IN_USE_PENDING_RESENT,
+        };
+      } catch (error) {
+        throw new AppError(
+          "Failed to send verification email",
+          HttpStatusCodes.INTERNAL_SERVER_ERROR.code
+        );
+      }
+    }
+
+    // Si no existe, crear usuario nuevo
     const user = await this.authRepository.createUser(data);
-
-    // Generar el código y enviarlo por email
     const token = generateCodeToken(user.email, "verification");
-    const { code } = verifyCodeToken(token) || {};
 
+    const { code } = verifyCodeToken(token) || {};
     if (!code) {
-      throw new Error("Failed to generate verification code");
+      throw new AppError(
+        MESSAGES.AUTH.CODE_GENERATION_FAILED,
+        HttpStatusCodes.INTERNAL_SERVER_ERROR.code
+      );
     }
 
     await sendEmail(
@@ -46,27 +85,46 @@ export class AuthService {
       `Your verification code is: ${code}`
     );
 
-    return { user, token };
+    return {
+      user,
+      token,
+      message: MESSAGES.AUTH.USER_REGISTERED_SUCCESS,
+    };
   }
 
-  // Verificación del código
-  async verifyUserCode(token: string, code: string) {
-    const payload = verifyCodeToken(token);
+  // Verificación de cuenta con código y token desde headers
+  async verifyUserCode(
+    authorization: string | undefined,
+    code: string
+  ): Promise<{ message: string }> {
+    if (!authorization) {
+      throw new AppError(
+        "Authorization header missing",
+        HttpStatusCodes.UNAUTHORIZED.code
+      );
+    }
 
-    if (!payload || payload.code !== code) {
-      throw new Error("Invalid or expired verification code");
+    const token = authorization.replace("Bearer ", "");
+    const payload = verifyCodeToken(token);
+    if (!payload || payload.code !== code || payload.type !== "verification") {
+      throw new AppError(
+        MESSAGES.AUTH.INVALID_VERIFICATION_CODE,
+        HttpStatusCodes.BAD_REQUEST.code
+      );
     }
 
     await this.authRepository.updateUserStatus(payload.email, "active");
-
-    return { message: "User verified successfully" };
+    return { message: MESSAGES.AUTH.USER_VERIFIED };
   }
 
   // Inicio de sesión
   async loginUser(data: LoginDTO): Promise<{ user: User; token: string }> {
     const user = await this.authRepository.getEmail(data.email);
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new AppError(
+        MESSAGES.AUTH.INVALID_CREDENTIALS,
+        HttpStatusCodes.UNAUTHORIZED.code
+      );
     }
 
     const isPasswordValid = await this.authRepository.verifyPassword(
@@ -74,11 +132,17 @@ export class AuthService {
       user.password
     );
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      throw new AppError(
+        MESSAGES.AUTH.INVALID_CREDENTIALS,
+        HttpStatusCodes.UNAUTHORIZED.code
+      );
     }
 
     if (!user.isVerified()) {
-      throw new Error("User is not verified");
+      throw new AppError(
+        MESSAGES.AUTH.USER_NOT_VERIFIED,
+        HttpStatusCodes.FORBIDDEN.code
+      );
     }
 
     const token = generateToken({
@@ -88,62 +152,91 @@ export class AuthService {
       last_name: user.last_name,
       status: user.status,
       user_type: user.user_type,
-
     });
 
     return { user, token };
   }
 
-  // Solicitar código de recuperación
+  // Solicitud de recuperación de contraseña
   async requestPasswordReset(
     data: ForgotPasswordDTO
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; token?: string }> {
     const user = await this.authRepository.getEmail(data.email);
+
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError(
+        MESSAGES.AUTH.USER_NOT_FOUND,
+        HttpStatusCodes.NOT_FOUND.code
+      );
+    }
+
+    if (!user.isVerified()) {
+      throw new AppError(
+        MESSAGES.AUTH.USER_NOT_VERIFIED,
+        HttpStatusCodes.FORBIDDEN.code
+      );
     }
 
     const token = generateCodeToken(user.email, "password_reset");
+
     const payload = verifyCodeToken(token);
     if (!payload || !payload.code) {
-      throw new Error("Failed to generate recovery code");
+      throw new AppError(
+        MESSAGES.AUTH.CODE_GENERATION_FAILED,
+        HttpStatusCodes.INTERNAL_SERVER_ERROR.code
+      );
     }
 
-    await sendEmail(
-      user.email,
-      "Password Reset Code",
-      `Your code is: ${payload.code}`
-    );
+    try {
+      await sendEmail(
+        user.email,
+        "Password Reset Code",
+        `Your code is: ${payload.code}`,
+        `<h1>Password Reset</h1><p>Your code is: <strong>${payload.code}</strong></p>`
+      );
 
-    return { message: "A password reset code was sent to your email" };
+      return {
+        message: MESSAGES.AUTH.PASSWORD_RESET_CODE_SENT,
+        token,
+      };
+    } catch {
+      throw new AppError(
+        "Failed to send password reset email",
+        HttpStatusCodes.INTERNAL_SERVER_ERROR.code
+      );
+    }
   }
 
-  // Verificar código y actualizar contraseña
-  async resetPassword(data: ResetPasswordDTO): Promise<{ message: string }> {
-    const payload = verifyCodeToken(data.token);
+  // Verificación de código y cambio de contraseña
+  async resetPassword(
+    authorization: string | undefined,
+    data: ResetPasswordDTO
+  ): Promise<{ message: string }> {
+    if (!authorization) {
+      throw new AppError(
+        "Authorization header missing",
+        HttpStatusCodes.UNAUTHORIZED.code
+      );
+    }
 
-    if (!payload || payload.code !== data.code) {
-      throw new Error("Invalid or expired code");
+    const token = authorization.replace("Bearer ", "");
+    const payload = verifyCodeToken(token);
+
+    if (
+      !payload ||
+      payload.code !== data.code ||
+      payload.type !== "password_reset"
+    ) {
+      throw new AppError(
+        MESSAGES.AUTH.INVALID_RESET_CODE,
+        HttpStatusCodes.BAD_REQUEST.code
+      );
     }
 
     await this.authRepository.updateUserPassword(
       payload.email,
       data.new_password
     );
-
-    return { message: "Password reset successfully" };
+    return { message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS };
   }
-//completar el onboarding
-  async completeOnboarding(userId: number, data: OnboardingDTO) {
-    const user = await this.authRepository.updateUserOnboarding(userId, data);
-  
-    if (data.user_type === "lawyer" && data.license_number) {
-      await this.authRepository.createLawyerData(userId, data.license_number);
-    } else if (data.user_type === "client") {
-      await this.authRepository.createClientData(userId);
-    }
-  
-    return { message: "Onboarding completed successfully", user };
-  }
-  
 }

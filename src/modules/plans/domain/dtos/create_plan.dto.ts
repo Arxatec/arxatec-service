@@ -1,0 +1,25 @@
+// src/modules/plans/domain/dtos/create_plan.dto.ts
+import { z } from "zod";
+
+export const CreatePlanSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  description: z.string().optional(),
+  price: z.number().min(0, "Price must be zero or a positive number."),
+  features: z
+    .object({
+      caseManagement: z.boolean().optional(),
+      paymentsAndFinances: z.boolean().optional(),
+      communityAccess: z.boolean().optional(),
+      messagesAccess: z.boolean().optional(),
+      aiIntegration: z.boolean().optional(),
+      maxConsultationsPerMonth: z.number().optional(),
+      maxContractReviewsPerMonth: z.number().optional(),
+      maxVirtualMeetingsPerMonth: z.number().optional(),
+      maxRemindersPerMonth: z.number().optional(),
+      prioritySupport: z.boolean().optional(),
+      exclusiveEvents: z.boolean().optional(),
+    })
+    .optional(),
+});
+
+export type CreatePlanDTO = z.infer<typeof CreatePlanSchema>;

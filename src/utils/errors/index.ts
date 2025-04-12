@@ -1,3 +1,4 @@
+// src/utils/errors/index.ts
 export class AppError extends Error {
   public readonly statusCode: number;
 

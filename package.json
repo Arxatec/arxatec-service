@@ -1,7 +1,7 @@
 {
   "name": "arxatec_service",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./dist/index.mjs",
   "type": "module",
   "exports": "./dist/index.mjs",
   "scripts": {
@@ -14,6 +14,14 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "pkgroll": "^2.8.2",
+    "prisma": "^6.3.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -25,14 +33,6 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.7",
     "@types/yamljs": "^0.2.34",
-    "pkgroll": "^2.8.2",
-    "prisma": "^6.3.1",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.8.2"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.3.1",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",

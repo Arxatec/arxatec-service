@@ -1,3 +1,5 @@
+// src/modules/email/domain/dtos/email.entity.ts
+
 export interface User {
   id: string;
   name: string;

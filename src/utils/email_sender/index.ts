@@ -1,19 +1,23 @@
-import transporter from "../../config/email/";
+import transporter from "../../config/email";
 
-export const sendEmail = async (to: string, subject: string, text: string, html?: string) => {
+export async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html?: string
+): Promise<void> {
   try {
-    const mailOptions = {
-      from: `"Arxatec" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to,
       subject,
       text,
       html,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Correo enviado a: ${to} - ID: ${info.messageId}`);
+    console.log(`Email sent: ${info.messageId}`);
   } catch (error) {
-    console.error("Error al enviar el correo:", error);
-    throw new Error("Error al enviar el correo");
+    console.error("Failed to send email:", error);
+    throw new Error("Email sending failed");
   }
-};
+}

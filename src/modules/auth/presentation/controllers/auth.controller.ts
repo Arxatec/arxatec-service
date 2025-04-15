@@ -1,5 +1,3 @@
-// src/modules/auth/presentation/controllers/auth.controller.ts
-
 import {
   handleServerError,
   handleZodError,
@@ -33,7 +31,6 @@ interface AuthenticatedRequest extends Request {
   user?: { id: number };
 }
 export class AuthController {
-  // Registro de usuario
   async register(req: Request, res: Response): Promise<Response> {
     try {
       const data = RegisterSchema.parse(req.body) as RegisterDTO;
@@ -138,33 +135,46 @@ export class AuthController {
       return handleServerError(res, req, error);
     }
   }
-//Endpoint para manejar el onboarding
+  //Endpoint para manejar el onboarding
 
+  async completeOnboarding(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> {
+    try {
+      if (!req.user) {
+        return res
+          .status(HttpStatusCodes.UNAUTHORIZED.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.UNAUTHORIZED.code,
+              "Unauthorized",
+              req.path
+            )
+          );
+      }
 
-async completeOnboarding(req: AuthenticatedRequest, res: Response): Promise<Response> {
-  try {
-    if (!req.user) {
-      return res.status(HttpStatusCodes.UNAUTHORIZED.code).json(
-        buildHttpResponse(HttpStatusCodes.UNAUTHORIZED.code, "Unauthorized", req.path)
-      );
+      const userId = req.user.id; // ✅ TypeScript ya reconoce `req.user.id`
+      const data = OnboardingSchema.parse(req.body) as OnboardingDTO;
+
+      const response = await authService.completeOnboarding(userId, data);
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            response.message,
+            req.path,
+            response.user
+          )
+        );
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const createdError = handleZodError(error, req);
+        return res.status(createdError.status).json(createdError);
+      }
+      return handleServerError(res, req, error);
     }
-
-    const userId = req.user.id; // ✅ TypeScript ya reconoce `req.user.id`
-    const data = OnboardingSchema.parse(req.body) as OnboardingDTO;
-    
-    const response = await authService.completeOnboarding(userId, data);
-
-    return res.status(HttpStatusCodes.OK.code).json(
-      buildHttpResponse(HttpStatusCodes.OK.code, response.message, req.path, response.user)
-    );
-  } catch (error) {
-    if (error instanceof ZodError) {
-      const createdError = handleZodError(error, req);
-      return res.status(createdError.status).json(createdError);
-    }
-    return handleServerError(res, req, error);
   }
-}
-
-  
 }

@@ -12,6 +12,7 @@ pnpm-debug.log
 .env.production
 .env.test
 .env.*.local
+.cursorrules
 
 # Prisma
 prisma/dev.db

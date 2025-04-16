@@ -40,11 +40,59 @@ export class AuthService {
       throw new Error("Failed to generate verification code");
     }
 
-    await sendEmail(
-      user.email,
-      "Verify your account",
-      `Your verification code is: ${code}`
-    );
+    const subject = "Verify your account";
+    const text = `Your verification code is: ${code}`;
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+      <title>Código de verificación - Arxatec</title>
+    </head>
+    <body style="font-family: 'DM Sans', Arial, sans-serif; ">
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+        @font-face {
+          font-family: 'DM Sans';
+          src: url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+        }
+      </style>
+
+      <div style="width: 100%; max-width: 600px; margin: 1rem auto; background-color: #fff; padding: 1rem; border-radius: 0.5rem">
+        <img src="https://www.arxatec.net/assets/logo.png" alt="logo" width="120" >
+        <h1 style="font-size: 1rem; color: #111827; font-weight: 900; font-family: 'DM Sans', Arial, sans-serif; text-align: left; margin-top: 1rem; ">
+          Código de verificación
+        </h1>
+
+        <p style="font-size: 0.8rem; color: #4b5563; font-family: 'DM Sans', Arial, sans-serif;">
+        Para activar tu cuenta en Arxatec, utiliza el siguiente código de verificación. No compartas este código. Es exclusivo para completar tu registro correctamente.
+        </p>
+        <b style="font-size: 2rem; color: #4b5563; letter-spacing: 0.2rem; font-weight: 900; font-family: 'DM Sans', Arial, sans-serif; text-align: center; display: block; margin-top: 1rem">
+          ${code}
+        </b>
+
+        <a href="https://arxatec-platform.vercel.app/verify-account?code=${code}" style="text-decoration: none; margin: 1.5rem 0rem; background-color: #2563eb;  padding: 0.8rem 1rem; color: #fff; font-family: 'DM Sans', Arial, sans-serif; font-weight: 600; border-radius: 0.3rem; display: block; font-size: 0.8rem; text-align: center; ">
+          Confirmar y activar cuenta
+        </a>
+        <p style="font-size: 0.8rem; margin-top: 0.2rem; color: #4b5563; font-family: 'DM Sans', Arial, sans-serif;">
+          Gracias por registrarte en Arxatec — Rafael Aguirre, Director de Operaciones (COO)
+        </p>
+
+        <div style="border-top: 1px solid #d1d5db; margin-top: 32px; padding-top: 10px; font-size: 12px; color: #9ca3af;">
+          <p style="font-family: 'DM Sans', Arial, sans-serif;">
+          Este es un mensaje automático del sistema de Arxatec. 
+          </p> 
+        </div>
+      </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    await sendEmail(user.email, subject, text, html);
 
     return { user, token };
   }
@@ -88,7 +136,6 @@ export class AuthService {
       last_name: user.last_name,
       status: user.status,
       user_type: user.user_type,
-
     });
 
     return { user, token };
@@ -133,17 +180,16 @@ export class AuthService {
 
     return { message: "Password reset successfully" };
   }
-//completar el onboarding
+  //completar el onboarding
   async completeOnboarding(userId: number, data: OnboardingDTO) {
     const user = await this.authRepository.updateUserOnboarding(userId, data);
-  
+
     if (data.user_type === "lawyer" && data.license_number) {
       await this.authRepository.createLawyerData(userId, data.license_number);
     } else if (data.user_type === "client") {
       await this.authRepository.createClientData(userId);
     }
-  
+
     return { message: "Onboarding completed successfully", user };
   }
-  
 }

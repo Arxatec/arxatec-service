@@ -63,11 +63,10 @@ export const getAllUsersEmails = async (): Promise<string[]> => {
 
 //login
 export const loginUser = async (data: LoginDTO) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email: data.email,
-    },
+  const user = await prisma.users.findUnique({
+    where: { email: data.email },
   });
+
   if (user && (await bcrypt.compare(data.password, user.password))) {
     return user;
   }

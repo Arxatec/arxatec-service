@@ -3,11 +3,13 @@ import { WAITLIST_MESSAGES } from "./waitlist";
 import { ARTICLE_MESSAGES } from "./article";
 import { LAWYER_MESSAGES } from "./lawyer";
 import { CLIENT_MESSAGES } from "./client";
+import { COMMUNITY_MESSAGES } from "./community";
 
 export const MESSAGES = {
   BOT: BOT_MESSAGES,
   WAITLIST: WAITLIST_MESSAGES,
   ARTICLE: ARTICLE_MESSAGES,
   LAWYER: LAWYER_MESSAGES,
-  CLIENT: CLIENT_MESSAGES
+  CLIENT: CLIENT_MESSAGES,
+  COMMUNITY: COMMUNITY_MESSAGES
 };

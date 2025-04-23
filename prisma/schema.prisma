@@ -69,6 +69,46 @@ enum work_day {
   domingo
 }
 
+enum community_user_type {
+  moderator // Moderador de la comunidad
+  member // Miembro de la comunidad
+}
+
+enum ReactionType {
+  like // Me gusta
+  dislike // No me gusta
+}
+
+enum ReactionTarget {
+  publication // Reacción a una publicación
+  comment // Reacción a un comentario
+  reply // Reacción a una respuesta
+}
+
+enum notification_type {
+  info
+  success
+  error
+  alert
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement()) /// Identificador único de la notificación
+  receiverId  Int /// ID del usuario receptor
+  senderId    Int? /// ID del usuario emisor (opcional)
+  title       String /// Título de la notificación
+  description String /// Descripción del evento notificado
+  type        notification_type /// Tipo de notificación: info, success, error o alert
+  createdAt   DateTime          @default(now()) /// Fecha de creación de la notificación
+
+  url String? /// Ruta/URL destino para la notificación (opcional)
+
+  receiver Users  @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+  sender   Users? @relation("SentNotifications", fields: [senderId], references: [id])
+
+  @@map("notifications")
+}
+
 model ArxatecSubscribers {
   id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
   name      String   @db.VarChar(100) /// Nombre del suscriptor
@@ -91,10 +131,12 @@ model Users {
   birth_date         DateTime?   @db.Date /// Fecha de nacimiento
   creation_timestamp DateTime? /// Timestamp de creación del registro
 
-  lawyerDetails LawyerDetails? /// Relación uno a uno: Datos adicionales para abogados
-  clientDetails ClientDetails? /// Relación uno a uno: Datos adicionales para clientes
-  adminDetails  AdminDetails? /// Relación uno a uno: Datos adicionales para administradores
-  userDetails   UserDetails? /// Relación uno a uno: Datos generales del usuario
+  lawyerDetails         LawyerDetails? /// Relación uno a uno: Datos adicionales para abogados
+  clientDetails         ClientDetails? /// Relación uno a uno: Datos adicionales para clientes
+  adminDetails          AdminDetails? /// Relación uno a uno: Datos adicionales para administradores
+  userDetails           UserDetails? /// Relación uno a uno: Datos generales del usuario
+  receivedNotifications Notification[] @relation("ReceivedNotifications") /// Notificaciones recibidas por el usuario
+  sentNotifications     Notification[] @relation("SentNotifications") /// Notificaciones enviadas por el usuario
 
   @@map("users")
 }
@@ -144,9 +186,12 @@ model UserDetails {
 
   articles Articles[] /// Relación uno a muchos: Artículos asociados a este UserDetails
 
-  user       Users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  Preference Preference?
-  Locations  Locations?
+  user           Users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Preference     Preference?
+  Locations      Locations?
+  communityUsers CommunityUsers[] /// Relación uno a muchos: Membresías en comunidades asociadas a este UserDetails
+  PlansClient    PlansClient?     @relation(fields: [plansClientId], references: [id])
+  plansClientId  Int?
 
   @@map("user_details")
 }
@@ -166,13 +211,13 @@ model Preference {
 model Locations {
   id           Int     @id @default(autoincrement()) /// Identificador único de la ubicación
   user_id      Int     @unique /// Identificador del UserDetails
-  country      String  @db.VarChar(100) /// Country of the location
-  state        String  @db.VarChar(100) /// Administrative area (state, region, province)
-  city         String  @db.VarChar(100) /// City or municipality
-  latitude     Float /// Latitude
-  longitude    Float /// Longitude
-  full_address String? @db.VarChar(255) /// Full formatted address (optional)
-  postal_code  String? @db.VarChar(20) /// Postal code (optional)
+  country      String  @db.VarChar(100) /// País de la ubicación
+  state        String  @db.VarChar(100) /// Área administrativa principal (estado, región, provincia)
+  city         String  @db.VarChar(100) /// Ciudad o municipio
+  latitude     Float /// Latitud
+  longitude    Float /// Longitud
+  full_address String? @db.VarChar(255) /// Dirección completa (opcional)
+  postal_code  String? @db.VarChar(20) /// Código postal (opcional)
 
   userDetails UserDetails @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
@@ -288,4 +333,163 @@ model WorkSchedules {
   lawyerServiceDetails LawyerService @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
 
   @@map("work_schedules")
+}
+
+model CommunityUsers {
+  id                 Int                 @id @default(autoincrement()) /// Identificador único de la membresía en la comunidad
+  user_id            Int /// Identificador del usuario (UserDetails)
+  community_id       Int /// Identificador de la comunidad
+  type               community_user_type /// Tipo de usuario en la comunidad (moderator - member)
+  creation_timestamp DateTime            @default(now()) /// Timestamp de creación
+
+  user         UserDetails      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  community    Communities      @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  publications Publications[] /// Relación uno a muchos: Publicaciones realizadas por este miembro
+  comments     Comments[] /// Relación uno a muchos: Comentarios realizados por este miembro
+  replies      CommentReplies[] /// Relación uno a muchos: Respuestas realizadas por este miembro
+  reactions    Reactions[] /// Relación uno a muchos: Reacciones realizadas por este miembro
+
+  @@map("community_users")
+}
+
+model Communities {
+  id                 Int       @id @default(autoincrement()) /// Identificador único de la comunidad
+  name               String /// Nombre de la comunidad
+  description        String? /// Descripción de la comunidad
+  banner             String? /// Banner de la comunidad
+  icon               String? /// Icono representativo de la comunidad
+  category_id        Int? /// Identificador de la categoría de la comunidad
+  creation_timestamp DateTime? @default(now()) /// Timestamp de creación del registro
+
+  communityUsers    CommunityUsers[] /// Relación uno a muchos: Usuarios asociados a esta comunidad
+  communityCategory CommunityCategories? @relation(fields: [category_id], references: [id])
+  communityMarkers  CommunityMarkers[] /// Relación uno a muchos: Marcadores asociados a esta comunidad
+  communityRules    CommunityRules[] /// Relación uno a muchos: Reglas asociadas a esta comunidad
+  publications      Publications[] /// Relación uno a muchos: Publicaciones asociadas a esta comunidad
+
+  @@map("communities")
+}
+
+model CommunityCategories {
+  id          Int     @id @default(autoincrement()) /// Identificador único de la categoría de comunidad
+  name        String /// Nombre de la categoría de la comunidad
+  description String? /// Descripción de la categoría de la comunidad
+
+  communities Communities[] /// Relación uno a muchos: Comunidades asociadas a esta categoría
+
+  @@map("community_categories")
+}
+
+model CommunityMarkers {
+  id           Int    @id @default(autoincrement()) /// Identificador único del marcador
+  community_id Int /// Identificador de la comunidad
+  marker       String /// Marcador o etiqueta de la comunidad
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+
+  @@map("community_markers")
+}
+
+model CommunityRules {
+  id           Int    @id @default(autoincrement()) /// Identificador único de la regla
+  community_id Int /// Identificador de la comunidad
+  rule         String /// Regla de la comunidad
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+
+  @@map("community_rules")
+}
+
+model Publications {
+  id                 Int      @id @default(autoincrement()) /// Identificador único de la publicación
+  title              String /// Título de la publicación
+  description        String /// Descripción de la publicación
+  community_id       Int /// Identificador de la comunidad
+  multimedia         String? /// Multimedia (opcional)
+  link               String? /// Enlace de la publicación (opcional)
+  community_user_id  Int /// Identificador del miembro de comunidad que creó la publicación
+  creation_timestamp DateTime @default(now()) /// Fecha de creación de la publicación
+
+  community     Communities    @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  communityUser CommunityUsers @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+  comments      Comments[] /// Relación uno a muchos: Comentarios asociados a esta publicación
+
+  @@map("publications")
+}
+
+model Comments {
+  id                 Int      @id @default(autoincrement()) /// Identificador único del comentario
+  community_user_id  Int /// Identificador del miembro de comunidad que comentó
+  comment            String /// Contenido del comentario
+  publication_id     Int /// Identificador de la publicación relacionada
+  creation_timestamp DateTime @default(now()) /// Fecha de creación del comentario
+
+  publication   Publications     @relation(fields: [publication_id], references: [id], onDelete: Cascade)
+  communityUser CommunityUsers   @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+  replies       CommentReplies[] /// Relación uno a muchos: Respuestas asociadas a este comentario
+
+  @@map("comments")
+}
+
+model CommentReplies {
+  id                 Int      @id @default(autoincrement()) /// Identificador único de la respuesta
+  comment_id         Int /// Identificador del comentario principal
+  community_user_id  Int /// Identificador del miembro de comunidad que respondió
+  reply              String /// Contenido de la respuesta
+  creation_timestamp DateTime @default(now()) /// Fecha de creación de la respuesta
+
+  comment       Comments       @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  communityUser CommunityUsers @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+
+  @@map("comment_replies")
+}
+
+model Reactions {
+  id                Int            @id @default(autoincrement()) /// Identificador único de la reacción
+  community_user_id Int /// Usuario de comunidad que reaccionó
+  target_id         Int /// ID del objeto al que reaccionó (publicación, comentario o respuesta)
+  target_type       ReactionTarget /// Tipo de objeto al que reaccionó
+  type              ReactionType /// Tipo de reacción (like/dislike)
+  created_at        DateTime       @default(now()) /// Fecha de creación de la reacción
+
+  communityUser CommunityUsers @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+
+  @@unique([community_user_id, target_id, target_type]) /// Solo una reacción por usuario por elemento
+  @@map("reactions")
+}
+
+model PlansClient {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float   @default(0.0)
+
+  features    PlanFeatures?
+  userDetails UserDetails[]
+
+  @@map("plans_client")
+}
+
+model PlanFeatures {
+  id Int @id @default(autoincrement())
+
+  planId Int @unique
+
+  caseManagement      Boolean @default(false)
+  paymentsAndFinances Boolean @default(false)
+  communityAccess     Boolean @default(false)
+  messagesAccess      Boolean @default(false)
+  aiIntegration       Boolean @default(false)
+
+  maxConsultationsPerMonth   Int? @default(0)
+  maxContractReviewsPerMonth Int? @default(0)
+  maxVirtualMeetingsPerMonth Int? @default(0)
+  maxRemindersPerMonth       Int? @default(0)
+
+  prioritySupport Boolean @default(false)
+  exclusiveEvents Boolean @default(false)
+
+  plan PlansClient @relation(fields: [planId], references: [id])
+
+  @@map("plan_features")
 }

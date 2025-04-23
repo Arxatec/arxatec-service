@@ -1,0 +1,41 @@
+import { generateVerificationCode } from "../../../../../../config/jwt";
+import { sendEmail } from "../../../../../../utils/email_sender";
+import {
+  ResendRegistrationDTO,
+  ResendRegistrationResponseDTO,
+} from "./resend_registration.dto";
+import { ResendRegistrationRepository } from "../data/resend_registration.repository";
+import { AppError, getDirname } from "../../../../../../utils";
+import { HttpStatusCodes } from "../../../../../../constants";
+import path from "path";
+import ejs from "ejs";
+
+export class ResendRegistrationUseCase {
+  constructor(private readonly repository: ResendRegistrationRepository) {}
+
+  async execute(
+    data: ResendRegistrationDTO
+  ): Promise<ResendRegistrationResponseDTO> {
+    const user = await this.repository.getTemporaryUser(data.email);
+    if (!user) {
+      throw new AppError("User not found", HttpStatusCodes.NOT_FOUND.code);
+    }
+
+    const code = generateVerificationCode();
+    await this.repository.createTemporaryCode(data.email, code);
+
+    const subject = "Verificación de cuenta - Arxatec";
+    const text = `Tu código de verificación es: ${code}`;
+    const html = await ejs.renderFile(
+      path.join(
+        getDirname(import.meta.url),
+        "../templates/verification_code.ejs"
+      ),
+      { code }
+    );
+
+    await sendEmail(data.email, subject, text, html);
+
+    return { message: code };
+  }
+}

@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./docs/swagger";
 import routes from "./routes";
 import dotenv from "dotenv";
+import { redisClient } from "./config/redis";
 dotenv.config();
 
 const app = express();
@@ -28,7 +29,12 @@ app.get("/ping", (_, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en ${appUrl}`);
-  console.log(`Swagger Docs disponibles en ${appUrl}/api-docs`);
-});
+const main = async () => {
+  await redisClient.connect();
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en ${appUrl}`);
+    console.log(`Swagger Docs disponibles en ${appUrl}/api-docs`);
+  });
+};
+
+main();

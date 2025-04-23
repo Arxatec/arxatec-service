@@ -7,7 +7,7 @@ export interface LoginRepository {
 
 export class LoginRepositoryImpl implements LoginRepository {
   async getEmail(email: string): Promise<User | null> {
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { email },
       select: {
         id: true,
@@ -29,7 +29,7 @@ export class LoginRepositoryImpl implements LoginRepository {
           userData.email,
           userData.password,
           userData.status,
-          userData.creation_timestamp,
+          userData.creation_timestamp ?? undefined,
           userData.user_type
         )
       : null;

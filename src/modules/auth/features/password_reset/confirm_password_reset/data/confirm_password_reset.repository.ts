@@ -8,7 +8,7 @@ export class ConfirmPasswordResetRepositoryImpl
   implements ConfirmPasswordResetRepository
 {
   async updatePassword(email: string, password: string) {
-    await prisma.user.update({
+    await prisma.users.update({
       where: { email },
       data: { password },
     });

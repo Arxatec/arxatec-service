@@ -1,10 +1,12 @@
+// src/utils/build_http_response/index.ts
+
 import { HttpStatusCodes } from "../../constants";
 
 export function buildHttpResponse(
   status: number,
   description: string,
   path?: string,
-  data?: any
+  data?: any,
 ) {
   return {
     status,

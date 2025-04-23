@@ -5,14 +5,18 @@ import waitlistRoutes from "./modules/waitlist/presentation/routes/waitlist.rout
 import articleRoutes from "./modules/article/presentation/routes/article.routes";
 import botRoutes from "./modules/bot/presentation/routes/bot.routes";
 import formRoutes from "./modules/form/presentation/routes/form.routes";
+import planRoutes from "./modules/plans/presentation/routes/plan.routes";
+import notificationRoutes from "./modules/notification/presentation/routes/notification.routes";
 const router = Router();
 const API_VERSION = "/api/v1";
 
+router.use(`${API_VERSION}/plans`, planRoutes);
 router.use(`${API_VERSION}/auth`, authRouter);
 router.use(`${API_VERSION}/email`, emailRoutes);
 router.use(`${API_VERSION}/articles`, articleRoutes);
 router.use(`${API_VERSION}/chatbot`, botRoutes);
 router.use(`${API_VERSION}/form`, formRoutes);
 router.use(`${API_VERSION}/`, waitlistRoutes);
+router.use(`${API_VERSION}/notifications`, notificationRoutes);
 
 export default router;

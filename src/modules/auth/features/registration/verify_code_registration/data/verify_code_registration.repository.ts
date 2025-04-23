@@ -15,7 +15,7 @@ export class VerifyCodeRegistrationRepositoryImpl
   implements VerifyCodeRegistrationRepository
 {
   async createUser(data: RequestRegistrationDTO): Promise<User> {
-    const userData = await prisma.user.create({
+    const userData = await prisma.users.create({
       data: {
         first_name: data.first_name,
         last_name: data.last_name,
@@ -32,7 +32,7 @@ export class VerifyCodeRegistrationRepositoryImpl
       userData.email,
       userData.password,
       userData.status,
-      userData.creation_timestamp,
+      userData.creation_timestamp ?? undefined,
       userData.user_type
     );
   }

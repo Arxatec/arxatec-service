@@ -2,6 +2,8 @@ import { PrismaClient, user_status, work_day } from "@prisma/client";
 import { Lawyer } from "../../domain/entities/lawyer.entity";
 import { UpdateLawyerDTO } from "../../domain/dtos/update_lawyer.dto";
 import { MESSAGES } from "../../../../constants/messages";
+import { AppError } from "../../../../utils";
+import { HttpStatusCodes } from "../../../../constants";
 
 function formatTimeOnly(dateValue: Date): string {
   const hours = String(dateValue.getHours()).padStart(2, "0");
@@ -204,12 +206,13 @@ export class LawyerRepository {
     workSchedules?: { day: string; open_time: string; close_time: string }[]
   ): Promise<Lawyer> {
     const user = await this.prisma.users.findUnique({ where: { id: userId } });
-    if (!user) throw new Error(MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND);
-    if (user.user_type === "lawyer") throw new Error("This user is already a lawyer");
+    if (!user) throw new AppError(MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND, HttpStatusCodes.NOT_FOUND.code);
+    if (user.user_type === "lawyer") throw new AppError("This user is already a lawyer", HttpStatusCodes.CONFLICT.code);
     await this.prisma.users.update({
       where: { id: userId },
       data: { user_type: "lawyer" }
     });
+
     await this.prisma.userDetails.update({
       where: { user_id: userId },
       data: {

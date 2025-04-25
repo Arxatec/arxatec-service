@@ -36,6 +36,6 @@ export class ResendRegistrationUseCase {
 
     await sendEmail(data.email, subject, text, html);
 
-    return { message: code };
+    return { message: "Verification code resend sent successfully." };
   }
 }

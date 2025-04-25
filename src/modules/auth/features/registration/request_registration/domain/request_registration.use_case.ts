@@ -43,6 +43,6 @@ export class RequestRegistrationUseCase {
     );
 
     await sendEmail(data.email, subject, text, html);
-    return { message: code };
+    return { message: "Verification code sent successfully."};
   }
 }

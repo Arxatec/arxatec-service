@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
-import { ZodError } from "zod";
 import { HttpStatusCodes } from "../../../../../constants";
-import { AppError, buildHttpResponse } from "../../../../../utils";
-import {
-  handleServerError,
-  handleZodError,
-} from "../../../../../utils/error_handler";
+import { buildHttpResponse } from "../../../../../utils";
+import { handleServerError } from "../../../../../utils/error_handler";
 import { LoginService } from "./login.service";
 import { LoginSchema } from "../domain/login.schema";
 
@@ -28,15 +24,6 @@ export class LoginController {
           )
         );
     } catch (error) {
-      if (error instanceof AppError) {
-        return res
-          .status(error.statusCode)
-          .json(buildHttpResponse(error.statusCode, error.message, req.path));
-      }
-      if (error instanceof ZodError) {
-        const createdError = handleZodError(error, req);
-        return res.status(createdError.status).json(createdError);
-      }
       return handleServerError(res, req, error);
     }
   }

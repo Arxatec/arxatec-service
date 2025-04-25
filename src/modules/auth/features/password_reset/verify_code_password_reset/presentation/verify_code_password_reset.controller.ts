@@ -2,12 +2,8 @@ import { Request, Response } from "express";
 import { VerifyCodePasswordResetService } from "./verify_code_password_reset.service";
 import { VerifyCodePasswordResetSchema } from "../domain/verify_code_password_reset.schema";
 import { HttpStatusCodes } from "../../../../../../constants";
-import { AppError, buildHttpResponse } from "../../../../../../utils";
-import {
-  handleServerError,
-  handleZodError,
-} from "../../../../../../utils/error_handler";
-import { ZodError } from "zod";
+import { buildHttpResponse } from "../../../../../../utils";
+import { handleServerError } from "../../../../../../utils/error_handler";
 
 export class VerifyCodePasswordResetController {
   constructor(private readonly service: VerifyCodePasswordResetService) {}
@@ -27,15 +23,6 @@ export class VerifyCodePasswordResetController {
           )
         );
     } catch (error) {
-      if (error instanceof AppError) {
-        return res
-          .status(error.statusCode)
-          .json(buildHttpResponse(error.statusCode, error.message, req.path));
-      }
-      if (error instanceof ZodError) {
-        const createdError = handleZodError(error, req);
-        return res.status(createdError.status).json(createdError);
-      }
       return handleServerError(res, req, error);
     }
   }

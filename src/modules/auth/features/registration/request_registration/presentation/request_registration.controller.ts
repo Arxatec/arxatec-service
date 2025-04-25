@@ -19,6 +19,7 @@ export class RequestRegistrationController {
         .status(HttpStatusCodes.OK.code)
         .json(buildHttpResponse(HttpStatusCodes.OK.code, message, req.path));
     } catch (error) {
+      console.log(error)
       return handleServerError(res, req, error);
     }
   }

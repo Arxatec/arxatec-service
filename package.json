@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node dist/index.mjs",
     "dev": "tsx watch src/index.ts",
-    "build": "pkgroll",
-    "postinstall": "node -e \"try { require('@rollup/rollup-linux-x64-gnu'); } catch (e) { process.exit(0); }\" || npm i @rollup/rollup-linux-x64-gnu"
+    "build": "pkgroll"
   },
   "keywords": [],
   "author": "",
@@ -52,7 +51,9 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0",
-    "zod": "^3.24.1",
-    "@rollup/rollup-linux-x64-gnu": "latest"
+    "zod": "^3.24.1"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.34.6"
   }
 }

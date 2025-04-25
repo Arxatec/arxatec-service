@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/index.mjs",
     "dev": "tsx watch src/index.ts",
-    "build": "pkgroll"
+    "build": "ROLLUP_SKIP_NODEJS_NATIVE=1 pkgroll"
   },
   "keywords": [],
   "author": "",

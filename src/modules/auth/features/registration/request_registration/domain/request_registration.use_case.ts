@@ -1,4 +1,4 @@
-import { AppError, getDirname } from "../../../../../../utils";
+import { AppError } from "../../../../../../utils";
 import { HttpStatusCodes } from "../../../../../../constants";
 import { generateVerificationCode } from "../../../../../../config/jwt";
 import { sendEmail } from "../../../../../../utils/email_sender";
@@ -32,17 +32,18 @@ export class RequestRegistrationUseCase {
     const code = generateVerificationCode();
     await this.repository.createTemporaryUser(dataEncrypted, code);
 
-    const subject = "Verifica tu cuenta de Arxatec";
-    const text = `Tu código de verificación es: ${code}`;
-    const html = await ejs.renderFile(
-      path.join(
-        getDirname(import.meta.url),
-        "../templates/verification_code.ejs"
-      ),
-      { code }
+    const filePath = path.join(
+      process.cwd(),
+      "public",
+      "templates",
+      "verification_code.ejs"
     );
 
+    const subject = "Verifica tu cuenta de Arxatec";
+    const text = `Tu código de verificación es: ${code}`;
+    const html = await ejs.renderFile(filePath, { code });
+
     await sendEmail(data.email, subject, text, html);
-    return { message: "Verification code sent successfully."};
+    return { message: "Verification code sent successfully." };
   }
 }

@@ -1,11 +1,13 @@
+// src/config/socket/index.ts
+
 import { Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 
 let io: SocketIOServer;
 
 export const initSocket = (server: HttpServer) => {
-  // Lee la variable de entorno
-  const allowedOrigin = process.env.SOCKET_URL || "*";
+
+  const allowedOrigin = process.env.SOCKET_URL;
 
   io = new SocketIOServer(server, {
     cors: {
@@ -13,6 +15,12 @@ export const initSocket = (server: HttpServer) => {
       methods: ["GET", "POST"],
     },
   });
+// io = new SocketIOServer(server, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET", "POST"],
+//   },
+// });
 
   io.on("connection", (socket) => {
     console.log(`🔌 Client connected: ${socket.id}`);
@@ -22,7 +30,7 @@ export const initSocket = (server: HttpServer) => {
       socket.join(room);
       console.log(`👤 Socket ${socket.id} joined the channel: ${room}`);
     });
-
+ 
     socket.on("disconnect", () => {
       console.log(`❌ Client disconnected: ${socket.id}`);
     });

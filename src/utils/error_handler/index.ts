@@ -1,50 +1,46 @@
+// src/utils/error_handler/index.ts
 import { ZodError } from "zod";
 import { Request, Response } from "express";
 import { HttpStatusCodes } from "../../constants";
 import { buildHttpResponse } from "../build_http_response";
-import { AppError } from "../errors";
+import { AppError } from "../errors"; 
 
 export function handleZodError(error: ZodError, req: Request) {
   const isExtraKeysError = error.errors.some(
-    (err) => err.code === "unrecognized_keys"
+    (err) => err.code === "unrecognized_keys",
   );
-  if (isExtraKeysError) {
-    return buildHttpResponse(
-      HttpStatusCodes.BAD_REQUEST.code,
-      error.errors[0].message,
-      req.path
-    );
-  }
+
+  const message = isExtraKeysError
+    ? error.errors[0].message
+    : error.errors[0].message;
+
   return buildHttpResponse(
     HttpStatusCodes.BAD_REQUEST.code,
-    error.errors[0].message,
-    req.path
+    message,
+    req.path,
   );
 }
 
 export const handleServerError = (
   res: Response,
   req: Request,
-  error: unknown
+  error: unknown,
 ) => {
+  /* 👇 Si es AppError, responde con su statusCode y message */
   if (error instanceof AppError) {
     return res
       .status(error.statusCode)
       .json(buildHttpResponse(error.statusCode, error.message, req.path));
   }
 
-  if (error instanceof ZodError) {
-    const zodResp = handleZodError(error, req);
-    return res.status(zodResp.status).json(zodResp);
-  }
-
-  return res
-    .status(HttpStatusCodes.INTERNAL_SERVER_ERROR.code)
-    .json(
-      buildHttpResponse(
-        HttpStatusCodes.INTERNAL_SERVER_ERROR.code,
-        JSON.stringify(error),
-        req.path
-      )
-    );
+  /* Fallback 500 genérico */
+  return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR.code).json(
+    buildHttpResponse(
+      HttpStatusCodes.INTERNAL_SERVER_ERROR.code,
+      process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : JSON.stringify(error, null, 2),
+      req.path,
+    ),
+  );
 };

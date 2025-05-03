@@ -1,6 +1,7 @@
 // src/middlewares/authenticate_token/index.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../../config/env";
 
 export interface AuthenticatedRequest extends Request {
   user?: { id: number; email?: string; role: "client" | "lawyer" };
@@ -18,7 +19,7 @@ export function authenticateToken(
   }
 
   const token = authHeader.split(" ")[1];
-  const secret = process.env.JWT_SECRET || "clave_por_defecto";
+  const secret = JWT_SECRET || "clave_por_defecto";
 
   try {
     const payload: any = jwt.verify(token, secret);

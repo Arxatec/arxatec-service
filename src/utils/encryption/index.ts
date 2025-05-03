@@ -1,10 +1,7 @@
-// src/utils/encryption/index.ts
 import crypto from "crypto";
-import dotenv from "dotenv";
+import { JWT_SECRET } from "../../config/env";
 
-dotenv.config();
-
-const ENCRYPTION_KEY = process.env.JWT_SECRET ?? "";
+const ENCRYPTION_KEY = JWT_SECRET ?? "";
 if (ENCRYPTION_KEY.length < 32) {
   throw new Error("JWT_SECRET must be at least 32 characters long for AES-256 encryption.");
 }

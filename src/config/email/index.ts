@@ -1,17 +1,13 @@
-// src/config/email/index.ts
-
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { EMAIL_PASSWORD, EMAIL_USER, SMTP_HOST, SMTP_PORT } from "../env";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  host: SMTP_HOST,
+  port: Number(SMTP_PORT),
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: EMAIL_USER,
+    pass: EMAIL_PASSWORD,
   },
   tls: {
     ciphers: "TLSv1.2",

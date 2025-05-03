@@ -1,13 +1,12 @@
-// src/config/socket/index.ts
-
 import { Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { SOCKET_URL } from "../env";
 
 let io: SocketIOServer;
 
 export const initSocket = (server: HttpServer) => {
 
-  const allowedOrigin = process.env.SOCKET_URL;
+  const allowedOrigin = SOCKET_URL;
 
   io = new SocketIOServer(server, {
     cors: {

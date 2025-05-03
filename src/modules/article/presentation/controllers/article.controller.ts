@@ -41,11 +41,6 @@ export class ArticleController {
         )
       );
     } catch (error) {
-      if (error instanceof ZodError) {
-        const errResponse = handleZodError(error, req);
-        errResponse.path = "/articles";
-        return res.status(errResponse.status).json(errResponse);
-      }
       return handleServerError(res, req, error);
     }
   }

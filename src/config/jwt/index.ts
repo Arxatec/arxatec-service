@@ -1,12 +1,11 @@
 // src/config/jwt/index.ts
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
-import dotenv from "dotenv";
 import ms from "ms";
 import { encrypt, decrypt } from "../../utils/encryption";
+import { JWT_SECRET as JWT_SECRET_ENV } from "../env";
 
-dotenv.config();
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET ?? "";
+const JWT_SECRET: Secret = JWT_SECRET_ENV ?? "";
 const JWT_EXPIRES_IN = "7d";
 const CODE_EXPIRES_IN = "15m";
 

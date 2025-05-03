@@ -1,4 +1,3 @@
-// src/modules/case/presentation/services/cases.service.ts
 import {  Prisma, case_status, case_category, case_type } from "@prisma/client";
 import { CasesRepository } from "../../data/repository/cases.repository";
 import { NotificationRepository } from "../../../notification/data/repository/notification.repository";

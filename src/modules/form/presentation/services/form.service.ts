@@ -1,3 +1,4 @@
+import { EMAIL_ADMIN } from "../../../../config/env";
 import { HttpStatusCodes, MESSAGES } from "../../../../constants";
 import { AppError, sendEmail } from "../../../../utils";
 import { SupportFormDTO } from "../../domain/dtos/form.dtos";
@@ -6,7 +7,7 @@ export class FormService {
   constructor() {}
   async submitSupportForm(formData: SupportFormDTO) {
     try {
-      const emailAdmin = process.env.EMAIL_ADMIN;
+      const emailAdmin = EMAIL_ADMIN;
       const subject = "Nueva solicitud de contacto";
       const text =
         "Se ha recibido una nueva solicitud de contacto a través del formulario de 'Contáctanos y Soporte' de Arxatec.";

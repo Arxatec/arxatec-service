@@ -1,4 +1,5 @@
 import transporter from "../../config/email";
+import { EMAIL_USER } from "../../config/env";
 
 export async function sendEmail(
   to: string,
@@ -8,7 +9,7 @@ export async function sendEmail(
 ): Promise<void> {
   try {
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: EMAIL_USER,
       to,
       subject,
       text,

@@ -4,17 +4,15 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./docs/swagger";
 import routes from "./routes";
-import dotenv from "dotenv";
 import { initSocket } from "./config/socket";
 import http from "http";
 import { redisClient } from "./config/redis";
-dotenv.config();
+import { APP_URL, PORT } from "./config/env";
 
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT;
-const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+const appUrl = APP_URL || `http://localhost:${PORT}`;
 
 // Inicializar sockets
 initSocket(server);

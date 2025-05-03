@@ -1,15 +1,14 @@
-import { PrismaClient } from "@prisma/client";
 import { ArticleRepository } from "../../data/repository/article.repository";
 import { CreateArticleDTO } from "../../domain/dtos/create_article.dto";
 import { UpdateArticleDTO } from "../../domain/dtos/update_article.dto";
 import { Article } from "../../domain/entities/article.entity";
 import { MESSAGES } from "../../../../constants/messages";
+import  prisma  from "../../../../config/prisma_client";
 
 export class ArticleService {
   constructor(private articleRepository: ArticleRepository) {}
 
   async createArticle(userId: number, data: CreateArticleDTO): Promise<Article> {
-    const prisma = new PrismaClient();
     // Buscar en la tabla Users (no en userDetails)
     const user = await prisma.users.findUnique({ where: { id: userId } });
     if (!user || user.status !== "active") {

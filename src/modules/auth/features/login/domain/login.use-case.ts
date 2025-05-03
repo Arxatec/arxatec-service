@@ -32,6 +32,7 @@ export class LoginUseCase {
 
     const token = generateToken({
       id: user.id,
+      user_type: user.user_type,
     });
 
     return {

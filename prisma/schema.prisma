@@ -7,7 +7,7 @@
 //
 // Ejemplos de comandos útiles:
 // npx prisma migrate reset 
-// npx prisma migrate dev --name agregar_especialidades_abogado
+// npx prisma migrate dev
 // npx prisma generate
 // npx prisma studio 
 //
@@ -18,8 +18,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL_PROD")
-  directUrl = env("DIRECT_URL_PROD")
+  // url       = env("DATABASE_URL_PROD")
+  // directUrl = env("DIRECT_URL_PROD")
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 enum user_type {
@@ -34,11 +36,6 @@ enum user_status {
   pending
 }
 
-enum consultation_type {
-  public
-  private
-  own
-}
 
 enum video_call_status {
   confirmed
@@ -92,33 +89,6 @@ enum notification_type {
   error
   alert
 }
-
-model Notification {
-  id          Int               @id @default(autoincrement()) /// Identificador único de la notificación
-  receiverId  Int /// ID del usuario receptor
-  senderId    Int? /// ID del usuario emisor (opcional)
-  title       String /// Título de la notificación
-  description String /// Descripción del evento notificado
-  type        notification_type /// Tipo de notificación: info, success, error o alert
-  createdAt   DateTime          @default(now()) /// Fecha de creación de la notificación
-
-  url String? /// Ruta/URL destino para la notificación (opcional)
-
-  receiver Users  @relation("ReceivedNotifications", fields: [receiverId], references: [id])
-  sender   Users? @relation("SentNotifications", fields: [senderId], references: [id])
-
-  @@map("notifications")
-}
-
-model ArxatecSubscribers {
-  id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
-  name      String   @db.VarChar(100) /// Nombre del suscriptor
-  email     String   @unique @db.VarChar(255) /// Email único del suscriptor
-  createdAt DateTime @default(now()) /// Fecha de suscripción
-
-  @@map("arxatec_subscribers")
-}
-
 model Users {
   id                 Int         @id @default(autoincrement()) /// Identificador único del usuario
   first_name         String /// Nombre del usuario
@@ -135,9 +105,16 @@ model Users {
   lawyerDetails         LawyerDetails? /// Relación uno a uno: Datos adicionales para abogados
   clientDetails         ClientDetails? /// Relación uno a uno: Datos adicionales para clientes
   adminDetails          AdminDetails? /// Relación uno a uno: Datos adicionales para administradores
+  externalClients  ExternalClient[]  @relation("ExternalClientLawyer")
   userDetails           UserDetails? /// Relación uno a uno: Datos generales del usuario
   receivedNotifications Notification[] @relation("ReceivedNotifications") /// Notificaciones recibidas por el usuario
   sentNotifications     Notification[] @relation("SentNotifications") /// Notificaciones enviadas por el usuario
+
+  clientCases         Case[]           @relation("ClientCases")
+  lawyerCases         Case[]           @relation("LawyerCases")
+  uploadedAttachments CaseAttachment[] @relation("UserUploads")
+  sentMessages        CaseMessage[]    @relation("UserSentMessages")
+  caseHistories       CaseHistory[]    @relation("UserCaseHistories")
 
   @@map("users")
 }
@@ -157,7 +134,6 @@ model LawyerDetails {
 
   @@map("lawyer_details")
 }
-
 model ClientDetails {
   client_id        Int     @id /// Identificador (igual al id del usuario)
   budget_range     String? /// Rango presupuestario para contratar el servicio legal
@@ -455,4 +431,175 @@ model Reactions {
 
   @@unique([community_user_id, target_id, target_type]) /// Solo una reacción por usuario por elemento
   @@map("reactions")
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement()) /// Identificador único de la notificación
+  receiverId  Int /// ID del usuario receptor
+  senderId    Int? /// ID del usuario emisor (opcional)
+  title       String /// Título de la notificación
+  description String /// Descripción del evento notificado
+  type        notification_type /// Tipo de notificación: info, success, error o alert
+  createdAt   DateTime          @default(now()) /// Fecha de creación de la notificación
+
+  url String? /// Ruta/URL destino para la notificación (opcional)
+
+  receiver Users  @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+  sender   Users? @relation("SentNotifications", fields: [senderId], references: [id])
+
+  @@map("notifications")
+}
+
+model ArxatecSubscribers {
+  id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
+  name      String   @db.VarChar(100) /// Nombre del suscriptor
+  email     String   @unique @db.VarChar(255) /// Email único del suscriptor
+  createdAt DateTime @default(now()) /// Fecha de suscripción
+
+  @@map("arxatec_subscribers")
+}
+
+/// Casos Beta
+enum consultation_type {
+  public
+  private
+  own
+}
+enum case_category {
+  labor
+  family
+  personal
+  corporate
+  other
+}
+
+enum case_type {
+  consultation
+  case
+  advisory
+}
+
+enum case_status {
+  open
+  taken
+  in_progress
+  closed
+  archived
+}
+
+/// ---------- CASOS ----------
+model Case {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(120)
+  description String        @db.VarChar(2000)
+  category    case_category
+  type        case_type
+  is_public   Boolean       @default(true)
+  status      case_status   @default(open)
+  archived    Boolean       @default(false)
+  created_at  DateTime      @default(now())
+
+  // FK
+  client_id          Int?
+  lawyer_id          Int?
+  external_client_id Int?
+
+  // RELATIONS
+  client         Users?          @relation("ClientCases", fields: [client_id], references: [id], onDelete: Cascade)
+  lawyer         Users?          @relation("LawyerCases", fields: [lawyer_id], references: [id], onDelete: Cascade)
+  externalClient ExternalClient? @relation(fields: [external_client_id], references: [id], onDelete: Cascade)
+
+  attachments CaseAttachment[] @relation("CaseAttachments")
+  messages    CaseMessage[]    @relation("CaseMessages")
+  histories   CaseHistory[]    @relation("CaseHistories")
+
+  // índices existentes
+  @@index([status], map: "idx_status")
+  @@index([category], map: "idx_category")
+  @@index([type], map: "idx_type")
+  @@index([lawyer_id], map: "idx_lawyer")
+  @@index([client_id], map: "idx_client")
+
+  // nuevos índices sugeridos
+  @@index([archived, status], map: "idx_archived_status")
+  @@index([is_public],   map: "idx_is_public")
+
+  @@map("cases")
+}
+
+model ExternalClient {
+  id         Int     @id @default(autoincrement())
+  first_name String  @db.VarChar(60)
+  last_name  String  @db.VarChar(60)
+  email      String? @db.VarChar(120)
+  phone      String? @db.VarChar(20)
+
+  lawyer_id  Int?
+  lawyer     Users?  @relation("ExternalClientLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
+
+  cases Case[]
+
+  @@unique([email], map: "uq_extclient_email")
+  @@map("external_clients")
+}
+
+
+
+model CaseAttachment {
+  id          Int      @id @default(autoincrement())
+  case_id     Int
+  file_url    String   @db.Text
+  filename    String?  @db.VarChar(140)
+  archived    Boolean  @default(false)
+  uploaded_by Int
+  uploaded_at DateTime @default(now())
+
+  case       Case  @relation("CaseAttachments", fields: [case_id], references: [id], onDelete: Cascade)
+  uploadedBy Users @relation("UserUploads", fields: [uploaded_by], references: [id], onDelete: Cascade)
+
+  // índice compuesto para consultas activas
+  @@index([case_id, archived], map: "idx_case_active_attach")
+
+  // nuevo índice para filtrar por archived
+  @@index([archived], map: "idx_attachment_archived")
+
+  // unicidad para evitar archivos duplicados
+  @@unique([case_id, file_url], map: "uniq_case_attachment_file")
+
+  @@map("case_attachments")
+}
+
+model CaseMessage {
+  id         Int      @id @default(autoincrement())
+  case_id    Int
+  sender_id  Int
+  content    String   @db.Text
+  created_at DateTime @default(now())
+
+  case   Case  @relation("CaseMessages", fields: [case_id], references: [id], onDelete: Cascade)
+  sender Users @relation("UserSentMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+
+  // nuevo índice para consultas por caso
+  @@index([case_id], map: "idx_case_message_case")
+
+  @@map("case_messages")
+}
+
+model CaseHistory {
+  id         Int      @id @default(autoincrement())
+  case_id    Int
+  changed_by Int
+  field      String   @db.VarChar(60)
+  old_value  String?  @db.Text
+  new_value  String?  @db.Text
+
+  created_at DateTime @default(now()) @map("timestamp")
+
+  case Case  @relation("CaseHistories", fields: [case_id], references: [id], onDelete: Cascade)
+  user Users @relation("UserCaseHistories", fields: [changed_by], references: [id], onDelete: Cascade)
+
+  // índice por caso
+  @@index([case_id], map: "idx_case_history")
+
+  @@map("case_histories")
 }

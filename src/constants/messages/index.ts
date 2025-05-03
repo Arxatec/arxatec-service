@@ -8,6 +8,7 @@ import { COMMUNITY_MESSAGES } from "./community";
 import { PLANS_MESSAGES } from "./plans";
 import { AUTH_MESSAGES } from "./auth";
 import { NOTIFICATION_MESSAGES } from "./notification";
+import { CASE_MESSAGES } from "./case";
 
 export const MESSAGES = {
   BOT: BOT_MESSAGES,
@@ -20,4 +21,5 @@ export const MESSAGES = {
   AUTH: AUTH_MESSAGES,
   PLANS: PLANS_MESSAGES,
   NOTIFICATION: NOTIFICATION_MESSAGES,
+  CASE: CASE_MESSAGES,
 };

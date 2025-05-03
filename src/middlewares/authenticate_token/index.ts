@@ -1,41 +1,36 @@
-// src/middlewares/authenticate_token.ts
+// src/middlewares/authenticate_token/index.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-/**
- * Define un tipo que extiende la Request de Express con la propiedad user
- */
 export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: number;
-    email?: string;
-    // Agrega otros campos que necesites
-  };
+  user?: { id: number; email?: string; role: "client" | "lawyer" };
 }
 
 export function authenticateToken(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
-): void {
+  next: NextFunction,
+): void {                    
   const authHeader = req.headers.authorization;
-  if (!authHeader) {
+  if (!authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Falta el header de autorización." });
-    return;
+    return;                  
   }
 
   const token = authHeader.split(" ")[1];
-  if (!token) {
-    res.status(401).json({ error: "Token no proporcionado." });
-    return;
-  }
+  const secret = process.env.JWT_SECRET || "clave_por_defecto";
 
   try {
-    const secret = process.env.JWT_SECRET || "clave_por_defecto";
-    const payload = jwt.verify(token, secret);
-    req.user = payload as AuthenticatedRequest["user"];
-    next();
-  } catch (error) {
+    const payload: any = jwt.verify(token, secret);
+
+    req.user = {
+      id:   payload.id,
+      email: payload.email,
+      role: payload.user_type as "client" | "lawyer",
+    };
+
+    next();                  
+  } catch {
     res.status(401).json({ error: "Token inválido o expirado." });
   }
 }

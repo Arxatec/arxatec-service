@@ -2,6 +2,7 @@ import { Router } from "express";
 import { ArticleController } from "../controllers/article.controller";
 import { asyncHandler } from "../../../../middlewares/async_handler";
 import { authenticateToken } from "../../../../middlewares/authenticate_token";
+import multer from "multer";
 
 const router = Router();
 const articleController = new ArticleController();
@@ -137,9 +138,11 @@ const articleController = new ArticleController();
  *         description: "Article deleted successfully."
  */
 
+const upload = multer({ storage: multer.memoryStorage() });
 router.post(
   "/",
   authenticateToken,
+  upload.single("banner"),
   asyncHandler((req, res) => articleController.create(req, res))
 );
 

@@ -1,6 +1,11 @@
 // src/modules/case/data/repository/cases.repository.ts
-import { Prisma, PrismaClient, case_status,case_category,
-  case_type} from "@prisma/client";
+import {
+  Prisma,
+  PrismaClient,
+  case_status,
+  case_category,
+  case_type,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -11,15 +16,18 @@ export class CasesRepository {
     return prisma.case.create({ data });
   }
 
-  async createExternalClient(data: Prisma.ExternalClientCreateInput, lawyerId: number) {
+  async createExternalClient(
+    data: Prisma.ExternalClientCreateInput,
+    lawyerId: number
+  ) {
     return prisma.externalClient.create({
       data: {
         ...data,
-        lawyer: { connect: { id: lawyerId } }
-      }
+        lawyer: { connect: { id: lawyerId } },
+      },
     });
   }
-  
+
   async findExternalClientById(id: number) {
     return prisma.externalClient.findUnique({
       where: { id },
@@ -64,7 +72,7 @@ export class CasesRepository {
       isPublic?: boolean;
       archived?: boolean;
       lawyerId?: number | null;
-    } = {},
+    } = {}
   ) {
     const {
       category,
@@ -110,7 +118,7 @@ export class CasesRepository {
     id: number,
     nextStatus: case_status,
     changedBy: number,
-    lawyerId?: number | null,
+    lawyerId?: number | null
   ) {
     return prisma.$transaction(async (tx) => {
       const previous = await tx.case.findUnique({ where: { id } });

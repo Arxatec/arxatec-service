@@ -1,9 +1,7 @@
-// src/config/jwt/index.ts
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import ms from "ms";
 import { encrypt, decrypt } from "../../utils/encryption";
 import { JWT_SECRET as JWT_SECRET_ENV } from "../env";
-
 
 const JWT_SECRET: Secret = JWT_SECRET_ENV ?? "";
 const JWT_EXPIRES_IN = "7d";
@@ -13,12 +11,10 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is missing in .env file");
 }
 
-// 🔢 Genera un código aleatorio de 4 dígitos
 export function generateVerificationCode(length = 4): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join("");
 }
 
-// 📩 Crea un token con un código de verificación cifrado
 export function generateCodeToken(
   email: string,
   type: "verification" | "password_reset"
@@ -31,7 +27,6 @@ export function generateCodeToken(
   });
 }
 
-// ✅ Verifica y decodifica el token con código
 export function verifyCodeToken(
   token: string
 ): { email: string; code: string; type: string } | null {
@@ -53,12 +48,10 @@ export function verifyCodeToken(
   }
 }
 
-// 🔐 Genera un token general para sesión JWT
 export function generateToken(payload: any): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
-// 🔍 Verifica un token general
 export function verifyToken(token: string): any {
   try {
     return jwt.verify(token, JWT_SECRET);
@@ -67,7 +60,6 @@ export function verifyToken(token: string): any {
   }
 }
 
-// 🔄 Genera un token solo con email (opcional si usas otros flujos)
 export function generateResetPasswordToken(
   email: string,
   expiresIn: number | ms.StringValue

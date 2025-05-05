@@ -25,6 +25,14 @@ export class VerifyCodeRegistrationRepositoryImpl
       },
     });
 
+    await prisma.userDetails.create({
+      data: {
+        user_id: userData.id,
+        gender: null,
+        birth_date: null,
+      },
+    });
+
     return new User(
       userData.id,
       userData.first_name,

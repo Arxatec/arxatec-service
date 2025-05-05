@@ -1,14 +1,15 @@
-import { PrismaClient, article_status } from "@prisma/client";
+import { article_status } from "@prisma/client";
 import { Article } from "../../domain/entities/article.entity";
 import { CreateArticleDTO } from "../../domain/dtos/create_article.dto";
 import { UpdateArticleDTO } from "../../domain/dtos/update_article.dto";
 import { MESSAGES } from "../../../../constants/messages";
+import prisma from "../../../../config/prisma_client";
+import { HttpStatusCodes } from "../../../../constants";
+import { AppError } from "../../../../utils/errors";
 
 export class ArticleRepository {
-  private prisma = new PrismaClient();
-
   async create(userId: number, data: CreateArticleDTO): Promise<Article> {
-    const created = await this.prisma.articles.create({
+    const created = await prisma.articles.create({
       data: {
         user_id: userId,
         title: data.title,
@@ -32,17 +33,17 @@ export class ArticleRepository {
   }
 
   async getAll(): Promise<any[]> {
-    return await this.prisma.articles.findMany({
+    return await prisma.articles.findMany({
       include: {
         userDetails: {
           select: {
             user: {
               select: {
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
+                last_name: true,
+              },
+            },
+          },
         },
         articleCategory: { select: { name: true } },
       },
@@ -50,7 +51,7 @@ export class ArticleRepository {
   }
 
   async getById(articleId: number): Promise<any | null> {
-    return await this.prisma.articles.findUnique({
+    return await prisma.articles.findUnique({
       where: { id: articleId },
       include: {
         userDetails: {
@@ -58,24 +59,28 @@ export class ArticleRepository {
             user: {
               select: {
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
+                last_name: true,
+              },
+            },
+          },
         },
         articleCategory: { select: { name: true } },
       },
     });
   }
 
-  async update(articleId: number, userId: number, data: UpdateArticleDTO): Promise<any> {
-    const article = await this.prisma.articles.findUnique({
+  async update(
+    articleId: number,
+    userId: number,
+    data: UpdateArticleDTO
+  ): Promise<any> {
+    const article = await prisma.articles.findUnique({
       where: { id: articleId },
     });
     if (!article || article.user_id !== userId) {
       throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
     }
-    const updated = await this.prisma.articles.update({
+    const updated = await prisma.articles.update({
       where: { id: articleId },
       data: {
         title: data.title,
@@ -89,10 +94,10 @@ export class ArticleRepository {
             user: {
               select: {
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
+                last_name: true,
+              },
+            },
+          },
         },
         articleCategory: { select: { name: true } },
       },
@@ -101,12 +106,15 @@ export class ArticleRepository {
   }
 
   async delete(articleId: number, userId: number): Promise<any> {
-    const article = await this.prisma.articles.findUnique({
+    const article = await prisma.articles.findUnique({
       where: { id: articleId },
     });
     if (!article || article.user_id !== userId) {
-      throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
+      throw new AppError(
+        MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED,
+        HttpStatusCodes.UNAUTHORIZED.code
+      );
     }
-    return await this.prisma.articles.delete({ where: { id: articleId } });
+    return await prisma.articles.delete({ where: { id: articleId } });
   }
 }

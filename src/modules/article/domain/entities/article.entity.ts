@@ -5,6 +5,8 @@ export interface Article {
   content: string;
   banner: string;
   categoryId: number;
-  publication_timestamp: Date;
+  readingTime: number;
+  publicationTimestamp: Date;
+  resume?: string | null;
   status: "pending" | "accepted" | "rejected";
 }

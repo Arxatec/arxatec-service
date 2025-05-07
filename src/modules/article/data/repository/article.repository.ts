@@ -7,17 +7,39 @@ import prisma from "../../../../config/prisma_client";
 import { HttpStatusCodes } from "../../../../constants";
 import { AppError } from "../../../../utils/errors";
 
+interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+}
+
 export class ArticleRepository {
-  async create(userId: number, data: CreateArticleDTO): Promise<Article> {
+  async create(
+    userId: number,
+    data: CreateArticleDTO,
+    content: string,
+    banner: string,
+    resume: string,
+    readingTime: number
+  ): Promise<Article> {
     const created = await prisma.articles.create({
       data: {
         user_id: userId,
         title: data.title,
-        content: data.content,
-        banner: data.banner,
+        content: content,
+        banner: banner,
+        resume: resume,
+        reading_time: readingTime,
         publication_timestamp: new Date(),
-        status: "pending" as article_status,
-        category_id: data.categoryId,
+        status: "accepted" as article_status,
+        category_id: Number(data.categoryId),
       },
     });
     return {
@@ -25,29 +47,52 @@ export class ArticleRepository {
       userId: created.user_id,
       title: created.title,
       content: created.content,
-      banner: created.banner ?? "",
+      banner: created.banner,
+      resume: created.resume,
+      readingTime: created.reading_time,
       categoryId: created.category_id,
-      publication_timestamp: created.publication_timestamp,
+      publicationTimestamp: created.publication_timestamp,
       status: created.status,
     };
   }
 
-  async getAll(): Promise<any[]> {
-    return await prisma.articles.findMany({
-      include: {
-        userDetails: {
-          select: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true,
+  async getAll(params: PaginationParams): Promise<PaginatedResponse<any>> {
+    const { page, limit } = params;
+    const skip = (page - 1) * limit;
+
+    const [articles, total] = await Promise.all([
+      prisma.articles.findMany({
+        skip,
+        take: limit,
+        include: {
+          userDetails: {
+            select: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                },
               },
             },
           },
+          articleCategory: { select: { name: true } },
         },
-        articleCategory: { select: { name: true } },
-      },
-    });
+        orderBy: {
+          publication_timestamp: "desc",
+        },
+      }),
+      prisma.articles.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: articles,
+      total,
+      totalPages,
+      currentPage: page,
+      limit,
+    };
   }
 
   async getById(articleId: number): Promise<any | null> {
@@ -72,7 +117,11 @@ export class ArticleRepository {
   async update(
     articleId: number,
     userId: number,
-    data: UpdateArticleDTO
+    data: UpdateArticleDTO,
+    bannerUrl: string,
+    contentUrl: string,
+    resume: string,
+    readingTime: number
   ): Promise<any> {
     const article = await prisma.articles.findUnique({
       where: { id: articleId },
@@ -84,9 +133,11 @@ export class ArticleRepository {
       where: { id: articleId },
       data: {
         title: data.title,
-        content: data.content,
-        banner: data.banner,
-        category_id: data.categoryId,
+        content: contentUrl,
+        banner: bannerUrl,
+        resume: resume,
+        reading_time: readingTime,
+        category_id: Number(data.categoryId),
       },
       include: {
         userDetails: {

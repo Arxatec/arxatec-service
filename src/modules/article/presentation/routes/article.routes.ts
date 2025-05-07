@@ -142,7 +142,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post(
   "/",
   authenticateToken,
-  upload.single("banner"),
+  upload.fields([
+    { name: "banner", maxCount: 1 },
+    { name: "content", maxCount: 1 },
+  ]),
   asyncHandler((req, res) => articleController.create(req, res))
 );
 
@@ -156,9 +159,14 @@ router.get(
   asyncHandler((req, res) => articleController.getById(req, res))
 );
 
+// TODO: all fields are optional, but if the client no send data, should show error
 router.patch(
   "/:id",
   authenticateToken,
+  upload.fields([
+    { name: "banner", maxCount: 1 },
+    { name: "content", maxCount: 1 },
+  ]),
   asyncHandler((req, res) => articleController.update(req, res))
 );
 

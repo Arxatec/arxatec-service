@@ -6,9 +6,10 @@ export type LoginDTO = z.infer<typeof LoginSchema>;
 export interface LoginResponseDTO {
   user: {
     id: number;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
     email: string;
+    profileImage?: string | null;
   };
   token: string;
 }

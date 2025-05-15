@@ -7,7 +7,8 @@ export class User {
     public password: string,
     public status: string,
     public createdAt?: Date,
-    public user_type?: string | null
+    public user_type?: string | null,
+    public profile_image?: string | null
   ) {}
 
   isVerified(): boolean {

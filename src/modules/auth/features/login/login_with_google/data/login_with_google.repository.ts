@@ -25,6 +25,7 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
         status: true,
         creation_timestamp: true,
         user_type: true,
+        profile_image: true,
       },
     });
 
@@ -37,7 +38,8 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
           userData.password,
           userData.status,
           userData.creation_timestamp ?? undefined,
-          userData.user_type
+          userData.user_type,
+          userData.profile_image
         )
       : null;
   }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginRouter } from "./features/login/presentation/login.routes";
+import { loginRouter } from "./features/login/login_with_email/presentation/login_email.routes";
 import {
   requestRegistrationRouter,
   verifyCodeRegistrationRouter,

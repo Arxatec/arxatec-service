@@ -1,5 +1,5 @@
-import { User } from "../../../domain/user.entity";
-import prisma from "../../../../../config/prisma_client";
+import { User } from "../../../../domain/user.entity";
+import prisma from "../../../../../../config/prisma_client";
 
 export interface LoginRepository {
   getEmail(email: string): Promise<User | null>;

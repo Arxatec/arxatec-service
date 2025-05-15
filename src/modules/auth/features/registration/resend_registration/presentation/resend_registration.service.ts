@@ -6,7 +6,7 @@ import {
   ResendRegistrationRepository,
   ResendRegistrationRepositoryImpl,
 } from "../data/resend_registration.repository";
-import { ResendRegistrationUseCase } from "../domain/resend_registration.use-case";
+import { ResendRegistrationUseCase } from "../domain/resend_registration.use_case";
 
 export class ResendRegistrationService {
   private readonly repository: ResendRegistrationRepository;

@@ -6,7 +6,7 @@ import {
   RequestPasswordResetRepository,
   RequestPasswordResetRepositoryImpl,
 } from "../data/request_password_reset.repository";
-import { RequestPasswordResetUseCase } from "../domain/request_password_reset.use-case";
+import { RequestPasswordResetUseCase } from "../domain/request_password_reset.use_case";
 
 export class RequestPasswordResetService {
   private readonly repository: RequestPasswordResetRepository;

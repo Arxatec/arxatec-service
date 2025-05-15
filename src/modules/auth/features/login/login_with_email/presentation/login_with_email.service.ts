@@ -1,6 +1,9 @@
-import { LoginDTO, LoginResponseDTO } from "../domain/login.dto";
-import { LoginUseCase } from "../domain/login.use-case";
-import { LoginRepository, LoginRepositoryImpl } from "../data/login.repository";
+import { LoginDTO, LoginResponseDTO } from "../domain/login_with_email.dto";
+import { LoginUseCase } from "../domain/login_with_email.use_case";
+import {
+  LoginRepository,
+  LoginRepositoryImpl,
+} from "../data/login_with_email.repository";
 
 export class LoginService {
   private readonly loginRepository: LoginRepository;

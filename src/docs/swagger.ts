@@ -9,12 +9,12 @@ const swaggerDefinition: OAS3Definition = {
       "API de servicios para la plataforma Arxatec. Esta documentación proporciona información detallada sobre todos los endpoints disponibles, sus parámetros y respuestas.",
     contact: {
       name: "Equipo de Desarrollo de Arxatec",
-      email: "developers@arxatec.com",
-      url: "https://arxatec.com/contact",
+      email: "developers@arxatec.net",
+      url: "https://arxatec.net/contact",
     },
     license: {
       name: "Propietario - Arxatec",
-      url: "https://arxatec.com/terms",
+      url: "https://arxatec.net/terms",
     },
   },
   servers: [
@@ -23,11 +23,11 @@ const swaggerDefinition: OAS3Definition = {
       description: "Servidor de desarrollo local",
     },
     {
-      url: "https://api-staging.arxatec.com",
+      url: "https://api-staging.arxatec.net",
       description: "Servidor de pruebas",
     },
     {
-      url: "https://api.arxatec.com",
+      url: "https://api.arxatec.net",
       description: "Servidor de producción",
     },
   ],
@@ -84,7 +84,7 @@ const swaggerDefinition: OAS3Definition = {
 
   externalDocs: {
     description: "Documentación adicional",
-    url: "https://arxatec.com/docs",
+    url: "https://arxatec.net/docs",
   },
 };
 

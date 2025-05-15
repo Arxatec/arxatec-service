@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LoginSchema } from "./login.schema";
+import { LoginSchema } from "./login_with_email.schema";
 
 export type LoginDTO = z.infer<typeof LoginSchema>;
 

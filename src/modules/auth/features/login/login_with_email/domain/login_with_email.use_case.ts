@@ -1,8 +1,8 @@
-import { generateToken } from "../../../../../infrastructure/jwt";
-import { LoginDTO, LoginResponseDTO } from "./login.dto";
-import { LoginRepository } from "../../../../auth/features/login/data/login.repository";
-import { AppError } from "../../../../../utils";
-import { HttpStatusCodes } from "../../../../../constants";
+import { generateToken } from "../../../../../../infrastructure/jwt";
+import { LoginDTO, LoginResponseDTO } from "./login_with_email.dto";
+import { LoginRepository } from "../data/login_with_email.repository";
+import { AppError } from "../../../../../../utils";
+import { HttpStatusCodes } from "../../../../../../constants";
 import bcrypt from "bcrypt";
 
 export class LoginUseCase {

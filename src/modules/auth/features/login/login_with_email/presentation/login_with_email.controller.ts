@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { HttpStatusCodes } from "../../../../../constants";
-import { buildHttpResponse } from "../../../../../utils";
-import { handleServerError } from "../../../../../utils/error_handler";
-import { LoginService } from "./login.service";
-import { LoginSchema } from "../domain/login.schema";
+import { HttpStatusCodes } from "../../../../../../constants";
+import { buildHttpResponse } from "../../../../../../utils";
+import { handleServerError } from "../../../../../../utils/error_handler";
+import { LoginService } from "./login_with_email.service";
+import { LoginSchema } from "../domain/login_with_email.schema";
 
 export class LoginController {
   constructor(private readonly loginService: LoginService) {}

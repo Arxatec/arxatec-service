@@ -1,6 +1,6 @@
 import { AppError } from "../../../../../../utils";
 import { HttpStatusCodes } from "../../../../../../constants";
-import { generateVerificationCode } from "../../../../../../config/jwt";
+import { generateVerificationCode } from "../../../../../../infrastructure/jwt";
 import { sendEmail } from "../../../../../../utils/email_sender";
 import { RequestRegistrationRepository } from "../data/request_registration.repository";
 import {

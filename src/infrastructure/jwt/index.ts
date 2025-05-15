@@ -1,7 +1,7 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import ms from "ms";
 import { encrypt, decrypt } from "../../utils/encryption";
-import { JWT_SECRET as JWT_SECRET_ENV } from "../env";
+import { JWT_SECRET as JWT_SECRET_ENV } from "../../config/env";
 
 const JWT_SECRET: Secret = JWT_SECRET_ENV ?? "";
 const JWT_EXPIRES_IN = "7d";

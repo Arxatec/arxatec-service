@@ -1,10 +1,12 @@
 import axios from "axios";
-import { externalServices } from "../../../../config";
+import { API_KEY_GEMINI } from "../../../../config/env";
 import { articleConfig } from "../config/article.config";
 
 export class ArticleApi {
   async generateResume(content: string) {
-    const GEMINI_URL = `${externalServices.GEMINI.BASE_URL}${externalServices.GEMINI.API_KEY}`;
+    const BASE_URL =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+    const GEMINI_URL = `${BASE_URL}${API_KEY_GEMINI}`;
     try {
       const response = await axios.post(GEMINI_URL, {
         contents: [

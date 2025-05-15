@@ -2,7 +2,10 @@
 import { EmailRepository } from "../../data/repository/email.repository";
 import { BulkEmailDTO } from "../../domain/dtos/bulk_email.dto";
 import { sendEmail } from "../../../../utils/email_sender";
-import { generateCodeToken, verifyCodeToken } from "../../../../config/jwt";
+import {
+  generateCodeToken,
+  verifyCodeToken,
+} from "../../../../infrastructure/jwt";
 
 export class EmailService {
   private emailRepository: EmailRepository;
@@ -20,10 +23,10 @@ export class EmailService {
   async verifyCode(token: string) {
     const decoded = verifyCodeToken(token);
     if (!decoded) throw new Error("Invalid or expired verification code");
-    
+
     const user = await this.emailRepository.getEmail(decoded.email);
     if (!user) throw new Error("User not found");
-    
+
     await this.emailRepository.updateUserStatus(decoded.email, "active");
     return { message: "User verified successfully" };
   }

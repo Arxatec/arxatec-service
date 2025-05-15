@@ -4,21 +4,23 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./docs/swagger";
 import routes from "./routes";
-import { initSocket } from "./config/socket";
 import http from "http";
+import { initSocket } from "./config/socket";
 import { redisClient } from "./config/redis";
 import { APP_URL, PORT } from "./config/env";
+import { displayWelcomeMessage } from "./utils";
+import { customMorganFormat } from "./utils/cli";
 
 const app = express();
 const server = http.createServer(app);
 
-const appUrl = APP_URL || `http://localhost:${PORT}`;
+const appUrl = `${APP_URL}${PORT}` || `http://localhost:${PORT}`;
 
 // Inicializar sockets
 initSocket(server);
 
 // Middlewares
-app.use(morgan("dev"));
+app.use(morgan(customMorganFormat));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,8 +40,7 @@ app.get("/ping", (_, res) => {
 const main = async () => {
   await redisClient.connect();
   app.listen(PORT, () => {
-    console.log(`Servidor corriendo en ${appUrl}`);
-    console.log(`Swagger Docs disponibles en ${appUrl}/api-docs`);
+    displayWelcomeMessage(appUrl);
   });
 };
 

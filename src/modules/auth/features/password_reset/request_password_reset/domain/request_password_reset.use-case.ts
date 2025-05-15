@@ -1,4 +1,4 @@
-import { generateVerificationCode } from "../../../../../../config/jwt";
+import { generateVerificationCode } from "../../../../../../infrastructure/jwt";
 import { sendEmail } from "../../../../../../utils/email_sender";
 import {
   RequestPasswordResetDTO,

@@ -1,4 +1,4 @@
-import { generateToken } from "../../../../../config/jwt";
+import { generateToken } from "../../../../../infrastructure/jwt";
 import { LoginDTO, LoginResponseDTO } from "./login.dto";
 import { LoginRepository } from "../../../../auth/features/login/data/login.repository";
 import { AppError } from "../../../../../utils";

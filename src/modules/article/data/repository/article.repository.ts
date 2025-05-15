@@ -95,7 +95,7 @@ export class ArticleRepository {
     };
   }
 
-  async getById(articleId: number): Promise<any | null> {
+  async getById(articleId: string): Promise<any | null> {
     return await prisma.articles.findUnique({
       where: { id: articleId },
       include: {
@@ -115,7 +115,7 @@ export class ArticleRepository {
   }
 
   async update(
-    articleId: number,
+    articleId: string,
     userId: number,
     data: UpdateArticleDTO,
     bannerUrl: string,
@@ -156,7 +156,7 @@ export class ArticleRepository {
     return updated;
   }
 
-  async delete(articleId: number, userId: number): Promise<any> {
+  async delete(articleId: string, userId: number): Promise<any> {
     const article = await prisma.articles.findUnique({
       where: { id: articleId },
     });

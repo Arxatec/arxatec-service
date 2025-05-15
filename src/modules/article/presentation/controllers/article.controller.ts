@@ -158,7 +158,7 @@ export class ArticleController {
   async getById(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
-      const article = await articleService.getArticleById(Number(id));
+      const article = await articleService.getArticleById(id);
       return res
         .status(HttpStatusCodes.OK.code)
         .json(
@@ -203,7 +203,7 @@ export class ArticleController {
       const data = UpdateArticleSchema.parse(req.body);
 
       const updatedArticle = await articleService.updateArticle(
-        Number(id),
+        id,
         authReq.user.id,
         data,
         articleReq.files
@@ -241,7 +241,7 @@ export class ArticleController {
       }
       const { id } = req.params;
       const deletedArticle = await articleService.deleteArticle(
-        Number(id),
+        id,
         authReq.user.id
       );
       return res

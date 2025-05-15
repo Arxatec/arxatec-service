@@ -239,7 +239,7 @@ model ConsultationServices {
 }
 
 model Articles {
-  id                    Int            @id @default(autoincrement()) /// Identificador único del artículo
+  id                    String         @id @default(uuid()) /// Identificador único del artículo
   user_id               Int /// Identificador del autor (UserDetails)
   title                 String /// Título del artículo
   resume                String? /// Resumen del artículo

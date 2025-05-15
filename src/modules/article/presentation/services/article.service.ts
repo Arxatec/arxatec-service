@@ -64,7 +64,7 @@ export class ArticleService {
     return this.articleRepository.getAll({ page, limit });
   }
 
-  async getArticleById(articleId: number): Promise<any> {
+  async getArticleById(articleId: string): Promise<any> {
     const article = await this.articleRepository.getById(articleId);
     if (!article) {
       throw new AppError(
@@ -76,7 +76,7 @@ export class ArticleService {
   }
 
   async updateArticle(
-    articleId: number,
+    articleId: string,
     userId: number,
     data: UpdateArticleDTO,
     files?: {
@@ -155,7 +155,7 @@ export class ArticleService {
     };
   }
 
-  async deleteArticle(articleId: number, userId: number): Promise<any> {
+  async deleteArticle(articleId: string, userId: number): Promise<any> {
     const article = await this.articleRepository.getById(articleId);
     if (!article) {
       throw new AppError(

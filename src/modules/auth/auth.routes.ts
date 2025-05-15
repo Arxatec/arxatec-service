@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginRouter } from "./features/login/login_with_email/presentation/login_email.routes";
+import { loginRouter, loginGoogleRouter } from "./features/login";
 import {
   requestRegistrationRouter,
   verifyCodeRegistrationRouter,
@@ -20,6 +20,7 @@ authRouter.use("/register", resendRegistrationRouter);
 
 // Login
 authRouter.use("/login", loginRouter);
+authRouter.use("/login", loginGoogleRouter);
 
 // Password Reset
 authRouter.use("/password-reset", requestPasswordResetRouter);

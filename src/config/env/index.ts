@@ -21,6 +21,9 @@ export const REDIS_URL = process.env.REDIS_URL;
 // PORT
 export const PORT = process.env.PORT;
 
+// ENVIROMENT
+export const NODE_ENV = process.env.NODE_ENV;
+
 // APP URL
 export const APP_URL = process.env.APP_URL;
 
@@ -41,3 +44,6 @@ export const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 export const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION;
 export const AWS_KEY_ACCESS = process.env.AWS_KEY_ACCESS;
 export const AWS_KEY_ACCESS_SECRET = process.env.AWS_KEY_ACCESS_SECRET;
+
+// AROUND
+export const MAX_LAWYER_CASES = process.env.MAX_LAWYER_CASES;

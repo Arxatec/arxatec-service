@@ -171,7 +171,6 @@ export class ArticleService {
       );
     }
 
-    // Eliminar archivos de AWS
     const bannerKey = article.banner.split(".amazonaws.com/")[1];
     const contentKey = article.content.split(".amazonaws.com/")[1];
 

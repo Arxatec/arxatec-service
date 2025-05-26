@@ -3,6 +3,7 @@ import { UpdateClientDTO } from "../../domain/dtos/update_client.dto";
 import { RegisterClientDTO } from "../../domain/dtos/register_client.dto";
 import { Client } from "../../domain/entities/client.entity";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 export class ClientService {
   constructor(private clientRepository: ClientRepository) {}
@@ -13,8 +14,15 @@ export class ClientService {
     return client;
   }
 
-  async getAllClients(): Promise<Client[]> {
-    return this.clientRepository.getAllClients();
+  async getAllClientsPaginated(page: number, limit: number, skip: number) {
+    const [data, total] = await Promise.all([
+      this.clientRepository.getClientsPaginated(skip, limit),
+      this.clientRepository.countClients()
+    ]);
+    return {
+      data,
+      meta: Pagination.buildPaginationMeta(total, page, limit)
+    };
   }
 
   async getClientProfile(userId: number): Promise<Client> {

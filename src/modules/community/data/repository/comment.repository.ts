@@ -70,4 +70,24 @@ export class CommentRepository {
 
     await this.prisma.comments.delete({ where: { id } });
   }
+
+  async getCommentsPaginated(publication_id: number, skip: number, take: number): Promise<Comment[]> {
+    const results = await this.prisma.comments.findMany({
+      where: { publication_id },
+      skip,
+      take
+    });
+
+    return results.map(c => ({
+      id: c.id,
+      comment: c.comment,
+      publication_id: c.publication_id,
+      community_user_id: c.community_user_id,
+      created_at: c.creation_timestamp
+    }));
+  }
+
+  async countCommentsByPublication(publication_id: number): Promise<number> {
+    return this.prisma.comments.count({ where: { publication_id } });
+  }
 }

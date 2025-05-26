@@ -49,6 +49,31 @@ export class ArticleRepository {
     });
   }
 
+  async getAllPaginated(skip: number, take: number): Promise<any[]> {
+    return await this.prisma.articles.findMany({
+      skip,
+      take,
+      orderBy: { publication_timestamp: "desc" },
+      include: {
+        userDetails: {
+          select: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        },
+        articleCategory: { select: { name: true } },
+      },
+    });
+  }
+
+  async count(): Promise<number> {
+    return await this.prisma.articles.count();
+  }
+
   async getById(articleId: number): Promise<any | null> {
     return await this.prisma.articles.findUnique({
       where: { id: articleId },
@@ -75,7 +100,7 @@ export class ArticleRepository {
     if (!article || article.user_id !== userId) {
       throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
     }
-    const updated = await this.prisma.articles.update({
+    return await this.prisma.articles.update({
       where: { id: articleId },
       data: {
         title: data.title,
@@ -97,7 +122,6 @@ export class ArticleRepository {
         articleCategory: { select: { name: true } },
       },
     });
-    return updated;
   }
 
   async delete(articleId: number, userId: number): Promise<any> {

@@ -188,4 +188,43 @@ export class CalendarRepository {
     await prisma.workSchedules.delete({ where: { id } })
     return true
   }
+
+  async listEventsPaginated(lawyer_id: number, skip: number, take: number) {
+  const list = await prisma.events.findMany({
+    where: { lawyer_id },
+    skip,
+    take,
+    include: { dates: true }
+  });
+  return list.map(e => ({
+    id: e.id,
+    title: e.title,
+    description: e.description || "",
+    dates: e.dates.map(d => d.date.toISOString().split("T")[0]),
+    start_time: formatTime(e.start_time),
+    end_time: formatTime(e.end_time)
+  }));
+}
+
+async countEvents(lawyer_id: number) {
+  return prisma.events.count({ where: { lawyer_id } });
+}
+
+  async listSchedulesPaginated(lawyer_id: number, skip: number, take: number) {
+    const list = await prisma.workSchedules.findMany({
+      where: { lawyer_id },
+      skip,
+      take
+    });
+    return list.map(ws => ({
+      id: ws.id,
+      day: ws.day,
+      open_time: formatTime(ws.open_time),
+      close_time: formatTime(ws.close_time)
+    }));
+  }
+
+  async countSchedules(lawyer_id: number) {
+    return prisma.workSchedules.count({ where: { lawyer_id } });
+  }
 }

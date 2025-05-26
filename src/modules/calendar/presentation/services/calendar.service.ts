@@ -5,6 +5,7 @@ import { CreateWorkScheduleDto } from "../../domain/dtos/create_work_schedule.dt
 import { UpdateWorkScheduleDto } from "../../domain/dtos/update_work_schedule.dto";
 import { EventEntity, WorkScheduleEntity } from "../../domain/entities/calendar.entity";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 export class CalendarService {
   constructor(private calendarRepository = new CalendarRepository()) {}
@@ -19,8 +20,15 @@ export class CalendarService {
     return event;
   }
 
-  async listEventsByLawyer(lawyerId: number): Promise<EventEntity[]> {
-    return this.calendarRepository.listEventsByLawyer(lawyerId);
+  async listEventsByLawyer(lawyerId: number, page: number, limit: number, skip: number) {
+    const [data, total] = await Promise.all([
+      this.calendarRepository.listEventsPaginated(lawyerId, skip, limit),
+      this.calendarRepository.countEvents(lawyerId)
+    ]);
+    return {
+      data,
+      meta: Pagination.buildPaginationMeta(total, page, limit)
+    };
   }
 
   async updateEvent(id: number, dto: UpdateEventDto, userId: number): Promise<EventEntity> {
@@ -44,8 +52,15 @@ export class CalendarService {
     return schedule;
   }
 
-  async listSchedulesByLawyer(lawyerId: number): Promise<WorkScheduleEntity[]> {
-    return this.calendarRepository.listSchedulesByLawyer(lawyerId);
+  async listSchedulesByLawyer(lawyerId: number, page: number, limit: number, skip: number) {
+    const [data, total] = await Promise.all([
+      this.calendarRepository.listSchedulesPaginated(lawyerId, skip, limit),
+      this.calendarRepository.countSchedules(lawyerId)
+    ]);
+    return {
+      data,
+      meta: Pagination.buildPaginationMeta(total, page, limit)
+    };
   }
 
   async updateSchedule(id: number, dto: UpdateWorkScheduleDto, userId: number): Promise<WorkScheduleEntity> {

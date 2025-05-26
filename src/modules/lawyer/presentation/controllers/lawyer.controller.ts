@@ -8,6 +8,7 @@ import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { handleZodError, handleServerError } from "../../../../utils/error_handler";
 import { MESSAGES } from "../../../../constants/messages";
 import { LawyerRepository } from "../../data/repository/lawyer.repository";
+import { Pagination } from "../../../../utils/pagination";
 
 const lawyerRepository = new LawyerRepository();
 const lawyerService = new LawyerService(lawyerRepository);
@@ -34,19 +35,22 @@ export class LawyerController {
     }
   }
 
-  async getAllLawyers(_req: Request, res: Response): Promise<Response> {
+  async getAllLawyers(req: Request, res: Response): Promise<Response> {
     try {
-      const lawyers = await lawyerService.getAllLawyers();
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await lawyerService.getAllLawyersPaginated(page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           MESSAGES.LAWYER.LAWYER_SUCCESS_LIST_RETRIEVED,
           "/lawyers",
-          lawyers
+          data,
+          meta
         )
       );
     } catch (error) {
-      return handleServerError(res, _req, error);
+      return handleServerError(res, req, error);
     }
   }
 

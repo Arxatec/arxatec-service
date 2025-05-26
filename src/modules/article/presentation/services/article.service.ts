@@ -4,13 +4,13 @@ import { CreateArticleDTO } from "../../domain/dtos/create_article.dto";
 import { UpdateArticleDTO } from "../../domain/dtos/update_article.dto";
 import { Article } from "../../domain/entities/article.entity";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 export class ArticleService {
   constructor(private articleRepository: ArticleRepository) {}
 
   async createArticle(userId: number, data: CreateArticleDTO): Promise<Article> {
     const prisma = new PrismaClient();
-    // Buscar en la tabla Users (no en userDetails)
     const user = await prisma.users.findUnique({ where: { id: userId } });
     if (!user || user.status !== "active") {
       throw new Error(MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED);
@@ -18,8 +18,16 @@ export class ArticleService {
     return this.articleRepository.create(userId, data);
   }
 
-  async getAllArticles(): Promise<any[]> {
-    return this.articleRepository.getAll();
+  async getAllArticlesPaginated(page: number, limit: number, skip: number): Promise<any> {
+    const [data, total] = await Promise.all([
+      this.articleRepository.getAllPaginated(skip, limit),
+      this.articleRepository.count(),
+    ]);
+
+    return {
+      data,
+      meta: Pagination.buildPaginationMeta(total, page, limit),
+    };
   }
 
   async getArticleById(articleId: number): Promise<any> {

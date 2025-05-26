@@ -288,4 +288,47 @@ export class LawyerRepository {
       workSchedules: mapWorkSchedulesToEntity(finalUser.lawyerDetails?.lawyerService?.workSchedules)
     };
   }
+  async getLawyersPaginated(skip: number, take: number): Promise<Lawyer[]> {
+    const users = await this.prisma.users.findMany({
+      skip,
+      take,
+      where: { user_type: "lawyer" },
+      include: {
+        lawyerDetails: {
+          include: {
+            lawyerService: {
+              include: {
+                attorneyFees: { include: { serviceCategory: true } },
+                workSchedules: true
+              }
+            }
+          }
+        },
+        userDetails: true
+      }
+    });
+
+    return users.map(user => ({
+      userId: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      licenseNumber: user.lawyerDetails?.license_number || "",
+      gender: user.userDetails?.gender || "",
+      birthDate: user.userDetails?.birth_date?.toISOString() || "",
+      specialty: user.lawyerDetails?.specialty || "",
+      experience: user.lawyerDetails?.experience ?? 0,
+      biography: user.lawyerDetails?.biography || "",
+      linkedin: user.lawyerDetails?.linkedin || "",
+      preferredClient: user.lawyerDetails?.lawyerService?.preferred_client || "",
+      attorneyFees: mapAttorneyFeesToEntity(user.lawyerDetails?.lawyerService?.attorneyFees),
+      workSchedules: mapWorkSchedulesToEntity(user.lawyerDetails?.lawyerService?.workSchedules)
+    }));
+  }
+
+  async countLawyers(): Promise<number> {
+    return this.prisma.users.count({
+      where: { user_type: "lawyer" }
+    });
+  }
 }

@@ -8,6 +8,7 @@ import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { handleZodError, handleServerError } from "../../../../utils/error_handler";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 const clientRepository = new ClientRepository();
 const clientService = new ClientService(clientRepository);
@@ -34,19 +35,22 @@ export class ClientController {
     }
   }
 
-  async getAllClients(_req: Request, res: Response): Promise<Response> {
+  async getAllClients(req: Request, res: Response): Promise<Response> {
     try {
-      const clients = await clientService.getAllClients();
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await clientService.getAllClientsPaginated(page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           MESSAGES.CLIENT.CLIENT_SUCCESS_LIST_RETRIEVED,
           "/clients",
-          clients
+          data,
+          meta
         )
       );
     } catch (error) {
-      return handleServerError(res, _req, error);
+      return handleServerError(res, req, error);
     }
   }
 

@@ -8,6 +8,7 @@ import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { handleZodError, handleServerError } from "../../../../utils/error_handler";
 import { MESSAGES } from "../../../../constants/messages";
 import { ArticleRepository } from "../../data/repository/article.repository";
+import { Pagination } from "../../../../utils/pagination";
 
 const articleRepository = new ArticleRepository();
 const articleService = new ArticleService(articleRepository);
@@ -30,8 +31,10 @@ export class ArticleController {
           )
         );
       }
+
       const data = CreateArticleSchema.parse(req.body);
       const article = await articleService.createArticle(authReq.user.id, data);
+
       return res.status(HttpStatusCodes.CREATED.code).json(
         buildHttpResponse(
           HttpStatusCodes.CREATED.code,
@@ -50,19 +53,22 @@ export class ArticleController {
     }
   }
 
-  async getAll(_req: Request, res: Response): Promise<Response> {
+  async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const articles = await articleService.getAllArticles();
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await articleService.getAllArticlesPaginated(page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           "Articles retrieved successfully.",
           "/articles",
-          articles
+          data,
+          meta
         )
       );
     } catch (error) {
-      return handleServerError(res, _req, error);
+      return handleServerError(res, req, error);
     }
   }
 
@@ -102,9 +108,11 @@ export class ArticleController {
           )
         );
       }
+
       const { id } = req.params;
       const data = UpdateArticleSchema.parse(req.body);
       const updatedArticle = await articleService.updateArticle(Number(id), authReq.user.id, data);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
@@ -136,8 +144,10 @@ export class ArticleController {
           )
         );
       }
+
       const { id } = req.params;
       const deletedArticle = await articleService.deleteArticle(Number(id), authReq.user.id);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,

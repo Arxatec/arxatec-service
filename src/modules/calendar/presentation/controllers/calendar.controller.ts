@@ -9,6 +9,7 @@ import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { PrismaClient } from "@prisma/client";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 const prisma = new PrismaClient();
 const service = new CalendarService();
@@ -74,9 +75,11 @@ export class CalendarController {
 
   async listEventsByLawyer(req: ExpressRequest, res: Response) {
     try {
-      const events = await service.listEventsByLawyer(Number(req.params.lawyer_id));
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await service.listEventsByLawyer(Number(req.params.lawyer_id), page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, MESSAGES.CALENDAR.CALENDAR_SUCCESS_LIST_RETRIEVED, req.path, events)
+        buildHttpResponse(HttpStatusCodes.OK.code, MESSAGES.CALENDAR.CALENDAR_SUCCESS_LIST_RETRIEVED, req.path, data, meta)
       );
     } catch {
       return internal(res, req.path);
@@ -157,9 +160,11 @@ export class CalendarController {
 
   async listSchedulesByLawyer(req: ExpressRequest, res: Response) {
     try {
-      const schedules = await service.listSchedulesByLawyer(Number(req.params.lawyer_id));
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await service.listSchedulesByLawyer(Number(req.params.lawyer_id), page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, MESSAGES.CALENDAR.CALENDAR_SUCCESS_LIST_RETRIEVED, req.path, schedules)
+        buildHttpResponse(HttpStatusCodes.OK.code, MESSAGES.CALENDAR.CALENDAR_SUCCESS_LIST_RETRIEVED, req.path, data, meta)
       );
     } catch {
       return internal(res, req.path);

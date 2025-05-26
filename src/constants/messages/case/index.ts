@@ -6,8 +6,7 @@ export const CASE_MESSAGES = {
     NOT_FOUND: "Case not found.",
     ACCESS_DENIED: "Access denied or insufficient permissions.",
     CATEGORIES_SUCCESS: "Categories fetched successfully.",
-    TYPES_SUCCESS: "Types fetched successfully.",
-
+    STATUSES_SUCCESS: "Statuses fetched successfully.", 
   
     /* ──────────────── Creation ──────────────── */
     CREATED_TITLE: "New case created",  
@@ -51,5 +50,8 @@ export const CASE_MESSAGES = {
   
     /* ──────────────── Filters/Scanning──────────────── */
     INVALID_FILTERS: "Invalid filters supplied for case exploration.",
+    /* ──────────────── Access / Visibility ──────────────── */
+     NOT_ASSIGNED_TO_LAWYER: "This case is not assigned to you.",
+
   };
   

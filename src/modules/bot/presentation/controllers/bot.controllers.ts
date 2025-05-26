@@ -21,7 +21,7 @@ export class BotController {
       const response = await botService.sendMessage(data.message);
       return res
         .status(HttpStatusCodes.OK.code)
-        .json(
+        .json(  
           buildHttpResponse(
             HttpStatusCodes.OK.code,
             MESSAGES.BOT.SEND_MESSAGE_SUCCESS,

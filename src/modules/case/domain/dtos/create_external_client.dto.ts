@@ -2,9 +2,10 @@
 import { z } from "zod";
 
 export const CreateExternalClientDto = z.object({
-  first_name: z.string().min(2).max(60),
-  last_name: z.string().min(2).max(60),
-  email: z.string().email().optional(),
-  phone: z.string().max(20).optional()
+  full_name: z.string().min(3).max(100),
+  phone:     z.string().min(6),
+  dni:       z.string().min(4),
+  email:     z.string().email().optional(),
 });
-export type CreateExternalClientDto = z.infer<typeof CreateExternalClientDto>;
+
+export type CreateExternalClientDtoType = z.infer<typeof CreateExternalClientDto>;

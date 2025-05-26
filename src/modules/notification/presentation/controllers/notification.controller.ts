@@ -17,10 +17,7 @@ export class NotificationController {
 
   async create(req: AuthenticatedRequest, res: Response) {
     try {
-      // Validar body con Zod
       const body = CreateNotificationSchema.parse(req.body);
-
-      // Llamar al servicio
       const notification = await this.notificationService.createNotification(body);
 
       return res.status(HttpStatusCodes.CREATED.code).json(

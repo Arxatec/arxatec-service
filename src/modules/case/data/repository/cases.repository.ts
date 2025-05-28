@@ -1,3 +1,4 @@
+// src/modules/case/data/repository/cases.repositoryts
 import { PrismaClient, Prisma, Attachments } from "@prisma/client";
 
 const prisma = new PrismaClient();

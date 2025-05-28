@@ -10,6 +10,8 @@ import lawyerRoutes from "./modules/lawyer/presentation/routes/lawyer.routes";
 import clientRoutes from "./modules/client/presentation/routes/client.routes";
 import communityRoutes from "./modules/community/presentation/routes/community.routes";
 import casesRoutes from "./modules/case/presentation/routes/case.routes";
+import dashboardLawyerRouter from './modules/dashboard/lawyer/presentation/routes/dashboardLawyer.routes';
+import dashboardClientRouter from './modules/dashboard/client/presentation/routes/dashboardClient.routes';
 
 const router = Router();
 const API_VERSION = "/api/v1";
@@ -25,5 +27,6 @@ router.use(`${API_VERSION}/form`, formRoutes);
 router.use(`${API_VERSION}/`, waitlistRoutes);
 router.use(`${API_VERSION}/notifications`, notificationRoutes);
 router.use(`${API_VERSION}/cases`, casesRoutes);
-
+router.use(`${API_VERSION}/dashboard`, dashboardLawyerRouter);
+router.use(`${API_VERSION}/dashboard`, dashboardClientRouter);
 export default router;

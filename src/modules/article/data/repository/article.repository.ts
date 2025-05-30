@@ -153,7 +153,6 @@ export class ArticleRepository {
         articleCategory: { select: { name: true } },
       },
     });
-    return updated;
   }
 
   async delete(articleId: string, userId: number): Promise<any> {

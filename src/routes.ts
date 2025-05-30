@@ -10,6 +10,7 @@ import notificationRoutes from "./modules/notification/presentation/routes/notif
 import lawyerRoutes from "./modules/lawyer/presentation/routes/lawyer.routes";
 import clientRoutes from "./modules/client/presentation/routes/client.routes";
 import communityRoutes from "./modules/community/presentation/routes/community.routes";
+import calendarRoutes from "./modules/calendar/presentation/routes/calendar.routes";
 import casesRoutes from "./modules/case/presentation/routes/case.routes";
 
 const router = Router();
@@ -26,6 +27,7 @@ router.use(`${API_VERSION}/clients`, clientRoutes);
 router.use(`${API_VERSION}/form`, formRoutes);
 router.use(`${API_VERSION}/`, waitlistRoutes);
 router.use(`${API_VERSION}/notifications`, notificationRoutes);
+router.use(`${API_VERSION}/calendar`, calendarRoutes);
 router.use(`${API_VERSION}/cases`, casesRoutes);
 
 export default router;

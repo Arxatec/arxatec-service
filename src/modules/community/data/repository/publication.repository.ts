@@ -85,10 +85,35 @@ export class PublicationRepository {
   }
 
   async delete(id: number, userId: number): Promise<void> {
-    const pub = await this.prisma.publications.findUnique({ where: { id } });
-    if (!pub) throw new Error(MESSAGES.COMMUNITY.PUBLICATION_ERROR_NOT_FOUND);
-    const communityUser = await this.prisma.communityUsers.findUnique({ where: { id: pub.community_user_id } });
-    if (!communityUser || communityUser.user_id !== userId) throw new Error(MESSAGES.COMMUNITY.PUBLICATION_ERROR_ACCESS_DENIED);
-    await this.prisma.publications.delete({ where: { id } });
+      const pub = await this.prisma.publications.findUnique({ where: { id } });
+      if (!pub) throw new Error(MESSAGES.COMMUNITY.PUBLICATION_ERROR_NOT_FOUND);
+      const communityUser = await this.prisma.communityUsers.findUnique({ where: { id: pub.community_user_id } });
+      if (!communityUser || communityUser.user_id !== userId) throw new Error(MESSAGES.COMMUNITY.PUBLICATION_ERROR_ACCESS_DENIED);
+      await this.prisma.publications.delete({ where: { id } });
+    }
+
+    async getPublicationsPaginated(communityId: number, skip: number, take: number): Promise<Publication[]> {
+    const pubs = await this.prisma.publications.findMany({
+      where: { community_id: communityId },
+      skip,
+      take
+    });
+
+    return pubs.map(p => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      multimedia: p.multimedia || undefined,
+      link: p.link || undefined,
+      community_id: p.community_id,
+      community_user_id: p.community_user_id,
+      created_at: p.creation_timestamp
+    }));
+  }
+
+  async countPublicationsByCommunity(communityId: number): Promise<number> {
+    return this.prisma.publications.count({
+      where: { community_id: communityId }
+    });
   }
 }

@@ -8,6 +8,7 @@ import { handleZodError, handleServerError } from "../../../../utils/error_handl
 import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 interface AuthenticatedRequest extends Request {
   user?: { id: number };
@@ -47,13 +48,16 @@ export class CommentReplyController {
   async getByComment(req: Request, res: Response) {
     try {
       const comment_id = Number(req.params.commentId);
-      const replies = await service.getByComment(comment_id);
+      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
+      const { data, meta } = await service.getRepliesPaginated(comment_id, page, limit, skip);
+
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           MESSAGES.COMMUNITY.COMMENT_REPLY_SUCCESS_LIST_RETRIEVED,
           `/community/reply/comment/${comment_id}`,
-          replies
+          data,
+          meta
         )
       );
     } catch (error) {

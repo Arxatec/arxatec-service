@@ -3,6 +3,7 @@ import { CreatePublicationDTO } from "../../domain/dtos/create_publication.dto";
 import { UpdatePublicationDTO } from "../../domain/dtos/update_publication.dto";
 import { Publication } from "../../domain/entities/publication.entity";
 import { MESSAGES } from "../../../../constants/messages";
+import { Pagination } from "../../../../utils/pagination";
 
 export class PublicationService {
   constructor(private repo: PublicationRepository) {}
@@ -27,5 +28,17 @@ export class PublicationService {
 
   async delete(id: number, userId: number): Promise<void> {
     return this.repo.delete(id, userId);
+  }
+
+  async getPublicationsPaginated(communityId: number, page: number, limit: number, skip: number) {
+    const [data, total] = await Promise.all([
+      this.repo.getPublicationsPaginated(communityId, skip, limit),
+      this.repo.countPublicationsByCommunity(communityId)
+    ]);
+
+    return {
+      data,
+      meta: Pagination.buildPaginationMeta(total, page, limit)
+    };
   }
 }

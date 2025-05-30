@@ -47,7 +47,7 @@ export class ArticleRepository {
       userId: created.user_id,
       title: created.title,
       content: created.content,
-      banner: created.banner,
+      banner: created.banner!,
       resume: created.resume,
       readingTime: created.reading_time,
       categoryId: created.category_id,

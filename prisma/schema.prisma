@@ -251,7 +251,7 @@ model Articles {
   resume                String? /// Resumen del artículo
   reading_time          Int /// Tiempo de lectura estimado en minutos
   content               String /// Contenido del artículo
-  banner                String /// Banner del artículo
+  banner                String? /// Banner del artículo
   category_id           Int /// Identificador de la categoría
   publication_timestamp DateTime /// Fecha de publicación
   status                article_status /// Estado del artículo
@@ -544,17 +544,17 @@ model Cases {
   @@map("cases")
 }
 
-model ExternalClient {
-  id         Int     @id @default(autoincrement())
-  first_name String  @db.VarChar(60)
-  last_name  String  @db.VarChar(60)
-  email      String? @db.VarChar(120)
-  phone      String? @db.VarChar(20)
+model CaseHistories {
+  id         Int      @id @default(autoincrement()) /// Identificador único del historial
+  case_id    Int /// ID del caso asociado
+  changed_by Int ///Saber quien hizo el cambio
+  field      String   @db.VarChar(60) ///Saber que campo fue cambiado (estado, archivado o documentado)  
+  old_value  String /// Valor anterior antes del cambio
+  new_value  String /// Nuevo valor asignado
+  note       String? /// Comentario adicional
+  created_at DateTime @default(now()) /// Fecha del cambio
 
-  lawyer_id Int?
-  lawyer    Users? @relation("ExternalClientLawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
-
-  cases Case[]
+  case Cases @relation(fields: [case_id], references: [id])
 
   @@map("case_histories")
 }
@@ -575,44 +575,72 @@ model Consultations {
 
   service Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
-  // unicidad para evitar archivos duplicados
-  @@unique([case_id, file_url], map: "uniq_case_attachment_file")
-  // índice compuesto para consultas activas
-  @@index([case_id, archived], map: "idx_case_active_attach")
-  // nuevo índice para filtrar por archived
-  @@index([archived], map: "idx_attachment_archived")
-  @@map("case_attachments")
+  @@map("consultations")
 }
 
-model CaseMessage {
-  id         Int      @id @default(autoincrement())
-  case_id    Int
-  sender_id  Int
-  content    String   @db.Text
-  created_at DateTime @default(now())
+model CallCategories {
+  id   Int    @id @default(autoincrement()) /// Identificador único de la categoría de llamada
+  name String /// Nombre de la categoría
 
-  case   Case  @relation("CaseMessages", fields: [case_id], references: [id], onDelete: Cascade)
-  sender Users @relation("UserSentMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+  calls Calls[] /// Llamadas asociadas
 
-  // nuevo índice para consultas por caso
-  @@index([case_id], map: "idx_case_message_case")
-  @@map("case_messages")
+  @@map("call_categories")
 }
 
-model CaseHistory {
-  id         Int     @id @default(autoincrement())
-  case_id    Int
-  changed_by Int
-  field      String  @db.VarChar(60)
-  old_value  String? @db.Text
-  new_value  String? @db.Text
+model Calls {
+  id               Int         @id @default(autoincrement()) /// Identificador único de la llamada
+  type             String /// Tipo de llamada (voz, video, etc.)
+  scheduled_date   DateTime /// Fecha agendada
+  scheduled_time   DateTime /// Hora agendada
+  duration_minutes Int /// Duración estimada en minutos
+  status           call_status /// Estado de la llamada
+  meeting_link     String /// Enlace a la reunión
+  notes            String? /// Notas adicionales
+  category_id      Int /// ID de la categoría
+  service_id       Int /// ID del servicio relacionado
+  created_at       DateTime    @default(now()) /// Fecha de creación
 
-  created_at DateTime @default(now()) @map("timestamp")
+  category CallCategories @relation(fields: [category_id], references: [id])
+  service  Services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
-  case Case  @relation("CaseHistories", fields: [case_id], references: [id], onDelete: Cascade)
-  user Users @relation("UserCaseHistories", fields: [changed_by], references: [id], onDelete: Cascade)
+  @@map("calls")
+}
 
-  // índice por caso
-  @@index([case_id], map: "idx_case_history")
-  @@map("case_histories")
+model Messages {
+  id         Int        @id @default(autoincrement()) /// Identificador único del mensaje
+  service_id Int /// ID del servicio asociado
+  content    String /// Contenido del mensaje
+  sent_by    actor_type /// Emisor: lawyer o client
+  is_read    Boolean /// Si fue leído
+  created_at DateTime   @default(now()) /// Fecha de envío
+
+  service Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model AttachmentCategories {
+  id   Int    @id @default(autoincrement()) /// Identificador único de la categoría
+  name String @unique /// Nombre de la categoría
+
+  attachments Attachments[] /// Archivos asociados
+
+  @@map("attachment_categories")
+}
+
+model Attachments {
+  id          Int        @id @default(autoincrement()) /// Identificador único del archivo
+  file_key    String /// ruta/key en S3
+  label       String /// Nombre o etiqueta del archivo
+  description String? /// Descripción adicional
+  category_id Int /// ID de la categoría del archivo
+  uploaded_by actor_type /// Emisor del archivo: lawyer o client
+  created_at  DateTime   @default(now()) /// Fecha de subida
+  service_id  Int /// Servicio al que pertenece
+  archived    Boolean    @default(false)
+
+  service  Services             @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category AttachmentCategories @relation(fields: [category_id], references: [id])
+
+  @@map("attachments")
 }

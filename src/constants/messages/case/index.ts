@@ -1,5 +1,4 @@
 // src/constants/messages/case/index.ts
-
 export const CASE_MESSAGES = {
     /* ──────────────── General ──────────────── */
     INVALID_ID: "Invalid case ID.",  

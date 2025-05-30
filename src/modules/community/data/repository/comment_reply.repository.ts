@@ -65,26 +65,4 @@ export class CommentReplyRepository {
 
     await this.prisma.commentReplies.delete({ where: { id } });
   }
-
-  async getRepliesPaginated(comment_id: number, skip: number, take: number): Promise<CommentReply[]> {
-    const results = await this.prisma.commentReplies.findMany({
-      where: { comment_id },
-      skip,
-      take
-    });
-
-    return results.map(r => ({
-      id: r.id,
-      reply: r.reply,
-      comment_id: r.comment_id,
-      community_user_id: r.community_user_id,
-      created_at: r.creation_timestamp
-    }));
-  }
-
-  async countRepliesByComment(comment_id: number): Promise<number> {
-    return this.prisma.commentReplies.count({
-      where: { comment_id }
-    });
-  }
 }

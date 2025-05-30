@@ -2,7 +2,6 @@ import { LawyerRepository } from "../../data/repository/lawyer.repository";
 import { UpdateLawyerDTO } from "../../domain/dtos/update_lawyer.dto";
 import { Lawyer } from "../../domain/entities/lawyer.entity";
 import { MESSAGES } from "../../../../constants/messages";
-import { Pagination } from "../../../../utils/pagination";
 
 export class LawyerService {
   constructor(private lawyerRepository: LawyerRepository) {}
@@ -13,15 +12,8 @@ export class LawyerService {
     return lawyer;
   }
 
-  async getAllLawyersPaginated(page: number, limit: number, skip: number) {
-    const [data, total] = await Promise.all([
-      this.lawyerRepository.getLawyersPaginated(skip, limit),
-      this.lawyerRepository.countLawyers()
-    ]);
-    return {
-      data,
-      meta: Pagination.buildPaginationMeta(total, page, limit)
-    };
+  async getAllLawyers(): Promise<Lawyer[]> {
+    return this.lawyerRepository.getAllLawyers();
   }
 
   async getLawyerProfile(userId: number): Promise<Lawyer> {

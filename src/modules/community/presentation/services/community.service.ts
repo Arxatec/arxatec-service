@@ -3,7 +3,6 @@ import { CreateCommunityDTO } from "../../domain/dtos/create_community.dto";
 import { UpdateCommunityDTO } from "../../domain/dtos/update_community.dto";
 import { Community } from "../../domain/entities/community.entity";
 import { MESSAGES } from "../../../../constants/messages";
-import { Pagination } from "../../../../utils/pagination";
 
 export class CommunityService {
   constructor(private repository: CommunityRepository) {}
@@ -32,17 +31,5 @@ export class CommunityService {
 
   async joinCommunity(communityId: number, userId: number): Promise<void> {
     return this.repository.joinCommunity(communityId, userId);
-  }
-
-  async getAllCommunitiesPaginated(page: number, limit: number, skip: number) {
-    const [data, total] = await Promise.all([
-      this.repository.getAllCommunitiesPaginated(skip, limit),
-      this.repository.countCommunities()
-    ]);
-
-    return {
-      data,
-      meta: Pagination.buildPaginationMeta(total, page, limit)
-    };
   }
 }

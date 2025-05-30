@@ -49,6 +49,11 @@ enum work_day {
   sunday
 }
 
+enum service_type {
+  case
+  consultation
+}
+
 enum community_user_type {
   moderator // Moderador de la comunidad
   member // Miembro de la comunidad
@@ -240,9 +245,11 @@ model Locations {
 }
 
 model Articles {
-  id                    Int            @id @default(autoincrement()) /// Identificador único del artículo
+  id                    String         @id @default(uuid()) /// Identificador único del artículo
   user_id               Int /// Identificador del autor (UserDetails)
   title                 String /// Título del artículo
+  resume                String? /// Resumen del artículo
+  reading_time          Int /// Tiempo de lectura estimado en minutos
   content               String /// Contenido del artículo
   banner                String? /// Banner del artículo
   category_id           Int /// Identificador de la categoría
@@ -464,7 +471,7 @@ model ExternalClients {
   id             Int      @id @default(autoincrement()) /// Identificador único del cliente externo
   user_detail_id Int /// Usuario que registró al cliente externo
   full_name      String /// Nombre completo del cliente externo
-  email          String /// Correo electrónico del cliente externo
+  email          String?  @default("") /// Correo electrónico del cliente externo
   phone          String /// Teléfono del cliente externo
   dni            String /// Documento de identidad del cliente externo
   created_at     DateTime @default(now()) /// Fecha de registro del cliente externo
@@ -476,9 +483,9 @@ model ExternalClients {
 }
 
 model Services {
-  id                 Int      @id @default(autoincrement()) /// Identificador único del servicio
-  type               String /// Tipo de servicio (consulta, caso, etc.)
-  created_at         DateTime @default(now()) /// Fecha de creación del servicio
+  id                 Int          @id @default(autoincrement()) /// Identificador único del servicio
+  type               service_type /// Tipo de servicio (consulta, caso, etc.)
+  created_at         DateTime     @default(now()) /// Fecha de creación del servicio
   lawyer_id          Int? /// ID del abogado que atiende el servicio
   client_id          Int? /// ID del cliente registrado
   external_client_id Int? /// ID del cliente externo (opcional)
@@ -498,7 +505,7 @@ model Services {
 
 model CaseCategories {
   id          Int     @id @default(autoincrement()) /// Identificador único de la categoría de caso
-  name        String /// Nombre de la categoría
+  name        String  @unique /// Nombre de la categoría
   description String? /// Descripción detallada de la categoría
 
   cases Cases[] /// Casos que pertenecen a esta categoría
@@ -508,7 +515,7 @@ model CaseCategories {
 
 model CaseStatuses {
   id          Int     @id @default(autoincrement()) /// Identificador único del estado del caso
-  name        String /// Nombre del estado
+  name        String  @unique /// Nombre del estado
   description String? /// Descripción del estado
 
   cases Cases[] /// Casos que tienen este estado
@@ -525,7 +532,7 @@ model Cases {
   urgency        case_urgency /// Nivel de urgencia del caso
   status_id      Int /// ID del estado actual del caso
   is_public      Boolean
-  reference_code String /// Código interno o externo para referencia
+  reference_code String       @default(cuid()) /// Numero de expediente
   created_at     DateTime     @default(now()) /// Fecha de creación del caso
   archived       Boolean      @default(false)
 
@@ -540,7 +547,8 @@ model Cases {
 model CaseHistories {
   id         Int      @id @default(autoincrement()) /// Identificador único del historial
   case_id    Int /// ID del caso asociado
-  changed_by Int
+  changed_by Int ///Saber quien hizo el cambio
+  field      String   @db.VarChar(60) ///Saber que campo fue cambiado (estado, archivado o documentado)  
   old_value  String /// Valor anterior antes del cambio
   new_value  String /// Nuevo valor asignado
   note       String? /// Comentario adicional
@@ -613,7 +621,7 @@ model Messages {
 
 model AttachmentCategories {
   id   Int    @id @default(autoincrement()) /// Identificador único de la categoría
-  name String /// Nombre de la categoría
+  name String @unique /// Nombre de la categoría
 
   attachments Attachments[] /// Archivos asociados
 
@@ -622,9 +630,9 @@ model AttachmentCategories {
 
 model Attachments {
   id          Int        @id @default(autoincrement()) /// Identificador único del archivo
-  file_url    String /// URL de almacenamiento del archivo
+  file_key    String /// ruta/key en S3
   label       String /// Nombre o etiqueta del archivo
-  description String /// Descripción adicional
+  description String? /// Descripción adicional
   category_id Int /// ID de la categoría del archivo
   uploaded_by actor_type /// Emisor del archivo: lawyer o client
   created_at  DateTime   @default(now()) /// Fecha de subida

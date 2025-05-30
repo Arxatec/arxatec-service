@@ -1,3 +1,5 @@
+// src/utils/build_http_response/index.ts
+
 import { HttpStatusCodes } from "../../constants";
 
 export function buildHttpResponse(
@@ -5,9 +7,8 @@ export function buildHttpResponse(
   description: string,
   path?: string,
   data?: any,
-  meta?: any 
 ) {
-  const response: any = {
+  return {
     status,
     message:
       Object.values(HttpStatusCodes).find((s) => s.code === status)?.message ||
@@ -17,10 +18,4 @@ export function buildHttpResponse(
     path: path || undefined,
     data: data || undefined,
   };
-
-  if (meta !== undefined) {
-    response.meta = meta; 
-  }
-
-  return response;
 }

@@ -84,29 +84,8 @@ export class CommunityRepository {
   }
 
   async joinCommunity(communityId: number, userId: number): Promise<void> {
-      await this.prisma.communityUsers.create({
-        data: { community_id: communityId, user_id: userId, type: "member" }
-      });
-    }
-
-    async getAllCommunitiesPaginated(skip: number, take: number): Promise<Community[]> {
-    const communities = await this.prisma.communities.findMany({
-      skip,
-      take
+    await this.prisma.communityUsers.create({
+      data: { community_id: communityId, user_id: userId, type: "member" }
     });
-
-    return communities.map(c => ({
-      id: c.id,
-      name: c.name,
-      description: c.description || "",
-      banner: c.banner || "",
-      icon: c.icon || "",
-      category_id: c.category_id || undefined,
-      creator_user_id: 0
-    }));
-  }
-
-  async countCommunities(): Promise<number> {
-    return this.prisma.communities.count();
   }
 }

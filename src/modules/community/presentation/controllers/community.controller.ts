@@ -8,7 +8,6 @@ import { handleZodError, handleServerError } from "../../../../utils/error_handl
 import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../constants/messages";
-import { Pagination } from "../../../../utils/pagination";
 
 const service = new CommunityService(new CommunityRepository());
 
@@ -45,22 +44,19 @@ export class CommunityController {
     }
   }
 
-  async getAllCommunities(req: Request, res: Response) {
+  async getAllCommunities(_req: Request, res: Response) {
     try {
-      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
-      const { data, meta } = await service.getAllCommunitiesPaginated(page, limit, skip);
-
+      const result = await service.getAllCommunities();
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           MESSAGES.COMMUNITY.COMMUNITY_SUCCESS_LIST_RETRIEVED,
           "/community",
-          data,
-          meta
+          result
         )
       );
     } catch (error) {
-      return handleServerError(res, req, error);
+      return handleServerError(res, _req, error);
     }
   }
 

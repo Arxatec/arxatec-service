@@ -8,7 +8,6 @@ import { handleZodError, handleServerError } from "../../../../utils/error_handl
 import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../constants/messages";
-import { Pagination } from "../../../../utils/pagination";
 
 interface AuthenticatedRequest extends Request {
   user?: { id: number };
@@ -48,23 +47,20 @@ export class PublicationController {
   async getByCommunity(req: Request, res: Response) {
     try {
       const communityId = Number(req.params.communityId);
-      const { page, limit, skip } = Pagination.getPaginationParams(req.query);
-      const { data, meta } = await service.getPublicationsPaginated(communityId, page, limit, skip);
-
+      const list = await service.getByCommunityId(communityId);
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           MESSAGES.COMMUNITY.PUBLICATION_SUCCESS_LIST_RETRIEVED,
           `/community/${communityId}/publication`,
-          data,
-          meta
+          list
         )
       );
     } catch (error) {
       return handleServerError(res, req, error);
     }
   }
-  
+
   async getById(req: Request, res: Response) {
     try {
       const id = Number(req.params.id);

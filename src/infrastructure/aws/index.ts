@@ -2,7 +2,6 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
-  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl as awsGetSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
@@ -24,70 +23,30 @@ const s3Client = new S3Client({
   },
 });
 
-export const getUrl = (key: string) => {
-  return (
-    "https://" +
-    AWS_BUCKET_NAME +
-    ".s3." +
-    AWS_BUCKET_REGION +
-    ".amazonaws.com/" +
-    key
-  );
-};
-
-export async function uploadFile(
-  file: Express.Multer.File,
-  pathPrefix: string
-) {
-  let fileBody: Buffer | fs.ReadStream;
-  let originalFileName: string;
-  let mimeType: string;
-
-  if (file.buffer) {
-    fileBody = file.buffer;
-    originalFileName = file.originalname;
-    mimeType = file.mimetype;
-  } else if (file.path) {
-    fileBody = fs.createReadStream(file.path);
-    originalFileName = file.originalname;
-    mimeType = file.mimetype;
-  } else {
-    throw new Error("The Multer file object does not contain buffer or path.");
-  }
-
+export async function uploadFile(file: any, pathPrefix: string) {
+  const fileStream = fs.createReadStream(file.tempFilePath); // Creamos un stream de la imagen
   const uniqueId = uuidv4();
-  const fileExtension = path.extname(originalFileName);
+  const fileExtension = path.extname(file.name);
   const newFileName = `${uniqueId}${fileExtension}`;
   const createKey = `${pathPrefix}/${newFileName}`;
 
   const uploadParams = {
-    Bucket: AWS_BUCKET_NAME,
-    Body: fileBody,
-    Key: createKey,
-    ContentType: mimeType,
+    Bucket: AWS_BUCKET_NAME, // Nombre del bucket
+    Body: fileStream, // Stream de la imagen
+    Key: createKey, // Key de la imagen
+    ContentType: file.mimetype, // Tipo de la imagen
   };
-  const command = new PutObjectCommand(uploadParams);
-  const response = await s3Client.send(command);
-  return {
-    response,
-    key: createKey,
-    url: getUrl(createKey),
-  };
+  const command = new PutObjectCommand(uploadParams); // Creamos un comando para subir la imagen
+  const response = await s3Client.send(command); // Enviamos el comando
+  console.log(response); // Imprimimos la respuesta
+  return createKey; // Devolvemos la key de la imagen
 }
 
 export async function getSignedUrl(key: string) {
   const command = new GetObjectCommand({
-    Bucket: AWS_BUCKET_NAME,
-    Key: key,
+    Bucket: AWS_BUCKET_NAME, // Nombre del bucket
+    Key: key, // Key de la imagen
   });
-  const url = await awsGetSignedUrl(s3Client, command, { expiresIn: 3600 });
-  return url;
-}
-
-export async function deleteFile(key: string) {
-  const command = new DeleteObjectCommand({
-    Bucket: AWS_BUCKET_NAME,
-    Key: key,
-  });
-  return await s3Client.send(command);
+  const url = await awsGetSignedUrl(s3Client, command, { expiresIn: 3600 }); // Obtenemos la url de la imagen
+  return url; // Devolvemos la url de la imagen
 }

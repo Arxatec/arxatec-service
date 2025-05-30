@@ -1,23 +1,26 @@
 import { Router } from "express";
+import multer from "multer";
 import { authenticateToken } from "../../../../middlewares/authenticate_token";
 import { asyncHandler } from "../../../../middlewares/async_handler";
-
 import { CaseController } from "../controllers/case.controller";
 
 const caseController = new CaseController();
 const router = Router();
 
-/* ---------- públicas / auxiliares ---------- */
+// Configure multer (private uploads, use tempFilePath + memory as needed)
+const upload = multer({ storage: multer.memoryStorage() });
+
+/* -------- PUBLIC CATALOGS -------- */
 router.get(
   "/categories",
   asyncHandler((req, res) => caseController.getCategories(req, res))
 );
 router.get(
-  "/types",
-  asyncHandler((req, res) => caseController.getTypes(req, res))
+  "/statuses",
+  asyncHandler((req, res) => caseController.getStatuses(req, res))
 );
 
-/* ---------- creación ---------- */
+/* -------- CASE CREATION -------- */
 router.post(
   "/",
   authenticateToken,
@@ -29,11 +32,11 @@ router.post(
   asyncHandler((req, res) => caseController.createExternalClient(req, res))
 );
 
-/* ---------- lectura ---------- */
+/* -------- CASE READ -------- */
 router.get(
   "/explore",
   asyncHandler((req, res) => caseController.exploreCases(req, res))
-); // público
+);
 router.get(
   "/my",
   authenticateToken,
@@ -50,7 +53,7 @@ router.get(
   asyncHandler((req, res) => caseController.getHistory(req, res))
 );
 
-/* ---------- actualización ---------- */
+/* -------- CASE UPDATE -------- */
 router.put(
   "/:id",
   authenticateToken,
@@ -67,28 +70,33 @@ router.patch(
   asyncHandler((req, res) => caseController.archiveCase(req, res))
 );
 
-/* ---------- adjuntos ---------- */
+/* -------- ATTACHMENTS -------- */
 router.post(
   "/:id/attachment",
   authenticateToken,
+  upload.fields([{ name: "file", maxCount: 1 }]),
   asyncHandler((req, res) => caseController.addAttachment(req, res))
 );
-router.delete(
+router.get(
+  "/:id/attachments",
+  authenticateToken,
+  asyncHandler((req, res) => caseController.listAttachments(req, res))
+);
+// GET TEMPORARY SIGNED URL FOR PRIVATE FILE
+router.get(
+  "/:id/attachment/:attId",
+  authenticateToken,
+  asyncHandler((req, res) => caseController.getAttachmentUrl(req, res))
+);
+
+// ARCHIVE ATTACHMENT (SOFT DELETE)
+router.patch(
   "/:id/attachment/:attId",
   authenticateToken,
   asyncHandler((req, res) => caseController.archiveAttachment(req, res))
 );
-router.post(
-  "/:id/attachment/external",
-  authenticateToken,
-  asyncHandler((req, res) => caseController.addAttachment(req, res))
-);
-router.delete(
-  "/:id/attachment/external/:attId",
-  authenticateToken,
-  asyncHandler((req, res) => caseController.archiveAttachment(req, res))
-);
-/* ---------- mensajes ---------- */
+
+/* -------- INTERNAL MESSAGES -------- */
 router.post(
   "/:id/message",
   authenticateToken,

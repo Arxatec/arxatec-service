@@ -7,7 +7,7 @@
 //
 // Ejemplos de comandos útiles:
 // npx prisma migrate reset 
-// npx prisma migrate dev
+// npx prisma migrate dev --init
 // npx prisma generate
 // npx prisma studio 
 //
@@ -17,11 +17,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL_PROD")
-  directUrl = env("DIRECT_URL_PROD")
-  // url       = env("DATABASE_URL")
-  // directUrl = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum user_type {
@@ -36,20 +33,6 @@ enum user_status {
   pending
 }
 
-enum video_call_status {
-  confirmed
-  pending
-  cancelled
-  in_progress
-  finished
-}
-
-enum message_status {
-  pending
-  answered
-  finished
-}
-
 enum article_status {
   pending
   accepted
@@ -57,13 +40,18 @@ enum article_status {
 }
 
 enum work_day {
-  lunes
-  martes
-  miércoles
-  jueves
-  viernes
-  sábado
-  domingo
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+enum service_type {
+  case
+  consultation
 }
 
 enum community_user_type {
@@ -89,6 +77,69 @@ enum notification_type {
   alert
 }
 
+enum case_urgency {
+  alta
+  media
+  baja
+}
+
+enum case_status {
+  abierto
+  en_progreso
+  cerrado
+  archivado
+}
+
+enum consultation_status {
+  pendiente
+  respondida
+  cerrada
+}
+
+enum consultation_priority {
+  alta
+  media
+  baja
+}
+
+enum call_status {
+  scheduled
+  completed
+  cancelled
+  missed
+}
+
+enum actor_type {
+  lawyer
+  client
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement()) /// Identificador único de la notificación
+  receiverId  Int /// ID del usuario receptor
+  senderId    Int? /// ID del usuario emisor (opcional)
+  title       String /// Título de la notificación
+  description String /// Descripción del evento notificado
+  type        notification_type /// Tipo de notificación: info, success, error o alert
+  createdAt   DateTime          @default(now()) /// Fecha de creación de la notificación
+
+  url String? /// Ruta/URL destino para la notificación (opcional)
+
+  receiver Users  @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+  sender   Users? @relation("SentNotifications", fields: [senderId], references: [id])
+
+  @@map("notifications")
+}
+
+model ArxatecSubscribers {
+  id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
+  name      String   @db.VarChar(100) /// Nombre del suscriptor
+  email     String   @unique @db.VarChar(255) /// Email único del suscriptor
+  createdAt DateTime @default(now()) /// Fecha de suscripción
+
+  @@map("arxatec_subscribers")
+}
+
 model Users {
   id                 Int         @id @default(autoincrement()) /// Identificador único del usuario
   first_name         String /// Nombre del usuario
@@ -105,16 +156,9 @@ model Users {
   lawyerDetails         LawyerDetails? /// Relación uno a uno: Datos adicionales para abogados
   clientDetails         ClientDetails? /// Relación uno a uno: Datos adicionales para clientes
   adminDetails          AdminDetails? /// Relación uno a uno: Datos adicionales para administradores
-  externalClients       ExternalClient[] @relation("ExternalClientLawyer")
   userDetails           UserDetails? /// Relación uno a uno: Datos generales del usuario
-  receivedNotifications Notification[]   @relation("ReceivedNotifications") /// Notificaciones recibidas por el usuario
-  sentNotifications     Notification[]   @relation("SentNotifications") /// Notificaciones enviadas por el usuario
-
-  clientCases         Case[]           @relation("ClientCases")
-  lawyerCases         Case[]           @relation("LawyerCases")
-  uploadedAttachments CaseAttachment[] @relation("UserUploads")
-  sentMessages        CaseMessage[]    @relation("UserSentMessages")
-  caseHistories       CaseHistory[]    @relation("UserCaseHistories")
+  receivedNotifications Notification[] @relation("ReceivedNotifications") /// Notificaciones recibidas por el usuario
+  sentNotifications     Notification[] @relation("SentNotifications") /// Notificaciones enviadas por el usuario
 
   @@map("users")
 }
@@ -127,10 +171,9 @@ model LawyerDetails {
   biography      String /// Biografía del abogado
   linkedin       String /// URL del perfil de LinkedIn
 
-  user                 Users                  @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
-  videoCallServices    VideoCallServices[] /// Relación uno a muchos: Video llamadas asociadas a este LawyerDetails
-  consultationServices ConsultationServices[] /// Relación uno a muchos: Consultas asociadas a este LawyerDetails
-  lawyerService        LawyerService? /// Relación uno a uno: Servicio del abogado
+  user          Users          @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
+  lawyerService LawyerService? /// Relación uno a uno: Servicio del abogado
+  events        Events[] /// Relación uno a muchos: Eventos asociados a este abogado
 
   @@map("lawyer_details")
 }
@@ -141,9 +184,7 @@ model ClientDetails {
   urgency_level    String? /// Nivel de urgencia o prioridad de la necesidad legal
   requirement_type String? /// Tipo de asistencia legal requerida
 
-  user                 Users                  @relation(fields: [client_id], references: [id], onDelete: Cascade)
-  videoCallServices    VideoCallServices[] /// Relación uno a muchos: Video llamadas asociadas a este ClientDetails
-  consultationServices ConsultationServices[] /// Relación uno a muchos: Consultas asociadas a este ClientDetails
+  user Users @relation(fields: [client_id], references: [id], onDelete: Cascade)
 
   @@map("client_details")
 }
@@ -164,10 +205,13 @@ model UserDetails {
 
   articles Articles[] /// Relación uno a muchos: Artículos asociados a este UserDetails
 
-  user           Users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  Preference     Preference?
-  Locations      Locations?
-  communityUsers CommunityUsers[] /// Relación uno a muchos: Membresías en comunidades asociadas a este UserDetails
+  user               Users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Preference         Preference?
+  Locations          Locations?
+  communityUsers     CommunityUsers[] /// Relación uno a muchos: Membresías en comunidades asociadas a este UserDetails
+  external_clients   ExternalClients[] /// Clientes externos registrados por este usuario
+  services_as_lawyer Services[]        @relation("LawyerServices") /// Servicios en los que actúa como abogado
+  services_as_client Services[]        @relation("ClientServices") /// Servicios en los que actúa como cliente
 
   @@map("user_details")
 }
@@ -198,44 +242,6 @@ model Locations {
   userDetails UserDetails @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("locations")
-}
-
-model VideoCallServices {
-  id                 Int               @id @default(autoincrement()) /// Identificador único del servicio
-  client_id          Int /// Identificador del cliente (ClientDetails)
-  lawyer_id          Int? /// Identificador del abogado (LawyerDetails)
-  subject            String /// Asunto de la consulta
-  service_date       DateTime          @db.Date /// Fecha de la consulta
-  service_time       DateTime          @db.Time /// Hora de la consulta
-  description        String /// Descripción detallada del servicio
-  consultation_type  consultation_type /// Tipo de consulta
-  status             video_call_status /// Estado de la videollamada
-  video_call_link    String? /// Enlace para la videollamada
-  message            String? /// Notas adicionales
-  creation_timestamp DateTime? /// Timestamp de creación
-
-  client ClientDetails  @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
-  lawyer LawyerDetails? @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
-
-  @@map("video_call_services")
-}
-
-model ConsultationServices {
-  id                 Int            @id @default(autoincrement()) /// Identificador único de la consulta
-  client_id          Int /// Identificador del cliente (ClientDetails)
-  lawyer_id          Int? /// Identificador del abogado (LawyerDetails)
-  subject            String /// Asunto de la consulta
-  message            String /// Contenido de la consulta
-  response           String? /// Respuesta del abogado
-  consultation_date  DateTime       @db.Date /// Fecha de la consulta
-  consultation_time  DateTime       @db.Time /// Hora de la consulta
-  status             message_status /// Estado de la consulta
-  creation_timestamp DateTime? /// Timestamp de creación
-
-  client ClientDetails  @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
-  lawyer LawyerDetails? @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
-
-  @@map("consultation_services")
 }
 
 model Articles {
@@ -436,96 +442,105 @@ model Reactions {
   @@map("reactions")
 }
 
-model Notification {
-  id          Int               @id @default(autoincrement()) /// Identificador único de la notificación
-  receiverId  Int /// ID del usuario receptor
-  senderId    Int? /// ID del usuario emisor (opcional)
-  title       String /// Título de la notificación
-  description String /// Descripción del evento notificado
-  type        notification_type /// Tipo de notificación: info, success, error o alert
-  createdAt   DateTime          @default(now()) /// Fecha de creación de la notificación
+model Events {
+  id          Int      @id @default(autoincrement()) /// Identificador del evento
+  lawyer_id   Int /// Abogado asociado
+  title       String /// Título del evento
+  description String? /// Descripción
+  start_time  DateTime @db.Time /// Hora de inicio (común para todas las fechas)
+  end_time    DateTime @db.Time /// Hora de fin (común para todas las fechas)
 
-  url String? /// Ruta/URL destino para la notificación (opcional)
+  lawyer LawyerDetails @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  dates  EventDates[] /// Fechas específicas del evento
 
-  receiver Users  @relation("ReceivedNotifications", fields: [receiverId], references: [id])
-  sender   Users? @relation("SentNotifications", fields: [senderId], references: [id])
-
-  @@map("notifications")
+  @@map("events")
 }
 
-model ArxatecSubscribers {
-  id        Int      @id @default(autoincrement()) /// Identificador único del suscriptor
-  name      String   @db.VarChar(100) /// Nombre del suscriptor
-  email     String   @unique @db.VarChar(255) /// Email único del suscriptor
-  createdAt DateTime @default(now()) /// Fecha de suscripción
+model EventDates {
+  id       Int      @id @default(autoincrement()) /// ID único
+  event_id Int /// Evento asociado
+  date     DateTime @db.Date /// Fecha específica del evento
 
-  @@map("arxatec_subscribers")
+  event Events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, date]) // Evita duplicados
+  @@map("event_dates")
 }
 
-/// Casos Beta
-enum consultation_type {
-  public
-  private
-  own
+model ExternalClients {
+  id             Int      @id @default(autoincrement()) /// Identificador único del cliente externo
+  user_detail_id Int /// Usuario que registró al cliente externo
+  full_name      String /// Nombre completo del cliente externo
+  email          String?  @default("") /// Correo electrónico del cliente externo
+  phone          String /// Teléfono del cliente externo
+  dni            String /// Documento de identidad del cliente externo
+  created_at     DateTime @default(now()) /// Fecha de registro del cliente externo
+
+  user_detail UserDetails @relation(fields: [user_detail_id], references: [user_id], onDelete: Cascade)
+  services    Services[] /// Servicios asociados a este cliente externo
+
+  @@map("external_clients")
 }
 
-enum case_category {
-  labor
-  family
-  personal
-  corporate
-  other
+model Services {
+  id                 Int          @id @default(autoincrement()) /// Identificador único del servicio
+  type               service_type /// Tipo de servicio (consulta, caso, etc.)
+  created_at         DateTime     @default(now()) /// Fecha de creación del servicio
+  lawyer_id          Int? /// ID del abogado que atiende el servicio
+  client_id          Int? /// ID del cliente registrado
+  external_client_id Int? /// ID del cliente externo (opcional)
+
+  lawyer          UserDetails?     @relation("LawyerServices", fields: [lawyer_id], references: [user_id])
+  client          UserDetails?     @relation("ClientServices", fields: [client_id], references: [user_id])
+  external_client ExternalClients? @relation(fields: [external_client_id], references: [id])
+
+  cases         Cases[] /// Casos asociados a este servicio
+  consultations Consultations[] /// Consultas asociadas a este servicio
+  calls         Calls[] /// Llamadas asociadas
+  messages      Messages[] /// Mensajes entre abogado y cliente
+  attachments   Attachments[] /// Archivos compartidos
+
+  @@map("services")
 }
 
-enum case_type {
-  consultation
-  case
-  advisory
+model CaseCategories {
+  id          Int     @id @default(autoincrement()) /// Identificador único de la categoría de caso
+  name        String  @unique /// Nombre de la categoría
+  description String? /// Descripción detallada de la categoría
+
+  cases Cases[] /// Casos que pertenecen a esta categoría
+
+  @@map("case_categories")
 }
 
-enum case_status {
-  open
-  taken
-  in_progress
-  closed
-  archived
+model CaseStatuses {
+  id          Int     @id @default(autoincrement()) /// Identificador único del estado del caso
+  name        String  @unique /// Nombre del estado
+  description String? /// Descripción del estado
+
+  cases Cases[] /// Casos que tienen este estado
+
+  @@map("case_statuses")
 }
 
-/// ---------- CASOS ----------
-model Case {
-  id          Int           @id @default(autoincrement())
-  title       String        @db.VarChar(120)
-  description String        @db.VarChar(2000)
-  category    case_category
-  type        case_type
-  is_public   Boolean       @default(true)
-  status      case_status   @default(open)
-  archived    Boolean       @default(false)
-  created_at  DateTime      @default(now())
+model Cases {
+  id             Int          @id @default(autoincrement()) /// Identificador único del caso
+  service_id     Int /// ID del servicio asociado
+  title          String /// Título breve del caso
+  description    String /// Descripción completa del caso
+  category_id    Int /// ID de la categoría asignada
+  urgency        case_urgency /// Nivel de urgencia del caso
+  status_id      Int /// ID del estado actual del caso
+  is_public      Boolean
+  reference_code String       @default(cuid()) /// Numero de expediente
+  created_at     DateTime     @default(now()) /// Fecha de creación del caso
+  archived       Boolean      @default(false)
 
-  // FK
-  client_id          Int?
-  lawyer_id          Int?
-  external_client_id Int?
+  service   Services        @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category  CaseCategories  @relation(fields: [category_id], references: [id])
+  status    CaseStatuses    @relation(fields: [status_id], references: [id])
+  histories CaseHistories[] /// Historial de cambios del caso
 
-  // RELATIONS
-  client         Users?          @relation("ClientCases", fields: [client_id], references: [id], onDelete: Cascade)
-  lawyer         Users?          @relation("LawyerCases", fields: [lawyer_id], references: [id], onDelete: Cascade)
-  externalClient ExternalClient? @relation(fields: [external_client_id], references: [id], onDelete: Cascade)
-
-  attachments CaseAttachment[] @relation("CaseAttachments")
-  messages    CaseMessage[]    @relation("CaseMessages")
-  histories   CaseHistory[]    @relation("CaseHistories")
-
-  // índices existentes
-  @@index([status], map: "idx_status")
-  @@index([category], map: "idx_category")
-  @@index([type], map: "idx_type")
-  @@index([lawyer_id], map: "idx_lawyer")
-  @@index([client_id], map: "idx_client")
-  // nuevos índices sugeridos
-  @@index([archived, status], map: "idx_archived_status")
-  @@index([is_public], map: "idx_is_public")
   @@map("cases")
 }
 
@@ -541,21 +556,24 @@ model ExternalClient {
 
   cases Case[]
 
-  @@unique([email], map: "uq_extclient_email")
-  @@map("external_clients")
+  @@map("case_histories")
 }
 
-model CaseAttachment {
-  id          Int      @id @default(autoincrement())
-  case_id     Int
-  file_url    String   @db.Text
-  filename    String?  @db.VarChar(140)
-  archived    Boolean  @default(false)
-  uploaded_by Int
-  uploaded_at DateTime @default(now())
+model Consultations {
+  id            Int                   @id @default(autoincrement()) /// Identificador único de la consulta
+  service_id    Int /// ID del servicio asociado
+  topic         String /// Tema principal de la consulta
+  question      String /// Pregunta detallada del cliente
+  response      String? /// Respuesta del abogado (opcional)
+  status        consultation_status /// Estado actual de la consulta
+  created_at    DateTime              @default(now()) /// Fecha de creación
+  answered_at   DateTime? /// Fecha en que fue respondida (opcional)
+  rating        Int? /// Calificación del cliente (1 a 5, opcional)
+  priority      consultation_priority /// Prioridad asignada
+  confidential  Boolean /// Si es confidencial
+  requires_call Boolean /// Si necesita llamada
 
-  case       Case  @relation("CaseAttachments", fields: [case_id], references: [id], onDelete: Cascade)
-  uploadedBy Users @relation("UserUploads", fields: [uploaded_by], references: [id], onDelete: Cascade)
+  service Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   // unicidad para evitar archivos duplicados
   @@unique([case_id, file_url], map: "uniq_case_attachment_file")

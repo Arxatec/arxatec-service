@@ -1,19 +1,21 @@
 // src/modules/case/presentation/controllers/case.controller.ts
 import { Request, Response } from "express";
 import { ZodError, z } from "zod";
-
 import { CasesService } from "../services/cases.service";
 import { CasesRepository } from "../../data/repository/cases.repository";
 import { NotificationRepository } from "../../../notification/data/repository/notification.repository";
+import { NotificationService } from "../../../notification/presentation/services/notification.service"; // ✅ nuevo
 
 import {
   CreateCaseSchema,
   UpdateCaseSchema,
-  ChangeStatusCaseSchema,
+  ChangeCaseStatusSchema,
   CreateCaseAttachmentSchema,
   CreateExternalClientSchema,
   CreateCaseMessageSchema,
 } from "../../domain/dtos/index";
+
+import { uploadFile } from "../../../../infrastructure/aws";
 
 import {
   handleServerError,
@@ -23,22 +25,26 @@ import { buildHttpResponse } from "../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../constants/messages";
 import { AppError } from "../../../../utils/errors";
-/* ─────────────── Init service (DI) ─────────────── */
-const casesService = new CasesService(
-  new CasesRepository(),
+
+const notificationService = new NotificationService(
   new NotificationRepository()
 );
+const casesService = new CasesService(
+  new CasesRepository(),
+  notificationService
+);
 
-/* ─────────────── Current user ─────────────── */
+casesService.init().catch(console.error);
+/* ─────────────── Helper user ─────────────── */
 type CurrentUser = { id: number; role: "client" | "lawyer" };
 const getUser = (req: Request): CurrentUser => (req as any).user as CurrentUser;
 
-/* ─────────────────────────────────────────────────── */
 export class CaseController {
   /* ---------- POST /case ---------- */
   async createCase(req: Request, res: Response): Promise<Response> {
     try {
       const dto = CreateCaseSchema.parse(req.body);
+
       const result = await casesService.createCase(dto, getUser(req));
 
       return res
@@ -53,8 +59,8 @@ export class CaseController {
         );
     } catch (error) {
       if (error instanceof ZodError) {
-        const err = handleZodError(error, req);
-        return res.status(err.status).json(err);
+        const zErr = handleZodError(error, req);
+        return res.status(zErr.status).json(zErr);
       }
       return handleServerError(res, req, error);
     }
@@ -63,38 +69,28 @@ export class CaseController {
   /* ---------- GET /case/explore ---------- */
   async exploreCases(req: Request, res: Response): Promise<Response> {
     try {
-      // query params validation
-      const FiltersSchema = z.object({
-        category: z
-          .enum(["labor", "family", "personal", "corporate", "other"])
-          .optional(),
-        type: z.enum(["consultation", "case", "advisory"]).optional(),
-        status: z
-          .union([
-            z.enum(["open", "taken", "in_progress", "closed", "archived"]),
-            z.array(
-              z.enum(["open", "taken", "in_progress", "closed", "archived"])
-            ),
-          ])
-          .optional(),
+      const QuerySchema = z.object({
+        category_id: z.coerce.number().int().positive().optional(),
+        status_id: z.coerce.number().int().positive().optional(),
       });
-      const filters = FiltersSchema.parse(req.query);
 
-      const role: "client" | "lawyer" = (req as any).user?.role ?? "client";
+      const { category_id, status_id } = QuerySchema.parse(req.query);
 
-      const data = await casesService.exploreCases(role, filters);
+      const filters = {
+        is_public: true, 
+        ...(category_id && { category_id }),
+        ...(status_id && { status_id }),
+      };
+
+      const data = await casesService.exploreCases(filters);
+
       return res
-        .status(HttpStatusCodes.OK.code)
+        .status(200)
         .json(
-          buildHttpResponse(
-            HttpStatusCodes.OK.code,
-            "Cases fetched successfully",
-            req.path,
-            data
-          )
+          buildHttpResponse(200, "Cases fetched successfully", req.path, data)
         );
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         const err = handleZodError(error, req);
         return res.status(err.status).json(err);
       }
@@ -106,6 +102,7 @@ export class CaseController {
   async getMyCases(req: Request, res: Response): Promise<Response> {
     try {
       const data = await casesService.getMyCases(getUser(req));
+
       return res
         .status(HttpStatusCodes.OK.code)
         .json(
@@ -120,24 +117,24 @@ export class CaseController {
   async getCaseById(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
-      if (Number.isNaN(id))
+      if (Number.isNaN(id)) {
         throw new AppError(
           MESSAGES.CASE.INVALID_ID,
           HttpStatusCodes.BAD_REQUEST.code
         );
+      }
 
       const data = await casesService.getCaseById(id, getUser(req));
+
       return res
-        .status(HttpStatusCodes.OK.code)
-        .json(
-          buildHttpResponse(
-            HttpStatusCodes.OK.code,
-            "Case detail",
-            req.path,
-            data
-          )
-        );
+        .status(200)
+        .json(buildHttpResponse(200, "Case detail", req.path, data));
     } catch (error) {
+      if (error instanceof AppError) {
+        return res
+          .status(error.statusCode)
+          .json(buildHttpResponse(error.statusCode, error.message, req.path));
+      }
       return handleServerError(res, req, error);
     }
   }
@@ -149,6 +146,7 @@ export class CaseController {
       const dto = UpdateCaseSchema.parse(req.body);
 
       const data = await casesService.updateCase(id, dto, getUser(req));
+
       return res
         .status(HttpStatusCodes.OK.code)
         .json(
@@ -167,14 +165,14 @@ export class CaseController {
       return handleServerError(res, req, error);
     }
   }
-
   /* ---------- PATCH /case/:id/status ---------- */
   async changeStatus(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
-      const dto = ChangeStatusCaseSchema.parse(req.body);
+      const dto = ChangeCaseStatusSchema.parse(req.body);
 
       const data = await casesService.changeStatus(id, dto, getUser(req));
+
       return res
         .status(HttpStatusCodes.OK.code)
         .json(
@@ -218,10 +216,39 @@ export class CaseController {
   /* ---------- POST /case/:id/attachment ---------- */
   async addAttachment(req: Request, res: Response): Promise<Response> {
     try {
-      const id = Number(req.params.id);
-      const dto = CreateCaseAttachmentSchema.parse(req.body);
+      const caseId = Number(req.params.id);
+      const user = getUser(req);
 
-      const data = await casesService.addAttachment(id, dto, getUser(req).id);
+      const found = await casesService.getCaseById(caseId, user);
+
+      const files = req.files as { file: Express.Multer.File[] };
+      const file = files.file?.[0];
+      if (!file) {
+        throw new AppError("File missing", HttpStatusCodes.BAD_REQUEST.code);
+      }
+
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE) {
+        throw new AppError(
+          "El archivo supera el tamaño máximo de 10MB.",
+          HttpStatusCodes.BAD_REQUEST.code
+        );
+      }
+
+      const { key: s3Key } = await uploadFile(file, `private/cases/${caseId}`);
+
+      const body = {
+        service_id: found.service_id,
+        file_key: s3Key,
+        label: req.body.label,
+        description: req.body.description,
+        category_id: Number(req.body.category_id),
+      };
+      console.log("ATTACH BODY:", body);
+      const dto = CreateCaseAttachmentSchema.parse(body);
+
+      const created = await casesService.addAttachment(caseId, dto, user);
+
       return res
         .status(HttpStatusCodes.CREATED.code)
         .json(
@@ -229,7 +256,7 @@ export class CaseController {
             HttpStatusCodes.CREATED.code,
             MESSAGES.CASE.ATTACHMENT_ADDED,
             req.path,
-            data
+            created
           )
         );
     } catch (error) {
@@ -240,8 +267,56 @@ export class CaseController {
       return handleServerError(res, req, error);
     }
   }
+  /* ---------- GET /case/:id/attachment ---------- */
+  async listAttachments(req: Request, res: Response): Promise<Response> {
+  try {
+    const caseId = Number(req.params.id);
+    const user   = getUser(req);
 
-  /* ---------- DELETE /case/:id/attachment/:attId ---------- */
+    // 1) Validar permisos y obtener el case
+    await casesService.getCaseById(caseId, user);
+
+    // 2) Obtener lista de attachments con signed-URL
+    const list = await casesService.listAttachments(caseId, user);
+
+    return res
+      .status(HttpStatusCodes.OK.code)
+      .json(
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "Attachments fetched successfully",
+          req.path,
+          list
+        )
+      );
+  } catch (err) {
+    return handleServerError(res, req, err);
+  }
+}
+  /* ---------- GET /case/:id/attachment/:attId ---------- */
+  async getAttachmentUrl(req: Request, res: Response) {
+    try {
+      const caseId = Number(req.params.id);
+      const attId = Number(req.params.attId);
+      const user = getUser(req);
+
+      const url = await casesService.getAttachmentUrl(caseId, attId, user);
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Signed URL generated",
+            req.path,
+            { url }
+          )
+        );
+    } catch (error) {
+      return handleServerError(res, req, error);
+    }
+  }
+  /* ---------- ARCHIVED /case/:id/attachment/:attId ---------- */
   async archiveAttachment(req: Request, res: Response): Promise<Response> {
     try {
       const attId = Number(req.params.attId);
@@ -265,9 +340,9 @@ export class CaseController {
   async createExternalClient(req: Request, res: Response): Promise<Response> {
     try {
       const dto = CreateExternalClientSchema.parse(req.body);
-      const user = getUser(req); 
+      const user = getUser(req);
       const data = await casesService.createExternalClient(dto, user.id);
-  
+
       return res
         .status(HttpStatusCodes.CREATED.code)
         .json(
@@ -286,31 +361,41 @@ export class CaseController {
       return handleServerError(res, req, error);
     }
   }
-  
+
   /* ---------- GET /case/categories ---------- */
   async getCategories(req: Request, res: Response): Promise<Response> {
-    const data = casesService.getCategories();
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          MESSAGES.CASE.CATEGORIES_SUCCESS,
-          req.path,
-          data
-        )
-      );
+    try {
+      const result = await casesService.getCategories();
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Categories fetched successfully.",
+            req.path,
+            result
+          )
+        );
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zErr = handleZodError(error, req);
+        return res.status(zErr.status).json(zErr);
+      }
+      return handleServerError(res, req, error);
+    }
   }
 
   /* ---------- GET /case/types ---------- */
-  async getTypes(req: Request, res: Response): Promise<Response> {
-    const data = casesService.getTypes();
+  async getStatuses(req: Request, res: Response): Promise<Response> {
+    const data = await casesService.getStatuses();
+
     return res
       .status(HttpStatusCodes.OK.code)
       .json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
-          MESSAGES.CASE.TYPES_SUCCESS,
+          MESSAGES.CASE.STATUSES_SUCCESS,
           req.path,
           data
         )

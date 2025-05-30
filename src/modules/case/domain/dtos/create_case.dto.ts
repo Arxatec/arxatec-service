@@ -2,12 +2,17 @@
 import { z } from "zod";
 
 export const CreateCaseDto = z.object({
-  title: z.string().min(5).max(120),
-  description: z.string().min(20).max(2_000),
-  category: z.enum(["labor", "family", "personal", "corporate", "other"]),
-  type: z.enum(["consultation", "case", "advisory"]),
-  is_public: z.boolean().optional(),
-  selected_lawyer_id: z.number().int().positive().optional(),
-  external_client_id: z.number().int().positive().optional() // Solo abogados
+  service_id: z.number().int().positive().optional(),
+  title: z.string().max(120),
+  description: z.string().max(2000),
+  category_id: z.number().int().positive(),
+  status_id: z.number().int().positive().optional(),
+  urgency: z.enum(["alta","media","baja"]).optional().default("media"),
+  is_public: z.boolean().optional().default(false),
+  reference_code: z.string().optional(),
+
+  selected_lawyer_id:  z.number().int().positive().optional(),
+  external_client_id:  z.number().int().positive().optional(),
 });
-export type CreateCaseDto = z.infer<typeof CreateCaseDto>;
+
+export type CreateCaseDtoType = z.infer<typeof CreateCaseDto>;

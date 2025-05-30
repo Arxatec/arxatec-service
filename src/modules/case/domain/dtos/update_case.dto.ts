@@ -3,9 +3,12 @@ import { z } from "zod";
 
 export const UpdateCaseDto = z.object({
   title: z.string().min(5).max(120).optional(),
-  description: z.string().min(20).max(2_000).optional(),
-  category: z.enum(["labor", "family", "personal", "corporate", "other"]).optional(),
-  type: z.enum(["consultation", "case", "advisory"]).optional(),
-  is_public: z.boolean().optional()
-}).refine(data => Object.keys(data).length > 0, { message: "At least one field must be provided" });
-export type UpdateCaseDto = z.infer<typeof UpdateCaseDto>;
+  description: z.string().min(20).max(2000).optional(),
+  category_id: z.number().int().positive().optional(),
+  urgency: z.enum(["alta", "media", "baja"]).optional(),
+  status_id: z.number().int().positive().optional(),
+  is_public: z.boolean().optional(),
+  reference_code: z.string().max(50).optional(),
+});
+
+export type UpdateCaseDtoType = z.infer<typeof UpdateCaseDto>;

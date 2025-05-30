@@ -11,10 +11,9 @@ export class NotificationService {
   constructor(private readonly notificationRepo: NotificationRepository) {}
 
   async createNotification(dto: CreateNotificationDto): Promise<NotificationEntity> {
-    // Crear la notificación en la BD
+
     const created = await this.notificationRepo.createNotification(dto);
 
-    // Emitir por Socket
     io.to(`user:${created.receiverId}`).emit("notificacion_recibida", {
       id: created.id,
       title: created.title,
@@ -26,7 +25,6 @@ export class NotificationService {
       url: created.url?? null,
     });
 
-    // Retornar la entidad
     return NotificationEntity.fromPrisma(created);
   }
 

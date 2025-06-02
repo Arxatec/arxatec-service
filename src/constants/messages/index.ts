@@ -9,6 +9,7 @@ import { PLANS_MESSAGES } from "./plans";
 import { AUTH_MESSAGES } from "./auth";
 import { NOTIFICATION_MESSAGES } from "./notification";
 import { CALENDAR_MESSAGES } from "./calendar";
+import { ADMIN_MESSAGES } from "./admin";
 
 export const MESSAGES = {
   BOT: BOT_MESSAGES,
@@ -22,4 +23,5 @@ export const MESSAGES = {
   PLANS: PLANS_MESSAGES,
   NOTIFICATION: NOTIFICATION_MESSAGES,
   CALENDAR: CALENDAR_MESSAGES,
+  ADMIN: ADMIN_MESSAGES,
 };

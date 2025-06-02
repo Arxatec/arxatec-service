@@ -5,6 +5,8 @@ import {
   UpdateArticleCategoryDto,
 } from "../../domain/dtos/article_category.dto";
 import { handleServerError } from "../../../../utils/error_handler";
+import { buildHttpResponse } from "../../../../utils/build_http_response";
+import { HttpStatusCodes } from "../../../../constants";
 
 /**
  * Controlador para gestionar operaciones CRUD de categorías de artículos
@@ -24,10 +26,16 @@ export class ArticleCategoryController {
       const categoryData: CreateArticleCategoryDto = req.body;
       const newCategory = await this.service.createCategory(categoryData);
 
-      res.status(201).json({
-        success: true,
-        data: newCategory,
-      });
+      res
+        .status(HttpStatusCodes.CREATED.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.CREATED.code,
+            "Category created successfully",
+            req.path,
+            newCategory
+          )
+        );
     } catch (error) {
       handleServerError(res, req, error);
     }
@@ -36,16 +44,22 @@ export class ArticleCategoryController {
   /**
    * Obtiene todas las categorías de artículos
    */
-  public async getAllCategories(_req: Request, res: Response): Promise<void> {
+  public async getAllCategories(req: Request, res: Response): Promise<void> {
     try {
       const categories = await this.service.getAllCategories();
 
-      res.status(200).json({
-        success: true,
-        data: categories,
-      });
+      res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Categories retrieved successfully",
+            req.path,
+            categories
+          )
+        );
     } catch (error) {
-      handleServerError(res, _req, error);
+      handleServerError(res, req, error);
     }
   }
 
@@ -57,19 +71,30 @@ export class ArticleCategoryController {
       const id = parseInt(req.params.id, 10);
 
       if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          message: "ID de categoría inválido",
-        });
+        res
+          .status(HttpStatusCodes.BAD_REQUEST.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.BAD_REQUEST.code,
+              "ID de categoría inválido",
+              req.path
+            )
+          );
         return;
       }
 
       const category = await this.service.getCategoryById(id);
 
-      res.status(200).json({
-        success: true,
-        data: category,
-      });
+      res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Category retrieved successfully",
+            req.path,
+            category
+          )
+        );
     } catch (error) {
       handleServerError(res, req, error);
     }
@@ -83,10 +108,15 @@ export class ArticleCategoryController {
       const id = parseInt(req.params.id, 10);
 
       if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          message: "ID de categoría inválido",
-        });
+        res
+          .status(HttpStatusCodes.BAD_REQUEST.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.BAD_REQUEST.code,
+              "ID de categoría inválido",
+              req.path
+            )
+          );
         return;
       }
 
@@ -96,10 +126,16 @@ export class ArticleCategoryController {
         categoryData
       );
 
-      res.status(200).json({
-        success: true,
-        data: updatedCategory,
-      });
+      res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Category updated successfully",
+            req.path,
+            updatedCategory
+          )
+        );
     } catch (error) {
       handleServerError(res, req, error);
     }
@@ -113,16 +149,30 @@ export class ArticleCategoryController {
       const id = parseInt(req.params.id, 10);
 
       if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          message: "ID de categoría inválido",
-        });
+        res
+          .status(HttpStatusCodes.BAD_REQUEST.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.BAD_REQUEST.code,
+              "ID de categoría inválido",
+              req.path
+            )
+          );
         return;
       }
 
       const result = await this.service.deleteCategory(id);
 
-      res.status(200).json(result);
+      res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Category deleted successfully",
+            req.path,
+            result
+          )
+        );
     } catch (error) {
       handleServerError(res, req, error);
     }

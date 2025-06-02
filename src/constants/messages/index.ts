@@ -11,6 +11,7 @@ import { NOTIFICATION_MESSAGES } from "./notification";
 import { CALENDAR_MESSAGES } from "./calendar";
 import { CASE_MESSAGES } from "./case";
 import { DASHBOARD_MESSAGES } from "./dashboard";
+import { USER_MESSAGES } from "./users";
 
 export const MESSAGES = {
   BOT: BOT_MESSAGES,
@@ -26,4 +27,5 @@ export const MESSAGES = {
   CALENDAR: CALENDAR_MESSAGES,
   CASE: CASE_MESSAGES,
   DASHBOARD: DASHBOARD_MESSAGES,
+  USER: USER_MESSAGES,
 };

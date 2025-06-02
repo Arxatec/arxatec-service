@@ -57,7 +57,7 @@ export class LoginGoogleUseCase {
           profileImage: user.profile_image,
         },
         token,
-        isNewUser,
+        isNewUser: isNewUser || user.user_type === null,
       };
     } catch (error) {
       if (error instanceof AppError) {

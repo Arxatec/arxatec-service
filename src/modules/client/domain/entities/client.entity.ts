@@ -1,11 +1,7 @@
 export interface Location {
-  country: string;
-  state: string;
-  city: string;
+  fullAddress: string;
   latitude: number;
   longitude: number;
-  fullAddress: string;
-  postalCode: string;
 }
 
 export interface Client {
@@ -13,14 +9,13 @@ export interface Client {
   firstName: string;
   lastName: string;
   email: string;
-  profileImage: string;
-  birthDate: string;
-  gender: string;
-  budgetRange: string;
-  urgencyLevel: string;
-  requirementType: string;
-  communicationChannel: string;
-  receiveNotifications: boolean;
-  notificationChannels: string;
+  profilePicture: string;
   location: Location;
+  occupation: string;
+  ageRange: string;
+  gender: "male" | "female";
+  birthDate: string;
+  budget: number;
+  urgencyLevel: string;
+  communicationPreference: string;
 }

@@ -182,10 +182,11 @@ model LawyerDetails {
 }
 
 model ClientDetails {
-  client_id        Int     @id /// Identificador (igual al id del usuario)
-  budget_range     String? /// Rango presupuestario para contratar el servicio legal
-  urgency_level    String? /// Nivel de urgencia o prioridad de la necesidad legal
-  requirement_type String? /// Tipo de asistencia legal requerida
+  client_id     Int     @id /// Identificador (igual al id del usuario)
+  occupation    String? /// Ocupación del cliente
+  age_range     String? /// Rango de edad del cliente
+  budget        Float? /// Presupuesto disponible del cliente
+  urgency_level String? /// Nivel de urgencia de la necesidad legal
 
   user Users @relation(fields: [client_id], references: [id], onDelete: Cascade)
 
@@ -220,11 +221,12 @@ model UserDetails {
 }
 
 model Preference {
-  id                    Int     @id @default(autoincrement()) /// Identificador único de la preferencia
-  user_id               Int     @unique /// Identificador del UserDetails
-  communication_channel String? /// Medio preferido de comunicación del usuario
-  receive_notifications Boolean /// Indica si se desean recibir notificaciones
-  notification_channels String? /// Canales para recibir notificaciones (Email, SMS o dentro de la plataforma)
+  id                       Int     @id @default(autoincrement()) /// Identificador único de la preferencia
+  user_id                  Int     @unique /// Identificador del UserDetails
+  communication_channel    String? /// Medio preferido de comunicación del usuario
+  receive_notifications    Boolean @default(true) /// Indica si se desean recibir notificaciones
+  notification_channels    String? /// Canales para recibir notificaciones (Email, SMS o dentro de la plataforma)
+  communication_preference String? /// Preferencia de comunicación del cliente
 
   userDetails UserDetails @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
@@ -234,13 +236,9 @@ model Preference {
 model Locations {
   id           Int     @id @default(autoincrement()) /// Identificador único de la ubicación
   user_id      Int     @unique /// Identificador del UserDetails
-  country      String  @db.VarChar(100) /// País de la ubicación
-  state        String  @db.VarChar(100) /// Área administrativa principal (estado, región, provincia)
-  city         String  @db.VarChar(100) /// Ciudad o municipio
+  full_address String? @db.VarChar(255) /// Dirección completa
   latitude     Float /// Latitud
   longitude    Float /// Longitud
-  full_address String? @db.VarChar(255) /// Dirección completa (opcional)
-  postal_code  String? @db.VarChar(20) /// Código postal (opcional)
 
   userDetails UserDetails @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 

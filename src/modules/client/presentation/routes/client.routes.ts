@@ -2,9 +2,11 @@ import { Router } from "express";
 import { ClientController } from "../controllers/client.controller";
 import { authenticateToken } from "../../../../middlewares/authenticate_token";
 import { asyncHandler } from "../../../../middlewares/async_handler";
+import multer from "multer";
 
 const router = Router();
 const clientController = new ClientController();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @openapi
@@ -64,61 +66,44 @@ const clientController = new ClientController();
  *           schema:
  *             type: object
  *             properties:
- *               first_name:
+ *               profile_picture:
  *                 type: string
- *                 example: "Ana"
- *               last_name:
+ *                 example: "/src/assets/images/avatar_default.png"
+ *               location:
  *                 type: string
- *                 example: "Gómez"
- *               budget_range:
+ *                 example: "Cda. Miguel Negrete 24, Zona Centro, Venustiano Carranza, 15100 Ciudad de México, CDMX, México"
+ *               occupation:
  *                 type: string
- *                 example: "$1000 - $5000"
- *               urgency_level:
+ *                 example: "Abogado"
+ *               age_range:
  *                 type: string
- *                 example: "alta"
- *               requirement_type:
+ *                 example: "18-25 años"
+ *               gender:
  *                 type: string
- *                 example: "consulta legal"
- *               profile_image:
- *                 type: string
- *                 example: "https://example.com/profile.jpg"
+ *                 enum: ["male", "female"]
+ *                 example: "male"
  *               birth_date:
  *                 type: string
  *                 format: date
- *                 example: "1985-05-15"
- *               gender:
- *                 type: string
- *                 example: "femenino"
- *               communication_channel:
- *                 type: string
- *                 example: "email"
- *               receive_notifications:
- *                 type: boolean
- *                 example: true
- *               notification_channels:
- *                 type: string
- *                 example: "email,sms"
- *               country:
- *                 type: string
- *                 example: "México"
- *               state:
- *                 type: string
- *                 example: "CDMX"
- *               city:
- *                 type: string
- *                 example: "Ciudad de México"
- *               latitude:
+ *                 example: "2025-06-06"
+ *               budget:
  *                 type: number
- *                 example: 19.4326
- *               longitude:
- *                 type: number
- *                 example: -99.1332
- *               full_address:
+ *                 example: 1012.00
+ *               urgency_level:
  *                 type: string
- *                 example: "Av. Reforma 100, Cuauhtémoc"
- *               postal_code:
+ *                 example: "No urgente"
+ *               communication_preference:
  *                 type: string
- *                 example: "12345"
+ *                 example: "Videollamada"
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                     example: 214
+ *                   longitude:
+ *                     type: number
+ *                     example: 23
  *     responses:
  *       '200':
  *         description: "Perfil de cliente actualizado correctamente."
@@ -134,7 +119,7 @@ const clientController = new ClientController();
  *     tags:
  *       - Client
  *     summary: "Registrar un usuario como cliente"
- *     description: "Actualiza el rol del usuario a 'client' y agrega sus datos de cliente, preferencias y localización. Recibe id, budget_range, urgency_level, requirement_type, profile_image, birth_date, gender, communication_channel, receive_notifications, notification_channels y ubicación (country, state, city, latitude, longitude, full_address, postal_code) en el body."
+ *     description: "Actualiza el rol del usuario a 'client' y agrega sus datos de cliente."
  *     requestBody:
  *       required: true
  *       content:
@@ -145,55 +130,44 @@ const clientController = new ClientController();
  *               id:
  *                 type: number
  *                 example: 456
- *               budget_range:
+ *               profile_picture:
  *                 type: string
- *                 example: "$1000 - $5000"
- *               urgency_level:
+ *                 example: "/src/assets/images/avatar_default.png"
+ *               location:
  *                 type: string
- *                 example: "alta"
- *               requirement_type:
+ *                 example: "Cda. Miguel Negrete 24, Zona Centro, Venustiano Carranza, 15100 Ciudad de México, CDMX, México"
+ *               occupation:
  *                 type: string
- *                 example: "consulta legal"
- *               profile_image:
+ *                 example: "Abogado"
+ *               age_range:
  *                 type: string
- *                 example: "https://example.com/profile.jpg"
+ *                 example: "18-25 años"
+ *               gender:
+ *                 type: string
+ *                 enum: ["male", "female"]
+ *                 example: "male"
  *               birth_date:
  *                 type: string
  *                 format: date
- *                 example: "1985-05-15"
- *               gender:
- *                 type: string
- *                 example: "femenino"
- *               communication_channel:
- *                 type: string
- *                 example: "email"
- *               receive_notifications:
- *                 type: boolean
- *                 example: true
- *               notification_channels:
- *                 type: string
- *                 example: "email,sms"
- *               country:
- *                 type: string
- *                 example: "México"
- *               state:
- *                 type: string
- *                 example: "CDMX"
- *               city:
- *                 type: string
- *                 example: "Ciudad de México"
- *               latitude:
+ *                 example: "2025-06-06"
+ *               budget:
  *                 type: number
- *                 example: 19.4326
- *               longitude:
- *                 type: number
- *                 example: -99.1332
- *               full_address:
+ *                 example: 1012.00
+ *               urgency_level:
  *                 type: string
- *                 example: "Av. Reforma 100, Cuauhtémoc"
- *               postal_code:
+ *                 example: "No urgente"
+ *               communication_preference:
  *                 type: string
- *                 example: "12345"
+ *                 example: "Videollamada"
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                     example: 214
+ *                   longitude:
+ *                     type: number
+ *                     example: 23
  *     responses:
  *       '201':
  *         description: "Usuario convertido en cliente correctamente."
@@ -201,16 +175,29 @@ const clientController = new ClientController();
  *         description: "Error en la solicitud o datos inválidos."
  */
 
-router.get("/profile", authenticateToken, asyncHandler((req, res) =>
-  clientController.getClientProfile(req, res)
-));
-router.patch("/profile", authenticateToken, asyncHandler((req, res) =>
-  clientController.updateClientProfile(req, res)
-));
-router.get("/", asyncHandler((req, res) => clientController.getAllClients(req, res)));
-router.get("/:id", asyncHandler((req, res) => clientController.getClientById(req, res)));
-router.post("/register", asyncHandler((req, res) =>
-  clientController.registerClient(req, res)
-));
+router.get(
+  "/profile",
+  authenticateToken,
+  asyncHandler((req, res) => clientController.getClientProfile(req, res))
+);
+router.patch(
+  "/profile",
+  authenticateToken,
+  upload.fields([{ name: "photo", maxCount: 1 }]),
+  asyncHandler((req, res) => clientController.updateClientProfile(req, res))
+);
+router.get(
+  "/",
+  asyncHandler((req, res) => clientController.getAllClients(req, res))
+);
+router.get(
+  "/:id",
+  asyncHandler((req, res) => clientController.getClientById(req, res))
+);
+router.post(
+  "/register",
+  upload.fields([{ name: "photo", maxCount: 1 }]),
+  asyncHandler((req, res) => clientController.registerClient(req, res))
+);
 
 export default router;

@@ -3,8 +3,9 @@ export interface ExternalClientEntity {
   id: number;
   user_detail_id: number;
   full_name: string;
-  email?: string;
-  phone?: string;
-  dni?: string;
-  created_at?: Date;
+  email: string | null;
+  phone: string;
+  dni: string;
+  created_at: Date;
+  archived: boolean;
 }

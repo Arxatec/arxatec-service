@@ -13,55 +13,61 @@ export class DashboardClientRepository {
   }
 
   /* ───────────── CASE STATUS COUNTS ───────────── */
-  async getCaseCounts(clientId: number) {
-    const statuses = await this.getStatuses()
-    const initialId     = statuses[0].id
-    const penultimateId = statuses[statuses.length - 2].id
-    const finalId       = statuses[statuses.length - 1].id
-    const inProgressIds = statuses
-      .slice(1, statuses.length - 2)
-      .map(s => s.id)
+async getCaseCounts(clientId: number) {
+  const statuses = await this.getStatuses();
+  if (statuses.length < 3) {
+    throw new Error(
+      "Deben haber al menos 3 estados configurados: Abierto, Tomado y Cerrado."
+    );
+  }
+  const openId   = statuses[0].id;
+  const takenId  = statuses[1].id;
+  const closedId = statuses[statuses.length - 1].id;
 
-    const [{ _count: total }] = await prisma.cases.aggregate({
+  // 2) Total de casos del cliente
+  const [{ _count: total }] = await prisma.cases
+    .aggregate({
       _count: true,
       where: { service: { client_id: clientId } },
-    }).then(r => [r])
+    })
+    .then(r => [r]);
 
-    const [ active, closed, archived, inProgress ] = await Promise.all([
-      prisma.cases.count({
-        where: {
-          service: { client_id: clientId },
-          status_id: { gte: initialId + 1, lt: penultimateId },
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { client_id: clientId },
-          status_id: penultimateId,
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { client_id: clientId },
-          OR: [{ status_id: finalId }, { archived: true }],
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { client_id: clientId },
-          status_id: { in: inProgressIds },
-        },
-      }),
-    ])
+  const [openCount, takenCount, closedCount, archivedCount] = await Promise.all([
+    // Abiertos
+    prisma.cases.count({
+      where: {
+        service:   { client_id: clientId },
+        status_id: openId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:   { client_id: clientId },
+        status_id: takenId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:   { client_id: clientId },
+        status_id: closedId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:  { client_id: clientId },
+        archived: true,
+      },
+    }),
+  ]);
 
-    return {
-      total,
-      active,
-      closed,
-      archived,
-      in_progress: inProgress,
-    }
-  }
+  return {
+    total,
+    open:     openCount,
+    taken:    takenCount,
+    closed:   closedCount,
+    archived: archivedCount,
+  };
+}
 
   /* ───────────── RECENT CASES ───────────── */
   async getRecentCases(

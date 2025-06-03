@@ -10,56 +10,58 @@ export class DashboardLawyerRepository {
       orderBy: { id: "asc" },
     });
   }
-  /* ───────────── STATUES─CASES──────────── */
-  async getCaseCounts(lawyerId: number) {
-    const statuses = await this.getStatuses();
-    const initialId = statuses[0].id;
-    const penultimateId = statuses[statuses.length - 2].id;
-    const finalId = statuses[statuses.length - 1].id;
-    const inProgressIds = statuses
-      .slice(2, statuses.length - 2)
-      .map((s) => s.id);
-
-    const [{ _count: total }] = await prisma.cases.aggregate({
-      _count: true,
-      where: { service: { lawyer_id: lawyerId } },
-    }).then(result => [result]);
-
-    const [taken, closed, archived, inProgress] = await Promise.all([
-      prisma.cases.count({
-        where: {
-          service: { lawyer_id: lawyerId },
-          status_id: { gte: initialId + 1, lt: penultimateId },
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { lawyer_id: lawyerId },
-          status_id: penultimateId,
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { lawyer_id: lawyerId },
-          OR: [{ status_id: finalId }, { archived: true }],
-        },
-      }),
-      prisma.cases.count({
-        where: {
-          service: { lawyer_id: lawyerId },
-          status_id: { in: inProgressIds },
-        },
-      }),
-    ]);
-
-    return {
-      total,
-      taken,
-      closed,
-      archived,
-      in_progress: inProgress,
-    };
+ /* ───────────── LAWYER CASE STATUS COUNTS ───────────── */
+async getCaseCounts(lawyerId: number) {
+  const statuses = await this.getStatuses()
+  if (statuses.length < 3) {
+    throw new Error("Deben haber al menos 3 estados configurados: abierto, tomado y cerrado.")
   }
+  const openId   = statuses[0].id
+  const takenId  = statuses[1].id
+  const closedId = statuses[statuses.length - 1].id
+
+  const [{ _count: total }] = await prisma.cases.aggregate({
+    _count: true,
+    where: { service: { lawyer_id: lawyerId } },
+  }).then(r => [r])
+
+  const [openCount, takenCount, closedCount, archivedCount] = await Promise.all([
+    prisma.cases.count({
+      where: {
+        service:   { lawyer_id: lawyerId },
+        status_id: openId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:   { lawyer_id: lawyerId },
+        status_id: takenId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:   { lawyer_id: lawyerId },
+        status_id: closedId,
+      },
+    }),
+    prisma.cases.count({
+      where: {
+        service:  { lawyer_id: lawyerId },
+        archived: true,
+      },
+    }),
+  ])
+
+  return {
+    total,
+    open:     openCount,
+    taken:    takenCount,
+    closed:   closedCount,
+    archived: archivedCount,
+  }
+}
+
+
   /* ───────────── CASES RECENT ───────────── */
 
   async getRecentCases(

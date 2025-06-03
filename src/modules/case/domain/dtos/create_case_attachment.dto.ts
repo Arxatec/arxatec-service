@@ -2,9 +2,9 @@
 import { z } from "zod";
 
 export const CreateCaseAttachmentDto = z.object({
-  file_key:    z.string().min(5),
-  label:       z.string(),
-  description: z.string().optional(),
-  category_id: z.number().int().positive(),
+    file_key:    z.string().min(5).max(255),
+    label:       z.string().min(1).max(100),
+    description: z.string().max(500).optional(),
+    category_id: z.number().int().positive(),
 });
 export type CreateCaseAttachmentDtoType = z.infer<typeof CreateCaseAttachmentDto>;

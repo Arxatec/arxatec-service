@@ -12,12 +12,21 @@ import {
 import { MESSAGES } from "../../../../constants/messages";
 import { LawyerRepository } from "../../data/repository/lawyer.repository";
 import { Pagination } from "../../../../utils/pagination";
+import { AppError } from "../../../../utils/errors";
 
 const lawyerRepository = new LawyerRepository();
 const lawyerService = new LawyerService(lawyerRepository);
 
 interface AuthenticatedRequest extends Request {
   user?: { id: number; user_type: "admin" | "client" | "lawyer" };
+}
+
+interface LawyerRequest {
+  files?: {
+    photo?: Express.Multer.File[];
+    [fieldname: string]: Express.Multer.File[] | undefined;
+  };
+  body: any;
 }
 
 export class LawyerController {
@@ -36,6 +45,7 @@ export class LawyerController {
           )
         );
     } catch (error) {
+      console.error("Error in getLawyerById controller:", error);
       return handleServerError(res, req, error);
     }
   }
@@ -61,6 +71,7 @@ export class LawyerController {
           )
         );
     } catch (error) {
+      console.error("Error in getAllLawyers controller:", error);
       return handleServerError(res, req, error);
     }
   }
@@ -92,6 +103,7 @@ export class LawyerController {
           )
         );
     } catch (error) {
+      console.error("Error in getLawyerProfile controller:", error);
       return handleServerError(res, req, error);
     }
   }
@@ -99,6 +111,8 @@ export class LawyerController {
   async updateLawyerProfile(req: Request, res: Response): Promise<Response> {
     try {
       const authReq = req as AuthenticatedRequest;
+      const lawyerReq = req as LawyerRequest;
+
       if (!authReq.user) {
         return res
           .status(HttpStatusCodes.UNAUTHORIZED.code)
@@ -123,65 +137,126 @@ export class LawyerController {
             )
           );
       }
-      const updateData = UpdateLawyerSchema.parse(req.body);
-      const updated = await lawyerService.updateLawyerProfile(
-        authReq.user.id,
-        updateData
-      );
-      return res
-        .status(HttpStatusCodes.OK.code)
-        .json(
-          buildHttpResponse(
-            HttpStatusCodes.OK.code,
-            MESSAGES.LAWYER.LAWYER_SUCCESS_PROFILE_UPDATED,
-            "/lawyers/profile",
-            updated
-          )
+
+      try {
+        const photoFile = lawyerReq.files?.photo?.[0];
+        const maxPhotoSizeBytes = 5 * 1024 * 1024; // 5 MB
+        const allowedPhotoTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+
+        if (photoFile) {
+          if (!allowedPhotoTypes.includes(photoFile.mimetype)) {
+            throw new AppError(
+              "File type for 'photo' not allowed. Only JPEG, PNG, GIF or WebP.",
+              HttpStatusCodes.BAD_REQUEST.code
+            );
+          }
+
+          if (photoFile.size > maxPhotoSizeBytes) {
+            throw new AppError(
+              `Photo file size exceeds the limit (${
+                maxPhotoSizeBytes / 1024 / 1024
+              }MB).`,
+              HttpStatusCodes.BAD_REQUEST.code
+            );
+          }
+        }
+
+        const updateData = UpdateLawyerSchema.parse(req.body);
+        const updated = await lawyerService.updateLawyerProfile(
+          authReq.user.id,
+          updateData,
+          photoFile
         );
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const zodResp = handleZodError(error, req);
-        zodResp.path = "/lawyers/profile";
-        return res.status(zodResp.status).json(zodResp);
+        return res
+          .status(HttpStatusCodes.OK.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.OK.code,
+              MESSAGES.LAWYER.LAWYER_SUCCESS_PROFILE_UPDATED,
+              "/lawyers/profile",
+              updated
+            )
+          );
+      } catch (validationError) {
+        console.error("Error validating update data:", validationError);
+        if (validationError instanceof ZodError) {
+          const zodResp = handleZodError(validationError, req);
+          zodResp.path = "/lawyers/profile";
+          return res.status(zodResp.status).json(zodResp);
+        }
+        throw validationError;
       }
+    } catch (error) {
+      console.error("Error in updateLawyerProfile controller:", error);
       return handleServerError(res, req, error);
     }
   }
 
   async registerLawyer(req: Request, res: Response): Promise<Response> {
     try {
-      const data = RegisterLawyerSchema.parse(req.body);
-      const lawyer = await lawyerService.registerLawyer(
-        Number(data.id),
-        data.license_number,
-        data.gender,
-        data.birth_date,
-        data.specialty,
-        data.experience,
-        data.biography,
-        data.linkedin,
-        data.preferred_client,
-        data.payment_methods,
-        data.currency,
-        data.attorneyFees,
-        data.workSchedules
-      );
-      return res
-        .status(HttpStatusCodes.CREATED.code)
-        .json(
-          buildHttpResponse(
-            HttpStatusCodes.CREATED.code,
-            MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
-            "/lawyers/register",
-            lawyer
-          )
-        );
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const zodResp = handleZodError(error, req);
-        zodResp.path = "/lawyers/register";
-        return res.status(zodResp.status).json(zodResp);
+      const lawyerReq = req as LawyerRequest;
+
+      try {
+        const photoFile = lawyerReq.files?.photo?.[0];
+        const maxPhotoSizeBytes = 5 * 1024 * 1024; // 5 MB
+        const allowedPhotoTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+
+        if (!photoFile) {
+          throw new AppError(
+            "The 'photo' file is required.",
+            HttpStatusCodes.BAD_REQUEST.code
+          );
+        }
+
+        if (!allowedPhotoTypes.includes(photoFile.mimetype)) {
+          throw new AppError(
+            "File type for 'photo' not allowed. Only JPEG, PNG, GIF or WebP.",
+            HttpStatusCodes.BAD_REQUEST.code
+          );
+        }
+
+        if (photoFile.size > maxPhotoSizeBytes) {
+          throw new AppError(
+            `Photo file size exceeds the limit (${
+              maxPhotoSizeBytes / 1024 / 1024
+            }MB).`,
+            HttpStatusCodes.BAD_REQUEST.code
+          );
+        }
+
+        const data = RegisterLawyerSchema.parse(req.body);
+        const lawyer = await lawyerService.registerLawyer(data, photoFile);
+        return res
+          .status(HttpStatusCodes.CREATED.code)
+          .json(
+            buildHttpResponse(
+              HttpStatusCodes.CREATED.code,
+              MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
+              "/lawyers/register",
+              lawyer
+            )
+          );
+      } catch (validationError) {
+        console.error("Error validating registration data:", validationError);
+        if (validationError instanceof ZodError) {
+          const zodResp = handleZodError(validationError, req);
+          zodResp.path = "/lawyers/register";
+          return res.status(zodResp.status).json(zodResp);
+        }
+        throw validationError;
       }
+    } catch (error) {
+      console.error("Error in registerLawyer controller:", error);
       return handleServerError(res, req, error);
     }
   }

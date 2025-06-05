@@ -13,11 +13,18 @@ export interface WorkSchedule {
   close_time: string;
 }
 
+export interface Location {
+  fullAddress: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface Lawyer {
   userId: number;
   firstName: string;
   lastName: string;
   email: string;
+  profilePicture: string;
   licenseNumber: string;
   gender: string;
   birthDate: string;
@@ -26,6 +33,8 @@ export interface Lawyer {
   biography: string;
   linkedin: string;
   preferredClient: string;
+  location: Location;
+  communicationPreference: string;
   attorneyFees: {
     id: number;
     lawyer_id: number;

@@ -1,5 +1,5 @@
 // src/modules/case/data/repository/cases.repositoryts
-import { PrismaClient, Prisma, Attachments } from "@prisma/client";
+import { PrismaClient, Prisma, Attachments, Services } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -52,7 +52,46 @@ export class CasesRepository {
       },
     });
   }
+  async findCaseLight(id: number): Promise<{
+    id: number;
+    archived: boolean;
+    status_id: number;
+  } | null> {
+    return prisma.cases.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        archived: true,
+        status_id: true,
+      },
+    });
+  }
 
+  private closedStatusId: number | null = null;
+
+  async getClosedStatusId(): Promise<number> {
+    if (this.closedStatusId !== null) return this.closedStatusId;
+
+    const closed = await prisma.caseStatuses.findFirst({
+      orderBy: { id: "desc" }, // último registro
+      select: { id: true },
+    });
+
+    if (!closed) {
+      throw new Error("No hay estados de caso configurados.");
+    }
+
+    this.closedStatusId = closed.id;
+    return closed.id;
+  }
+
+  async isCaseActive(id: number): Promise<boolean> {
+    const data = await this.findCaseLight(id);
+    if (!data) return false;
+    return (
+      !data.archived && data.status_id !== (await this.getClosedStatusId())
+    );
+  }
   /* ───────────── CREATE ───────────── */
   async createService(data: Prisma.ServicesCreateInput) {
     return prisma.services.create({ data });
@@ -61,8 +100,6 @@ export class CasesRepository {
   async createCase(data: Prisma.CasesCreateInput) {
     return prisma.cases.create({ data });
   }
-
-
 
   async addAttachment(data: Prisma.AttachmentsCreateInput) {
     return prisma.attachments.create({ data });
@@ -83,109 +120,104 @@ export class CasesRepository {
     return prisma.caseHistories.create({ data });
   }
   /* ───────────── EXTERNAL CLIENTS ───────────── */
-async createExternalClient(data: Prisma.ExternalClientsCreateInput) {
-  return prisma.externalClients.create({ data });
-}
-
-async findExternalClientsByLawyer(userDetailId: number) {
-  return prisma.externalClients.findMany({
-    where: {
-      user_detail_id: userDetailId,
-      archived: false,
-    },
-    orderBy: { created_at: "desc" },
-  });
-}
-
-async findExternalClientByIdForLawyer(id: number, userDetailId: number) {
-  return prisma.externalClients.findFirst({
-    where: {
-      id,
-      user_detail_id: userDetailId,
-      archived: false,
-    },
-  });
-}
-
-async updateExternalClient(
-  id: number,
-  userDetailId: number,
-  data: Prisma.ExternalClientsUpdateInput
-) {
-  const client = await this.findExternalClientByIdForLawyer(id, userDetailId);
-  if (!client) throw new Error("External client not found or not owned by this lawyer");
-  return prisma.externalClients.update({
-    where: { id },
-    data,
-  });
-}
-
-async archiveExternalClient(id: number, userDetailId: number) {
-  const client = await this.findExternalClientByIdForLawyer(id, userDetailId);
-  if (!client) throw new Error("External client not found or not owned by this lawyer");
-  return prisma.externalClients.update({
-    where: { id },
-    data: { archived: true },
-  });
-}
-
-async findArchivedExternalClientsByLawyer(userDetailId: number) {
-  return prisma.externalClients.findMany({
-    where: {
-      user_detail_id: userDetailId,
-      archived: true,
-    },
-    orderBy: { created_at: "desc" },
-  });
-}
-
-
-async findArchivedClientForLawyer(
-  id: number,
-  userDetailId: number
-) {
-  return prisma.externalClients.findFirst({
-    where: {
-      id,
-      user_detail_id: userDetailId,
-      archived: true,
-    },
-  });
-}
-
-async restoreExternalClient(id: number, userDetailId: number) {
-  const client = await this.findArchivedClientForLawyer(
-    id,
-    userDetailId
-  );
-  if (!client) {
-    throw new Error("External client not found or not archived");
+  async createExternalClient(data: Prisma.ExternalClientsCreateInput) {
+    return prisma.externalClients.create({ data });
   }
-  return prisma.externalClients.update({
-    where: { id },
-    data: { archived: false },
-  });
-}
+
+  async findExternalClientsByLawyer(userDetailId: number) {
+    return prisma.externalClients.findMany({
+      where: {
+        user_detail_id: userDetailId,
+        archived: false,
+      },
+      orderBy: { created_at: "desc" },
+    });
+  }
+
+  async findExternalClientByIdForLawyer(id: number, userDetailId: number) {
+    return prisma.externalClients.findFirst({
+      where: {
+        id,
+        user_detail_id: userDetailId,
+        archived: false,
+      },
+    });
+  }
+
+  async updateExternalClient(
+    id: number,
+    userDetailId: number,
+    data: Prisma.ExternalClientsUpdateInput
+  ) {
+    const client = await this.findExternalClientByIdForLawyer(id, userDetailId);
+    if (!client)
+      throw new Error("External client not found or not owned by this lawyer");
+    return prisma.externalClients.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async archiveExternalClient(id: number, userDetailId: number) {
+    const client = await this.findExternalClientByIdForLawyer(id, userDetailId);
+    if (!client)
+      throw new Error("External client not found or not owned by this lawyer");
+    return prisma.externalClients.update({
+      where: { id },
+      data: { archived: true },
+    });
+  }
+
+  async findArchivedExternalClientsByLawyer(userDetailId: number) {
+    return prisma.externalClients.findMany({
+      where: {
+        user_detail_id: userDetailId,
+        archived: true,
+      },
+      orderBy: { created_at: "desc" },
+    });
+  }
+
+  async findArchivedClientForLawyer(id: number, userDetailId: number) {
+    return prisma.externalClients.findFirst({
+      where: {
+        id,
+        user_detail_id: userDetailId,
+        archived: true,
+      },
+    });
+  }
+
+  async restoreExternalClient(id: number, userDetailId: number) {
+    const client = await this.findArchivedClientForLawyer(id, userDetailId);
+    if (!client) {
+      throw new Error("External client not found or not archived");
+    }
+    return prisma.externalClients.update({
+      where: { id },
+      data: { archived: false },
+    });
+  }
 
   /* ───────────── READ ───────────── */
 
-async findCaseById(id: number) {
-  return prisma.cases.findUnique({
-    where: { id },
-    include: {
-      service: {
-        include: {
-          attachments: { where: { archived: false } },
-          messages: true,
-          consultations: true,
+  async findCaseById(id: number) {
+    return prisma.cases.findUnique({
+      where: { id },
+      include: {
+        service: {
+          include: {
+            attachments: { where: { archived: false } },
+            messages: true,
+            consultations: true,
+          },
         },
+        histories: true,
+        category: true,
+        status: true,
       },
-      histories: true,
-      category: true,
-      status: true,
-    },
-  });
-}
+    });
+  }
 
   async findCasesByUser(userId: number, role: "client" | "lawyer") {
     const whereCondition =
@@ -245,7 +277,7 @@ async findCaseById(id: number) {
       where: { id: attId },
     });
   }
-async findAttachmentByServiceIdAndId(attId: number, serviceId: number) {
+  async findAttachmentByServiceIdAndId(attId: number, serviceId: number) {
     return prisma.attachments.findFirst({
       where: {
         id: attId,
@@ -253,17 +285,17 @@ async findAttachmentByServiceIdAndId(attId: number, serviceId: number) {
       },
     });
   }
-     async getCaseHistory(caseId: number) {
-     return prisma.caseHistories.findMany({
-       where: { case_id: caseId },
-       orderBy: { created_at: "desc" },
-     });
-   }
+  async getCaseHistory(caseId: number) {
+    return prisma.caseHistories.findMany({
+      where: { case_id: caseId },
+      orderBy: { created_at: "desc" },
+    });
+  }
   async findAttachmentsByServiceId(serviceId: number) {
-     return prisma.attachments.findMany({
-       where: { service_id: serviceId, archived: false },
-       orderBy: { created_at: "asc" },
-     });
+    return prisma.attachments.findMany({
+      where: { service_id: serviceId, archived: false },
+      orderBy: { created_at: "asc" },
+    });
   }
 
   /* ───────────── UPDATE ───────────── */
@@ -283,6 +315,13 @@ async findAttachmentByServiceIdAndId(attId: number, serviceId: number) {
     return prisma.services.update({
       where: { id: serviceId },
       data: { lawyer_id: lawyerId },
+    });
+  }
+  /* ───────────── UNASSIGN LAWYER ───────────── */
+  async unassignLawyerFromService(serviceId: number): Promise<Services> {
+    return prisma.services.update({
+      where: { id: serviceId },
+      data: { lawyer_id: null },
     });
   }
   /* ───────────── CHANGE STATUS ───────────── */
@@ -309,52 +348,52 @@ async findAttachmentByServiceIdAndId(attId: number, serviceId: number) {
     });
   }
   /* ───────────── ARCHIVE ───────────── */
-async archiveCase(id: number, userId: number) {
-  return prisma.$transaction(async (tx) => {
-    await tx.caseHistories.create({
-      data: {
-        case_id: id,
-        changed_by: userId,
-        field: "archived",
-        old_value: "false",
-        new_value: "true",
-        note: "Soft delete",
-      },
-    });
-
-    return tx.cases.update({
-      where: { id },
-      data: { is_public: false, archived: true },
-    });
-  });
-}
-
-
-   async archiveAttachment(attId: number, userId: number) {
-
+  async archiveCase(id: number, userId: number) {
     return prisma.$transaction(async (tx) => {
-      const attachment = await tx.attachments.findUnique({ where: { id: attId } });
+      await tx.caseHistories.create({
+        data: {
+          case_id: id,
+          changed_by: userId,
+          field: "archived",
+          old_value: "false",
+          new_value: "true",
+          note: "Soft delete",
+        },
+      });
+
+      return tx.cases.update({
+        where: { id },
+        data: { is_public: false, archived: true },
+      });
+    });
+  }
+
+  async archiveAttachment(attId: number, userId: number) {
+    return prisma.$transaction(async (tx) => {
+      const attachment = await tx.attachments.findUnique({
+        where: { id: attId },
+      });
       if (!attachment) throw new Error("Attachment no encontrado");
 
       const archived = await tx.attachments.update({
-       where: { id: attId },
+        where: { id: attId },
         data: { archived: true },
       });
- 
-       await tx.caseHistories.create({
-         data: {
-           case_id: archived.service_id,
-           changed_by: userId,
-           field: "attachment_archived",
-           old_value: "false",
-           new_value: "true",
-           note: `Attachment ${attId} archived`,
-         },
-       });
- 
-       return archived;
-     });
-   }
+
+      await tx.caseHistories.create({
+        data: {
+          case_id: archived.service_id,
+          changed_by: userId,
+          field: "attachment_archived",
+          old_value: "false",
+          new_value: "true",
+          note: `Attachment ${attId} archived`,
+        },
+      });
+
+      return archived;
+    });
+  }
   /* ───────────── FIND BY USER & STATUS ───────────── */
   async findCasesByUserAndStatus(params: {
     userId: number;
@@ -383,11 +422,8 @@ async archiveCase(id: number, userId: number) {
       orderBy: { created_at: "desc" },
     });
   }
-    /* ───────────── LISTAR CASOS ARCHIVADOS ───────────── */
-  async findCasesByUserAndArchived(
-    userId: number,
-    role: "client" | "lawyer"
-  ) {
+  /* ───────────── LISTAR CASOS ARCHIVADOS ───────────── */
+  async findCasesByUserAndArchived(userId: number, role: "client" | "lawyer") {
     const whereService =
       role === "client"
         ? { service: { client_id: userId } }
@@ -406,18 +442,18 @@ async archiveCase(id: number, userId: number) {
     return prisma.$transaction(async (tx) => {
       await tx.caseHistories.create({
         data: {
-          case_id:   id,
+          case_id: id,
           changed_by: userId,
-          field:     "archived",
+          field: "archived",
           old_value: "true",
           new_value: "false",
-          note:      "Case reopened",
+          note: "Case reopened",
         },
       });
 
       return tx.cases.update({
         where: { id },
-        data:  { archived: false },
+        data: { archived: false },
       });
     });
   }

@@ -18,7 +18,11 @@ import type { ExternalClientEntity } from "../../domain/entities/external_client
 import { AppError } from "../../../../utils/errors";
 import { HttpStatusCodes } from "../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../constants/messages";
-import { getSignedUrl } from "../../../../infrastructure/aws";
+import {
+  uploadFile,
+  deleteFile,
+  getSignedUrl,
+} from "../../../../infrastructure/aws";
 import { io } from "../../../../config/socket";
 
 type CurrentUser = { id: number; role: "client" | "lawyer" };
@@ -46,116 +50,114 @@ export class CasesService {
   }
 
   /* ───────────── CREATE ───────────── */
-async createCase(
-  dto: CreateCaseDto,
-  user: { id: number; role: "client" | "lawyer" }
-) {
-  const statuses = await this.casesRepo.getAllStatuses();
-  const initialStatus = statuses[0].id;
-  const takenStatus = statuses[1].id;
+  async createCase(
+    dto: CreateCaseDto,
+    user: { id: number; role: "client" | "lawyer" }
+  ) {
+    const statuses = await this.casesRepo.getAllStatuses();
+    const initialStatus = statuses[0].id;
+    const takenStatus = statuses[1].id;
 
-  if (user.role === "client") {
-    const maxOpen = 3;
-    const maxTaken = 3;
+    if (user.role === "client") {
+      const maxOpen = 3;
+      const maxTaken = 3;
 
-    const openCount = await this.casesRepo.countClientCasesByStatus({
-      clientId: user.id,
-      status_id: initialStatus,
-    });
-    if (openCount >= maxOpen) {
-      throw new AppError(
-        `Has alcanzado el límite de ${maxOpen} casos abiertos.`,
-        HttpStatusCodes.CONFLICT.code
-      );
+      const openCount = await this.casesRepo.countClientCasesByStatus({
+        clientId: user.id,
+        status_id: initialStatus,
+      });
+      if (openCount >= maxOpen) {
+        throw new AppError(
+          `Has alcanzado el límite de ${maxOpen} casos abiertos.`,
+          HttpStatusCodes.CONFLICT.code
+        );
+      }
+
+      const takenCount = await this.casesRepo.countClientCasesByStatus({
+        clientId: user.id,
+        status_id: takenStatus,
+      });
+      if (takenCount >= maxTaken) {
+        throw new AppError(
+          `Has alcanzado el límite de ${maxTaken} casos tomados.`,
+          HttpStatusCodes.CONFLICT.code
+        );
+      }
     }
 
-    const takenCount = await this.casesRepo.countClientCasesByStatus({
-      clientId: user.id,
-      status_id: takenStatus,
-    });
-    if (takenCount >= maxTaken) {
-      throw new AppError(
-        `Has alcanzado el límite de ${maxTaken} casos tomados.`,
-        HttpStatusCodes.CONFLICT.code
-      );
-    }
-  }
+    let isPublic = dto.is_public ?? true;
+    let lawyerId: number | null = null;
 
-  let isPublic = dto.is_public ?? true;
-  let lawyerId: number | null = null;
-
-  if (user.role === "client" && dto.selected_lawyer_id) {
-    isPublic = false;
-    lawyerId = dto.selected_lawyer_id;
-  } else if (user.role === "lawyer") {
-    isPublic = dto.is_public ?? false;
-    if (!isPublic) lawyerId = user.id;
-  }
-
-
-  if (dto.external_client_id) {
-    const ext = await this.casesRepo.findExternalClientByIdForLawyer(
-      dto.external_client_id,
-      user.id
-    );
-    if (!ext) {
-      throw new AppError(
-        "No puedes usar un cliente externo que no exista o que esté archivado",
-        HttpStatusCodes.FORBIDDEN.code
-      );
+    if (user.role === "client" && dto.selected_lawyer_id) {
+      isPublic = false;
+      lawyerId = dto.selected_lawyer_id;
+    } else if (user.role === "lawyer") {
+      isPublic = dto.is_public ?? false;
+      if (!isPublic) lawyerId = user.id;
     }
 
-    lawyerId = user.id;
-  }
+    if (dto.external_client_id) {
+      const ext = await this.casesRepo.findExternalClientByIdForLawyer(
+        dto.external_client_id,
+        user.id
+      );
+      if (!ext) {
+        throw new AppError(
+          "No puedes usar un cliente externo que no exista o que esté archivado",
+          HttpStatusCodes.FORBIDDEN.code
+        );
+      }
 
-  const serviceId =
-    dto.service_id ??
-    (
-      await this.casesRepo.createService({
-        type: service_type.case,
-        lawyer: lawyerId ? { connect: { user_id: lawyerId } } : undefined,
-        client:
-          user.role === "client"
-            ? { connect: { user_id: user.id } }
+      lawyerId = user.id;
+    }
+
+    const serviceId =
+      dto.service_id ??
+      (
+        await this.casesRepo.createService({
+          type: service_type.case,
+          lawyer: lawyerId ? { connect: { user_id: lawyerId } } : undefined,
+          client:
+            user.role === "client"
+              ? { connect: { user_id: user.id } }
+              : undefined,
+          external_client: dto.external_client_id
+            ? { connect: { id: dto.external_client_id } }
             : undefined,
-        external_client: dto.external_client_id
-          ? { connect: { id: dto.external_client_id } }
-          : undefined,
-      })
-    ).id;
+        })
+      ).id;
 
-  const statusIdToUse =
-    dto.selected_lawyer_id || user.role === "lawyer"
-      ? takenStatus
-      : initialStatus;
+    const statusIdToUse =
+      dto.selected_lawyer_id || user.role === "lawyer"
+        ? takenStatus
+        : initialStatus;
 
-  const created = await this.casesRepo.createCase({
-    service: { connect: { id: serviceId } },
-    title: dto.title,
-    description: dto.description,
-    category: { connect: { id: dto.category_id } },
-    urgency: dto.urgency ?? "media",
-    status: { connect: { id: dto.status_id ?? statusIdToUse } },
-    is_public: isPublic,
-    reference_code: dto.reference_code,
-  });
+    const created = await this.casesRepo.createCase({
+      service: { connect: { id: serviceId } },
+      title: dto.title,
+      description: dto.description,
+      category: { connect: { id: dto.category_id } },
+      urgency: dto.urgency ?? "media",
+      status: { connect: { id: dto.status_id ?? statusIdToUse } },
+      is_public: isPublic,
+      reference_code: dto.reference_code,
+    });
 
-  await this.notificationService.createNotification({
-    title: MESSAGES.CASE.CREATED_TITLE,
-    description: `Case “${created.title}” created`,
-    type: "info",
-    receiverId: user.id,
-    senderId: user.id,
-    url: `/case/${created.id}`,
-  });
-  io.to(`user:${user.id}`).emit("CASE_CREATED", {
-    id: created.id,
-    title: created.title,
-  });
+    await this.notificationService.createNotification({
+      title: MESSAGES.CASE.CREATED_TITLE,
+      description: `Case “${created.title}” created`,
+      type: "info",
+      receiverId: user.id,
+      senderId: user.id,
+      url: `/case/${created.id}`,
+    });
+    io.to(`user:${user.id}`).emit("CASE_CREATED", {
+      id: created.id,
+      title: created.title,
+    });
 
-  return created;
-}
-
+    return created;
+  }
 
   /* ───────────── READ ───────────── */
 
@@ -205,6 +207,7 @@ async createCase(
     dto: UpdateCaseDto,
     user: { id: number; role: "client" | "lawyer" }
   ) {
+    await this.assertActive(id);
     const found = await this.casesRepo.findCaseById(id);
     if (!found) {
       throw new AppError(
@@ -281,44 +284,54 @@ async createCase(
     const statuses = await this.casesRepo.getAllStatuses();
     if (statuses.length < 3) {
       throw new AppError(
-        "Deben haber al menos 3 estados configurados (abierto, tomado, cerrado).",
+        "Deben haber al menos 3 estados configurados.",
         HttpStatusCodes.INTERNAL_SERVER_ERROR.code
       );
     }
-    const openId = statuses[0].id;
-    const takenId = statuses[1].id;
-    const closedId = statuses[statuses.length - 1].id;
 
-    const currentId = found.status_id;
-    const nextId = dto.status_id;
-    const clientId = found.service?.client_id ?? null;
-    const lawyerId = found.service?.lawyer_id ?? null;
+    const currentStatus = statuses.find((s) => s.id === found.status_id);
+    const nextStatus = statuses.find((s) => s.id === dto.status_id);
+    const lastStatus = statuses.reduce((max, curr) =>
+      curr.id > max.id ? curr : max
+    );
 
-    if (currentId === openId) {
-      if (nextId !== takenId) {
-        throw new AppError(
-          "Solo se puede pasar de 'Abierto' a 'Tomado'.",
-          HttpStatusCodes.CONFLICT.code
-        );
-      }
-    } else if (currentId === takenId) {
-      if (nextId !== closedId) {
-        throw new AppError(
-          "Solo se puede pasar de 'Tomado' a 'Cerrado'.",
-          HttpStatusCodes.CONFLICT.code
-        );
-      }
-    } else {
+    if (!currentStatus || !nextStatus) {
+      throw new AppError("Estado inválido.", HttpStatusCodes.BAD_REQUEST.code);
+    }
+
+    if (currentStatus.id === lastStatus.id) {
       throw new AppError(
         "No se puede cambiar el estado de un caso ya cerrado.",
         HttpStatusCodes.CONFLICT.code
       );
     }
 
-    if (user.role === "lawyer" && currentId === openId && nextId === takenId) {
+    const isForward = nextStatus.id === currentStatus.id + 1;
+    const isBackward = nextStatus.id === currentStatus.id - 1;
+
+    if (user.role !== "lawyer") {
+      if (!isForward) {
+        throw new AppError(
+          MESSAGES.CASE.NEXT_STATUS_ONLY,
+          HttpStatusCodes.CONFLICT.code
+        );
+      }
+    } else {
+      if (!isForward && !isBackward) {
+        throw new AppError(
+          MESSAGES.CASE.INVALID_TRANSITION_LAWYER,
+          HttpStatusCodes.CONFLICT.code
+        );
+      }
+    }
+
+    const clientId = found.service?.client_id ?? null;
+    const lawyerId = found.service?.lawyer_id ?? null;
+
+    if (user.role === "lawyer" && currentStatus.id === 1 && isForward) {
       const count = await this.casesRepo.countLawyerCasesByStatus({
         lawyerId: user.id,
-        status_id: takenId,
+        status_id: nextStatus.id,
         excludeExternal: true,
       });
       if (count >= this.MAX_INPROGRESS_LAWYER) {
@@ -329,20 +342,33 @@ async createCase(
       }
     }
 
-    if (user.role === "lawyer" && currentId === openId && !lawyerId) {
-      await this.casesRepo.assignLawyerToService(found.service_id, user.id);
+    if (user.role === "lawyer") {
+      if (isForward && currentStatus.id === 1 && !lawyerId) {
+        await this.casesRepo.assignLawyerToService(found.service_id, user.id);
+      }
+      if (isBackward && currentStatus.id === 2) {
+        await this.casesRepo.unassignLawyerFromService(found.service_id);
+      }
     }
 
-    if (user.role === "lawyer" && nextId === closedId && lawyerId !== user.id) {
+    if (
+      user.role === "lawyer" &&
+      nextStatus.id === lastStatus.id &&
+      lawyerId !== user.id
+    ) {
       throw new AppError(
         MESSAGES.CASE.CLOSE_ONLY_LAWYER,
         HttpStatusCodes.FORBIDDEN.code
       );
     }
 
-    const updated = await this.casesRepo.changeStatus(id, nextId, user.id);
+    const updated = await this.casesRepo.changeStatus(
+      id,
+      nextStatus.id,
+      user.id
+    );
 
-    if (user.role === "lawyer" && nextId === takenId && clientId) {
+    if (user.role === "lawyer" && nextStatus.id === 2 && clientId) {
       await this.notificationService.createNotification({
         title: MESSAGES.CASE.TAKEN_TITLE,
         description: `Your case “${found.title}” was taken by a lawyer`,
@@ -353,146 +379,145 @@ async createCase(
       });
       io.to(`user:${clientId}`).emit("CASE_TAKEN", { id });
     }
-
     return updated;
   }
 
-/* ───────────── ARCHIVE ───────────── */
-async archiveCase(id: number, user: CurrentUser) {
-  const found = await this.casesRepo.findCaseById(id);
-  if (!found) {
-    throw new AppError(
-      MESSAGES.CASE.NOT_FOUND,
-      HttpStatusCodes.NOT_FOUND.code
-    );
-  }
-
-  const creatorId =
-    found.service.client_id === user.id
-      ? found.service.client_id
-      : found.service.lawyer_id === user.id
-      ? found.service.lawyer_id
-      : null;
-  if (!creatorId) {
-    throw new AppError(
-      "Solo el cliente o abogado originador puede archivar este caso.",
-      HttpStatusCodes.FORBIDDEN.code
-    );
-  }
-
-  if (found.archived) {
-    throw new AppError(
-      "El caso ya está archivado.",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
-
-  return this.casesRepo.archiveCase(id, user.id);
-}
-
-
-  /* ───────────── ATTACHMENTS ───────────── */
-async addAttachment(
-  caseId: number,
-  dto: CreateCaseAttachmentDto,
-  user: { id: number; role: "client" | "lawyer" }
-) {
-  const found = await this.casesRepo.findCaseById(caseId);
-  if (!found) {
-    throw new AppError(
-      MESSAGES.CASE.NOT_FOUND,
-      HttpStatusCodes.NOT_FOUND.code
-    );
-  }
-
-  if (found.archived) {
-    throw new AppError(
-      "No se pueden agregar adjuntos a un caso archivado.",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
-
-  const statuses = await this.casesRepo.getAllStatuses();
-  const closedId = statuses[statuses.length - 1].id;
-  if (found.status_id === closedId) {
-    throw new AppError(
-      "No se pueden agregar adjuntos a un caso cerrado.",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
-
-  const categories = await this.casesRepo.getAllCategories();
-  if (!categories.some((c) => c.id === dto.category_id)) {
-    throw new AppError(
-      "Categoría de adjunto no válida.",
-      HttpStatusCodes.NOT_FOUND.code
-    );
-  }
-
-  const clientId = found.service?.client_id ?? null;
-  const lawyerId = found.service?.lawyer_id ?? null;
-  const isOwner = clientId === user.id || lawyerId === user.id;
-  if (!isOwner) {
-    throw new AppError(
-      MESSAGES.CASE.ACCESS_DENIED,
-      HttpStatusCodes.FORBIDDEN.code
-    );
-  }
-
-  let receiverId: number | null = null;
-  if (user.role === "client") {
-    receiverId = lawyerId;
-  } else {
-    receiverId = clientId;
-    if (!receiverId) {
-      receiverId = null;
-    }
-  }
-
-  try {
-    const created = await this.casesRepo.addAttachment({
-      service:     { connect: { id: found.service_id } },
-      category:    { connect: { id: dto.category_id } },
-      file_key:    dto.file_key,
-      label:       dto.label,
-      description: dto.description,
-      uploaded_by: user.role as actor_type,
-      archived:    false,
-    });
-
-    await this.casesRepo.createCaseHistory({
-      case_id:    caseId,
-      changed_by: user.id,
-      field:      "document",
-      old_value:  "",
-      new_value:  dto.label,
-      note:       "Adjunto agregado por el usuario.",
-    });
-
-    if (receiverId) {
-      await this.notificationService.createNotification({
-        title:       "Nuevo adjunto en el caso",
-        description: `Se ha añadido un archivo: ${dto.label}`,
-        type:        "info",
-        receiverId,
-        url:         `/cases/${caseId}`,
-      });
-    }
-
-    return created;
-  } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
+  /* ───────────── ARCHIVE ───────────── */
+  async archiveCase(id: number, user: CurrentUser) {
+    const found = await this.casesRepo.findCaseById(id);
+    if (!found) {
       throw new AppError(
-        MESSAGES.CASE.ATTACHMENT_DUPLICATE,
+        MESSAGES.CASE.NOT_FOUND,
+        HttpStatusCodes.NOT_FOUND.code
+      );
+    }
+
+    const creatorId =
+      found.service.client_id === user.id
+        ? found.service.client_id
+        : found.service.lawyer_id === user.id
+        ? found.service.lawyer_id
+        : null;
+    if (!creatorId) {
+      throw new AppError(
+        "Solo el cliente o abogado originador puede archivar este caso.",
+        HttpStatusCodes.FORBIDDEN.code
+      );
+    }
+
+    if (found.archived) {
+      throw new AppError(
+        "El caso ya está archivado.",
         HttpStatusCodes.CONFLICT.code
       );
     }
-    throw err;
+
+    return this.casesRepo.archiveCase(id, user.id);
   }
-}
+
+  /* ───────────── ATTACHMENTS ───────────── */
+  async addAttachment(
+    caseId: number,
+    dto: CreateCaseAttachmentDto,
+    user: { id: number; role: "client" | "lawyer" }
+  ) {
+    await this.assertActive(caseId);
+    const found = await this.casesRepo.findCaseById(caseId);
+    if (!found) {
+      throw new AppError(
+        MESSAGES.CASE.NOT_FOUND,
+        HttpStatusCodes.NOT_FOUND.code
+      );
+    }
+
+    if (found.archived) {
+      throw new AppError(
+        "No se pueden agregar adjuntos a un caso archivado.",
+        HttpStatusCodes.CONFLICT.code
+      );
+    }
+
+    const statuses = await this.casesRepo.getAllStatuses();
+    const closedId = statuses[statuses.length - 1].id;
+    if (found.status_id === closedId) {
+      throw new AppError(
+        "No se pueden agregar adjuntos a un caso cerrado.",
+        HttpStatusCodes.CONFLICT.code
+      );
+    }
+
+    const categories = await this.casesRepo.getAllCategories();
+    if (!categories.some((c) => c.id === dto.category_id)) {
+      throw new AppError(
+        "Categoría de adjunto no válida.",
+        HttpStatusCodes.NOT_FOUND.code
+      );
+    }
+
+    const clientId = found.service?.client_id ?? null;
+    const lawyerId = found.service?.lawyer_id ?? null;
+    const isOwner = clientId === user.id || lawyerId === user.id;
+    if (!isOwner) {
+      throw new AppError(
+        MESSAGES.CASE.ACCESS_DENIED,
+        HttpStatusCodes.FORBIDDEN.code
+      );
+    }
+
+    let receiverId: number | null = null;
+    if (user.role === "client") {
+      receiverId = lawyerId;
+    } else {
+      receiverId = clientId;
+      if (!receiverId) {
+        receiverId = null;
+      }
+    }
+
+    try {
+      const created = await this.casesRepo.addAttachment({
+        service: { connect: { id: found.service_id } },
+        category: { connect: { id: dto.category_id } },
+        file_key: dto.file_key,
+        label: dto.label,
+        description: dto.description,
+        uploaded_by: user.role as actor_type,
+        archived: false,
+      });
+
+      await this.casesRepo.createCaseHistory({
+        case_id: caseId,
+        changed_by: user.id,
+        field: "document",
+        old_value: "",
+        new_value: dto.label,
+        note: "Adjunto agregado por el usuario.",
+      });
+
+      if (receiverId) {
+        await this.notificationService.createNotification({
+          title: "Nuevo adjunto en el caso",
+          description: `Se ha añadido un archivo: ${dto.label}`,
+          type: "info",
+          receiverId,
+          url: `/cases/${caseId}`,
+        });
+      }
+
+      return created;
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        throw new AppError(
+          MESSAGES.CASE.ATTACHMENT_DUPLICATE,
+          HttpStatusCodes.CONFLICT.code
+        );
+      }
+      throw err;
+    }
+  }
 
   async archiveAttachment(
     caseId: number,
@@ -563,7 +588,6 @@ async addAttachment(
     return await getSignedUrl(attachment.file_key);
   }
 
-
   async listAttachments(
     caseId: number,
     user: CurrentUser
@@ -597,13 +621,25 @@ async addAttachment(
   /* ───────────── CLIENT EXTERNAL ───────────── */
   async createExternalClient(
     dto: CreateExternalClientDto,
+    avatarFile: Express.Multer.File | undefined,
     userDetailId: number
-  ): Promise<ExternalClientEntity> {
+  ) {
+    let avatarUrl: string | undefined;
+
+    if (avatarFile) {
+      const { url } = await uploadFile(
+        avatarFile,
+        "public/external_clients/avatars"
+      );
+      avatarUrl = url;
+    }
+
     return this.casesRepo.createExternalClient({
       full_name: dto.full_name,
       email: dto.email ?? "",
       phone: dto.phone,
       dni: dto.dni,
+      profile_image: avatarUrl,
       user_detail: { connect: { user_id: userDetailId } },
     });
   }
@@ -617,6 +653,7 @@ async addAttachment(
   async updateExternalClient(
     id: number,
     dto: UpdateExternalClientDto,
+    avatarFile: Express.Multer.File | undefined,
     userDetailId: number
   ): Promise<ExternalClientEntity> {
     const client = await this.casesRepo.findExternalClientByIdForLawyer(
@@ -629,11 +666,29 @@ async addAttachment(
         HttpStatusCodes.NOT_FOUND.code
       );
     }
+
+    let avatarUrl = client.profile_image;
+
+    if (avatarFile) {
+      if (avatarUrl) {
+        const oldKey = avatarUrl.split(".amazonaws.com/")[1];
+        if (oldKey) await deleteFile(oldKey);
+      }
+
+      /* 2. Subir nuevo */
+      const { url } = await uploadFile(
+        avatarFile,
+        "public/external_clients/avatars"
+      );
+      avatarUrl = url;
+    }
+
     return this.casesRepo.updateExternalClient(id, userDetailId, {
       full_name: dto.full_name,
       email: dto.email,
       phone: dto.phone,
       dni: dto.dni,
+      profile_image: avatarUrl,
     });
   }
 
@@ -653,6 +708,7 @@ async addAttachment(
     }
     return this.casesRepo.archiveExternalClient(id, userDetailId);
   }
+
   async listArchivedExternalClients(
     userDetailId: number
   ): Promise<ExternalClientEntity[]> {
@@ -704,6 +760,7 @@ async addAttachment(
 
     return this.casesRepo.getCaseHistory(caseId);
   }
+
   /* ───────────── CLOSED & ARCHIVED LISTS ───────────── */
   async listClosedCases(user: CurrentUser) {
     const statuses = await this.casesRepo.getAllStatuses();
@@ -749,81 +806,90 @@ async addAttachment(
     return restored;
   }
 
-  //* ───────────── MESSAGES INTERNAL ───────────── */
-async sendMessage(
-  caseId: number,
-  dto: CreateCaseMessageDto,
-  sender: { id: number; role: "client" | "lawyer" }
-) {
-  // 1) Recuperar el caso
-  const found = await this.casesRepo.findCaseById(caseId);
-  if (!found) {
-    throw new AppError(
-      MESSAGES.CASE.NOT_FOUND,
-      HttpStatusCodes.NOT_FOUND.code
-    );
-  }
+  /* ───────────── MESSAGES INTERNAL ───────────── */
+  async sendMessage(
+    caseId: number,
+    dto: CreateCaseMessageDto,
+    sender: { id: number; role: "client" | "lawyer" }
+  ) {
+    await this.assertActive(caseId);
+    const found = await this.casesRepo.findCaseById(caseId);
+    if (!found) {
+      throw new AppError(
+        MESSAGES.CASE.NOT_FOUND,
+        HttpStatusCodes.NOT_FOUND.code
+      );
+    }
 
-  // 2) Bloquear si el caso está archivado
-  if (found.archived) {
-    throw new AppError(
-      "No se pueden enviar mensajes a un caso archivado",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
+    // 2) Bloquear si el caso está archivado
+    if (found.archived) {
+      throw new AppError(
+        "No se pueden enviar mensajes a un caso archivado",
+        HttpStatusCodes.CONFLICT.code
+      );
+    }
 
-  // 3) Obtener IDs de cliente y abogado asignado
-  const clientId = found.service?.client_id ?? null;
-  const lawyerId = found.service?.lawyer_id ?? null;
+    // 3) Obtener IDs de cliente y abogado asignado
+    const clientId = found.service?.client_id ?? null;
+    const lawyerId = found.service?.lawyer_id ?? null;
 
-  // 4) No permitir enviar mensajes si aún no hay abogado asignado
-  if (!lawyerId) {
-    throw new AppError(
-      "No puedes enviar mensajes hasta que un abogado tome el caso",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
+    // 4) No permitir enviar mensajes si aún no hay abogado asignado
+    if (!lawyerId) {
+      throw new AppError(
+        "No puedes enviar mensajes hasta que un abogado tome el caso",
+        HttpStatusCodes.CONFLICT.code
+      );
+    }
 
-  // 5) Validar que el emisor sea parte de este caso
-  if (sender.role === "client" && clientId !== sender.id) {
-    throw new AppError(
-      MESSAGES.CASE.ACCESS_DENIED,
-      HttpStatusCodes.FORBIDDEN.code
-    );
-  }
-  if (sender.role === "lawyer" && lawyerId !== sender.id) {
-    throw new AppError(
-      MESSAGES.CASE.NOT_ASSIGNED_TO_LAWYER,
-      HttpStatusCodes.FORBIDDEN.code
-    );
-  }
+    // 5) Validar que el emisor sea parte de este caso
+    if (sender.role === "client" && clientId !== sender.id) {
+      throw new AppError(
+        MESSAGES.CASE.ACCESS_DENIED,
+        HttpStatusCodes.FORBIDDEN.code
+      );
+    }
+    if (sender.role === "lawyer" && lawyerId !== sender.id) {
+      throw new AppError(
+        MESSAGES.CASE.NOT_ASSIGNED_TO_LAWYER,
+        HttpStatusCodes.FORBIDDEN.code
+      );
+    }
 
-  // 6) Crear el mensaje
-  const msg = await this.casesRepo.createMessage({
-    service: { connect: { id: found.service_id } },
-    content: dto.content,
-    sent_by: sender.role as actor_type,
-    is_read: false,
-  });
-
-  // 7) Notificar al destinatario
-  const receiverId = sender.id === clientId ? lawyerId : clientId;
-  if (receiverId) {
-    await this.notificationService.createNotification({
-      title:      MESSAGES.CASE.MESSAGE_SENT,
-      description:`New message in case “${found.title}”`,
-      type:       "info",
-      receiverId,
-      senderId:   sender.id,
-      url:        `/case/${caseId}`,
+    // 6) Crear el mensaje
+    const msg = await this.casesRepo.createMessage({
+      service: { connect: { id: found.service_id } },
+      content: dto.content,
+      sent_by: sender.role as actor_type,
+      is_read: false,
     });
-    io.to(`user:${receiverId}`).emit("CASE_NEW_MESSAGE", {
-      caseId,
-      messageId: msg.id,
-    });
+
+    // 7) Notificar al destinatario
+    const receiverId = sender.id === clientId ? lawyerId : clientId;
+    if (receiverId) {
+      await this.notificationService.createNotification({
+        title: MESSAGES.CASE.MESSAGE_SENT,
+        description: `New message in case “${found.title}”`,
+        type: "info",
+        receiverId,
+        senderId: sender.id,
+        url: `/case/${caseId}`,
+      });
+      io.to(`user:${receiverId}`).emit("CASE_NEW_MESSAGE", {
+        caseId,
+        messageId: msg.id,
+      });
+    }
+
+    return msg;
   }
-
-  return msg;
-}
-
+  /* ───────────── CASE CLOSED CONTROLLER ───────────── */
+  private async assertActive(caseId: number) {
+    const active = await this.casesRepo.isCaseActive(caseId);
+    if (!active) {
+      throw new AppError(
+        "El caso está cerrado o archivado",
+        HttpStatusCodes.CONFLICT.code
+      );
+    }
+  }
 }

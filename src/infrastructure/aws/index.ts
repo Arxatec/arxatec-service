@@ -1,4 +1,5 @@
-import {
+  //src/infrastructure/aws/index.ts
+  import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,

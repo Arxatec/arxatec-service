@@ -269,6 +269,9 @@ export class LawyerRepository {
                   full_address: data.location ?? "",
                   latitude: data.coordinates?.latitude ?? 0,
                   longitude: data.coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
                 },
               });
             }
@@ -278,7 +281,6 @@ export class LawyerRepository {
         console.error("Error updating lawyer profile data:", updateError);
         throw new Error("Error updating lawyer profile");
       }
-
       const finalUser = await this.prisma.users.findUnique({
         where: { id: userId },
         include: {
@@ -419,6 +421,9 @@ export class LawyerRepository {
                   full_address: location ?? "",
                   latitude: coordinates?.latitude ?? 0,
                   longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
                 },
               });
             }
@@ -453,6 +458,9 @@ export class LawyerRepository {
                   full_address: location ?? "",
                   latitude: coordinates?.latitude ?? 0,
                   longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
                 },
               },
               Preference: {

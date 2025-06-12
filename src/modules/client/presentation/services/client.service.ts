@@ -74,7 +74,6 @@ export class ClientService {
         photoUrl,
         data.location,
         data.occupation,
-        data.age_range,
         data.gender,
         data.birth_date,
         data.budget,

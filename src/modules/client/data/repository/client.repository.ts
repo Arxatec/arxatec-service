@@ -32,10 +32,9 @@ export class ClientRepository {
         longitude: user.userDetails?.Locations?.longitude ?? 0,
       },
       occupation: user.clientDetails?.occupation || "",
-      ageRange: user.clientDetails?.age_range || "",
       gender: (user.userDetails?.gender as "male" | "female") || "male",
       birthDate: user.birth_date ? user.birth_date.toISOString() : "",
-      budget: user.clientDetails?.budget ?? 0,
+      budget: user.clientDetails?.budget_range || "",
       urgencyLevel: user.clientDetails?.urgency_level || "",
       communicationPreference:
         user.userDetails?.Preference?.communication_channel || "",
@@ -67,10 +66,9 @@ export class ClientRepository {
         longitude: user.userDetails?.Locations?.longitude ?? 0,
       },
       occupation: user.clientDetails?.occupation || "",
-      ageRange: user.clientDetails?.age_range || "",
       gender: (user.userDetails?.gender as "male" | "female") || "male",
       birthDate: user.birth_date ? user.birth_date.toISOString() : "",
-      budget: user.clientDetails?.budget ?? 0,
+      budget: user.clientDetails?.budget_range ?? "",
       urgencyLevel: user.clientDetails?.urgency_level || "",
       communicationPreference:
         user.userDetails?.Preference?.communication_channel || "",
@@ -114,8 +112,8 @@ export class ClientRepository {
         where: { client_id: userId },
         data: {
           occupation: data.occupation ?? user.clientDetails.occupation,
-          age_range: data.age_range ?? user.clientDetails.age_range,
-          budget: data.budget ?? user.clientDetails.budget,
+          budget_range:
+            data.budget?.toString() ?? user.clientDetails.budget_range,
           urgency_level: data.urgency_level ?? user.clientDetails.urgency_level,
         },
       });
@@ -169,6 +167,9 @@ export class ClientRepository {
             full_address: data.location ?? "",
             latitude: data.coordinates?.latitude ?? 0,
             longitude: data.coordinates?.longitude ?? 0,
+            country: "Mexico",
+            state: "Jalisco",
+            city: "Guadalajara",
           },
         });
       }
@@ -198,10 +199,9 @@ export class ClientRepository {
         longitude: finalUser.userDetails?.Locations?.longitude ?? 0,
       },
       occupation: finalUser.clientDetails?.occupation || "",
-      ageRange: finalUser.clientDetails?.age_range || "",
       gender: (finalUser.userDetails?.gender as "male" | "female") || "male",
       birthDate: finalUser.birth_date ? finalUser.birth_date.toISOString() : "",
-      budget: finalUser.clientDetails?.budget ?? 0,
+      budget: finalUser.clientDetails?.budget_range ?? "",
       urgencyLevel: finalUser.clientDetails?.urgency_level || "",
       communicationPreference:
         finalUser.userDetails?.Preference?.communication_channel || "",
@@ -213,10 +213,9 @@ export class ClientRepository {
     profile_picture?: string,
     location?: string,
     occupation?: string,
-    age_range?: string,
     gender?: "male" | "female",
     birth_date?: string,
-    budget?: number,
+    budget?: string,
     urgency_level?: string,
     communication_preference?: string,
     coordinates?: { latitude: number; longitude: number }
@@ -242,8 +241,7 @@ export class ClientRepository {
         data: {
           client_id: userId,
           occupation: occupation ?? "",
-          age_range: age_range ?? "",
-          budget: budget ?? 0,
+          budget_range: budget,
           urgency_level: urgency_level ?? "",
         },
       });
@@ -305,6 +303,9 @@ export class ClientRepository {
               full_address: location ?? "",
               latitude: coordinates?.latitude ?? 0,
               longitude: coordinates?.longitude ?? 0,
+              country: "Mexico",
+              state: "Jalisco",
+              city: "Guadalajara",
             },
           });
         }
@@ -324,6 +325,9 @@ export class ClientRepository {
                 full_address: location ?? "",
                 latitude: coordinates?.latitude ?? 0,
                 longitude: coordinates?.longitude ?? 0,
+                country: "Mexico",
+                state: "Jalisco",
+                city: "Guadalajara",
               },
             },
           },
@@ -355,12 +359,11 @@ export class ClientRepository {
           longitude: finalUser.userDetails?.Locations?.longitude ?? 0,
         },
         occupation: finalUser.clientDetails?.occupation || "",
-        ageRange: finalUser.clientDetails?.age_range || "",
         gender: (finalUser.userDetails?.gender as "male" | "female") || "male",
         birthDate: finalUser.birth_date
           ? finalUser.birth_date.toISOString()
           : "",
-        budget: finalUser.clientDetails?.budget ?? 0,
+        budget: finalUser.clientDetails?.budget_range ?? "",
         urgencyLevel: finalUser.clientDetails?.urgency_level || "",
         communicationPreference:
           finalUser.userDetails?.Preference?.communication_channel || "",
@@ -399,10 +402,9 @@ export class ClientRepository {
         longitude: user.userDetails?.Locations?.longitude ?? 0,
       },
       occupation: user.clientDetails?.occupation || "",
-      ageRange: user.clientDetails?.age_range || "",
       gender: (user.userDetails?.gender as "male" | "female") || "male",
       birthDate: user.birth_date ? user.birth_date.toISOString() : "",
-      budget: user.clientDetails?.budget ?? 0,
+      budget: user.clientDetails?.budget_range ?? "",
       urgencyLevel: user.clientDetails?.urgency_level || "",
       communicationPreference:
         user.userDetails?.Preference?.communication_channel || "",

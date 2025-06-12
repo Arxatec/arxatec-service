@@ -10,11 +10,21 @@ const upload = multer({ storage: multer.memoryStorage() });
 const caseController = new CaseController();
 
 // ───────────── PUBLIC CATALOGS ─────────────
-router.get("/categories", asyncHandler(caseController.getCategories.bind(caseController)));
-router.get("/statuses",   asyncHandler(caseController.getStatuses.bind(caseController)));
+router.get(
+  "/categories",
+  asyncHandler(caseController.getCategories.bind(caseController))
+);
+router.get(
+  "/statuses",
+  asyncHandler(caseController.getStatuses.bind(caseController))
+);
 
 // ───────────── CASE CREATION ─────────────
-router.post("/", authenticateToken, asyncHandler(caseController.createCase.bind(caseController)));
+router.post(
+  "/",
+  authenticateToken,
+  asyncHandler(caseController.createCase.bind(caseController))
+);
 // ───────────── CLOSED & ARCHIVED CASES ─────────────
 router.get(
   "/closed",
@@ -36,6 +46,7 @@ router.patch(
 router.post(
   "/external_clients",
   authenticateToken,
+  upload.single("avatar"),
   asyncHandler(caseController.createExternalClient.bind(caseController))
 );
 router.get(
@@ -46,6 +57,7 @@ router.get(
 router.put(
   "/external_clients/:id",
   authenticateToken,
+  upload.single("avatar"),
   asyncHandler(caseController.updateExternalClient.bind(caseController))
 );
 router.patch(
@@ -66,15 +78,42 @@ router.patch(
 );
 
 // ───────────── CASE READ ─────────────
-router.get("/explore", asyncHandler(caseController.exploreCases.bind(caseController)));
-router.get("/my",      authenticateToken, asyncHandler(caseController.getMyCases.bind(caseController)));
-router.get("/:id/history", authenticateToken, asyncHandler(caseController.getHistory.bind(caseController)));
-router.get("/:id",         authenticateToken, asyncHandler(caseController.getCaseById.bind(caseController)));
+router.get(
+  "/explore",
+  asyncHandler(caseController.exploreCases.bind(caseController))
+);
+router.get(
+  "/my",
+  authenticateToken,
+  asyncHandler(caseController.getMyCases.bind(caseController))
+);
+router.get(
+  "/:id/history",
+  authenticateToken,
+  asyncHandler(caseController.getHistory.bind(caseController))
+);
+router.get(
+  "/:id",
+  authenticateToken,
+  asyncHandler(caseController.getCaseById.bind(caseController))
+);
 
 // ───────────── CASE UPDATE ─────────────
-router.put("/:id",          authenticateToken, asyncHandler(caseController.updateCase.bind(caseController)));
-router.patch("/:id/status", authenticateToken, asyncHandler(caseController.changeStatus.bind(caseController)));
-router.patch("/:id/archive",authenticateToken, asyncHandler(caseController.archiveCase.bind(caseController)));
+router.put(
+  "/:id",
+  authenticateToken,
+  asyncHandler(caseController.updateCase.bind(caseController))
+);
+router.patch(
+  "/:id/status",
+  authenticateToken,
+  asyncHandler(caseController.changeStatus.bind(caseController))
+);
+router.patch(
+  "/:id/archive",
+  authenticateToken,
+  asyncHandler(caseController.archiveCase.bind(caseController))
+);
 
 // ───────────── ATTACHMENTS ─────────────
 router.post(
@@ -99,8 +138,11 @@ router.patch(
   asyncHandler(caseController.archiveAttachment.bind(caseController))
 );
 
-
 // ───────────── INTERNAL MESSAGES ─────────────
-router.post("/:id/message", authenticateToken, asyncHandler(caseController.sendMessage.bind(caseController)));
+router.post(
+  "/:id/message",
+  authenticateToken,
+  asyncHandler(caseController.sendMessage.bind(caseController))
+);
 
 export default router;

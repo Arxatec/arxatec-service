@@ -19,7 +19,9 @@ export const CASE_MESSAGES = {
     UPDATED_SUCCESS: "The case has been successfully updated.",
     CANNOT_EDIT_ARCHIVED: "Archived cases cannot be edited.",
     CANNOT_EDIT_CLOSED: "Closed cases cannot be edited.",
-  
+    NEXT_STATUS_ONLY: "Solo se permite avanzar al siguiente estado.",
+    INVALID_TRANSITION_LAWYER: "Un abogado solo puede avanzar o retroceder un paso en el flujo del caso.",
+
     /* ──────────────── State ──────────────── */
     INVALID_STATUS: "Invalid status transition.",
     STATUS_UPDATED_SUCCESS: "The case status has been updated.",

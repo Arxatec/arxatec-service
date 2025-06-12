@@ -1,11 +1,7 @@
-//
 // Este es tu archivo de esquema de Prisma,
 // puedes aprender más sobre él en la documentación: https://pris.ly/d/prisma-schema
-//
 // ¿Buscas formas de acelerar tus consultas o escalar fácilmente con tus funciones serverless o edge?
 // Prueba Prisma Accelerate: https://pris.ly/cli/accelerate-init
-//
-// Ejemplos de comandos útiles:
 // npx prisma migrate reset 
 // npx prisma migrate dev --init
 // npx prisma generate
@@ -18,10 +14,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // url       = env("DATABASE_URL_PROD")
-  // directUrl = env("DIRECT_URL_PROD")
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
+  url       = env("DATABASE_URL_PROD")
+  directUrl = env("DIRECT_URL_PROD")
+  //url       = env("DATABASE_URL")
+  //directUrl = env("DATABASE_URL")
 }
 enum user_type {
   admin
@@ -469,6 +465,7 @@ model EventDates {
 model ExternalClients {
   id              Int           @id @default(autoincrement())   /// PK
   user_detail_id  Int                                       /// Abogado que creó este cliente
+  profile_image   String?                                   /// URL pública en S3 (*avatars*)
   full_name       String                                    /// Nombre completo
   email           String?       @default("")                 /// Correo opcional
   phone           String                                    /// Teléfono

@@ -225,57 +225,48 @@ export class CaseController {
     return res.json(buildHttpResponse(200, "Case reopened", req.path, data));
   }
   /* ───────────── POST /case/:id/attachment─────────── */
-   async addAttachment(req: Request, res: Response): Promise<Response> {
-    // 0) Logs iniciales
-    console.log("▶️ [RAW BODY]   :", req.body);
-    console.log("▶️ [RAW FILES]  :", req.files);
-
+  async addAttachment(req: Request, res: Response): Promise<Response> {
     try {
       const caseId = Number(req.params.id);
-      const user   = getUser(req);
+      const user = getUser(req);
 
-      // 1) Validar caso y permisos
       await casesService.getCaseById(caseId, user);
 
-      // 2) Validar archivo
       const files = req.files as { file: Express.Multer.File[] };
-      const file  = files.file?.[0];
-      if (!file) throw new AppError("File missing", HttpStatusCodes.BAD_REQUEST.code);
+      const file = files.file?.[0];
+      if (!file)
+        throw new AppError("File missing", HttpStatusCodes.BAD_REQUEST.code);
       if (file.size > 10 * 1024 * 1024) {
-        throw new AppError("El archivo supera el tamaño máximo de 10MB.", HttpStatusCodes.BAD_REQUEST.code);
+        throw new AppError(
+          "El archivo supera el tamaño máximo de 10MB.",
+          HttpStatusCodes.BAD_REQUEST.code
+        );
       }
 
-      // 3) Subir a S3
       const { key: s3Key } = await uploadFile(file, `private/cases/${caseId}`);
 
-      // 4) Construir sólo lo que Zod espera (sin service_id)
       const cleanBody = {
-        file_key:    s3Key,
-        label:       String(req.body.label).trim(),
-        description: req.body.description ? String(req.body.description).trim() : undefined,
+        file_key: s3Key,
+        label: String(req.body.label).trim(),
+        description: req.body.description
+          ? String(req.body.description).trim()
+          : undefined,
         category_id: Number(req.body.category_id.trim()),
       };
       console.log("▶️ [CLEAN BODY] :", cleanBody);
 
-      // 5) Validar con Zod
       const dto = CreateCaseAttachmentSchema.parse(cleanBody);
 
-      // 6) Llamar al servicio
       const created = await casesService.addAttachment(caseId, dto, user);
 
-      // 7) Responder
-      return res
-        .status(HttpStatusCodes.CREATED.code)
-        .json({
-          status:      HttpStatusCodes.CREATED.code,
-          message:     MESSAGES.CASE.ATTACHMENT_ADDED,
-          path:        req.path,
-          timestamp:   new Date().toISOString(),
-          data:        created,
-        });
-    } 
-    catch (error) {
-      // Log completo del error para ver stack / issues
+      return res.status(HttpStatusCodes.CREATED.code).json({
+        status: HttpStatusCodes.CREATED.code,
+        message: MESSAGES.CASE.ATTACHMENT_ADDED,
+        path: req.path,
+        timestamp: new Date().toISOString(),
+        data: created,
+      });
+    } catch (error) {
       console.error("🚨 addAttachment ERROR:", error);
 
       if (error instanceof ZodError) {
@@ -335,29 +326,32 @@ export class CaseController {
     }
   }
   /* ───────────── ARCHIVED /case/:id/attachment/:attId ───────────── */
-async archiveAttachment(req: Request, res: Response): Promise<Response> {
-  try {
-    const caseId = Number(req.params.id);
-    const attId = Number(req.params.attId);
-    const user = getUser(req);
+  async archiveAttachment(req: Request, res: Response): Promise<Response> {
+    try {
+      const caseId = Number(req.params.id);
+      const attId = Number(req.params.attId);
+      const user = getUser(req);
 
-    // Llama al servicio con caseId, attId y el usuario actual
-    const archived = await casesService.archiveAttachment(caseId, attId, user);
-
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          MESSAGES.CASE.ATTACHMENT_ARCHIVED,
-          req.path,
-          archived
-        )
+      const archived = await casesService.archiveAttachment(
+        caseId,
+        attId,
+        user
       );
-  } catch (error) {
-    return handleServerError(res, req, error);
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            MESSAGES.CASE.ATTACHMENT_ARCHIVED,
+            req.path,
+            archived
+          )
+        );
+    } catch (error) {
+      return handleServerError(res, req, error);
+    }
   }
-}
 
   /* ─────────────  GET /case/categories  ───────────── */
   async getCategories(req: Request, res: Response): Promise<Response> {
@@ -446,8 +440,14 @@ async archiveAttachment(req: Request, res: Response): Promise<Response> {
   async createExternalClient(req: Request, res: Response): Promise<Response> {
     try {
       const dto = CreateExternalClientSchema.parse(req.body);
+      const avatarFile = req.file;
       const user = getUser(req);
-      const data = await casesService.createExternalClient(dto, user.id);
+
+      const data = await casesService.createExternalClient(
+        dto,
+        avatarFile,
+        user.id
+      );
 
       return res
         .status(HttpStatusCodes.CREATED.code)
@@ -492,8 +492,15 @@ async archiveAttachment(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
       const dto = UpdateExternalClientSchema.parse(req.body);
+      const avatarFile = req.file;
       const user = getUser(req);
-      const data = await casesService.updateExternalClient(id, dto, user.id);
+
+      const data = await casesService.updateExternalClient(
+        id,
+        dto,
+        avatarFile,
+        user.id
+      );
 
       return res
         .status(HttpStatusCodes.OK.code)
@@ -518,6 +525,7 @@ async archiveAttachment(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
       const user = getUser(req);
+
       await casesService.archiveExternalClient(id, user.id);
 
       return res
@@ -533,41 +541,46 @@ async archiveAttachment(req: Request, res: Response): Promise<Response> {
       return handleServerError(res, req, error);
     }
   }
-    /* ───────────── GET /cases/external_clients/archived ───────────── */
+  /* ───────────── GET /cases/external_clients/archived ───────────── */
 
-async listArchivedExternalClients(req: Request, res: Response) {
-  try {
-    const user = getUser(req);
-    const data = await casesService.listArchivedExternalClients(user.id);
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(buildHttpResponse(
-        HttpStatusCodes.OK.code,
-        "Archived external clients fetched",
-        req.path,
-        data
-      ));
-  } catch (error) {
-    return handleServerError(res, req, error);
-  }
-}
-    /* ───────────── /cases/external_clients/:id/restore ───────────── */
-async restoreExternalClient(req: Request, res: Response): Promise<Response> {
-  try {
-    const id   = Number(req.params.id);
-    const user = getUser(req);
-    const data = await casesService.restoreExternalClient(id, user.id);
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(buildHttpResponse(
-        HttpStatusCodes.OK.code,
-        "External client restored",
-        req.path,
-        data
-      ));
-  } catch (error) {
-    return handleServerError(res, req, error);
-  }
-}
+  async listArchivedExternalClients(req: Request, res: Response) {
+    try {
+      const user = getUser(req);
+      const data = await casesService.listArchivedExternalClients(user.id);
 
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Archived external clients fetched",
+            req.path,
+            data
+          )
+        );
+    } catch (error) {
+      return handleServerError(res, req, error);
+    }
+  }
+  /* ───────────── /cases/external_clients/:id/restore ───────────── */
+  async restoreExternalClient(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = Number(req.params.id);
+      const user = getUser(req);
+      const data = await casesService.restoreExternalClient(id, user.id);
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "External client restored",
+            req.path,
+            data
+          )
+        );
+    } catch (error) {
+      return handleServerError(res, req, error);
+    }
+  }
 }

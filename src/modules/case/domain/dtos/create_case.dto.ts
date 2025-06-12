@@ -8,7 +8,7 @@ export const CreateCaseDto = z.object({
   category_id: z.number().int().positive(),
   status_id: z.number().int().positive().optional(),
   urgency: z.enum(["alta","media","baja"]).optional().default("media"),
-  is_public: z.boolean().optional().default(false),
+  is_public: z.boolean().optional().default(true),
   reference_code: z.string().optional(),
 
   selected_lawyer_id:  z.number().int().positive().optional(),

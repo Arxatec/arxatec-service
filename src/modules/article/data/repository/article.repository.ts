@@ -157,15 +157,19 @@ export class ArticleRepository {
   }
 
   async delete(articleId: string, userId: number): Promise<any> {
-    const article = await prisma.articles.findUnique({
-      where: { id: articleId },
-    });
-    if (!article || article.user_id !== userId) {
-      throw new AppError(
-        MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED,
-        HttpStatusCodes.UNAUTHORIZED.code
-      );
+    try {
+      const article = await prisma.articles.findUnique({
+        where: { id: articleId },
+      });
+      if (!article || article.user_id !== userId) {
+        throw new AppError(
+          MESSAGES.ARTICLE.ARTICLE_ERROR_ACCESS_DENIED,
+          HttpStatusCodes.UNAUTHORIZED.code
+        );
+      }
+      return await prisma.articles.delete({ where: { id: articleId } });
+    } catch (error) {
+      console.log(error);
     }
-    return await prisma.articles.delete({ where: { id: articleId } });
   }
 }

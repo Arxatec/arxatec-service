@@ -19,6 +19,7 @@ datasource db {
   //url       = env("DATABASE_URL")
   //directUrl = env("DATABASE_URL")
 }
+
 enum user_type {
   admin
   client
@@ -46,6 +47,7 @@ enum work_day {
   saturday
   sunday
 }
+
 enum service_type {
   case
   consultation
@@ -168,9 +170,9 @@ model LawyerDetails {
   biography      String /// Biografía del abogado
   linkedin       String /// URL del perfil de LinkedIn
 
-  user                 Users                  @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
-  lawyerService        LawyerService? /// Relación uno a uno: Servicio del abogado
-  events               Events[] /// Relación uno a muchos: Eventos asociados a este abogado
+  user          Users          @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
+  lawyerService LawyerService? /// Relación uno a uno: Servicio del abogado
+  events        Events[] /// Relación uno a muchos: Eventos asociados a este abogado
 
   @@map("lawyer_details")
 }
@@ -180,8 +182,9 @@ model ClientDetails {
   budget_range     String? /// Rango presupuestario para contratar el servicio legal
   urgency_level    String? /// Nivel de urgencia o prioridad de la necesidad legal
   requirement_type String? /// Tipo de asistencia legal requerida
+  occupation       String? /// Ocupación del cliente
 
-  user                 Users                  @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [client_id], references: [id], onDelete: Cascade)
 
   @@map("client_details")
 }
@@ -202,13 +205,13 @@ model UserDetails {
 
   articles Articles[] /// Relación uno a muchos: Artículos asociados a este UserDetails
 
-  user           Users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  Preference     Preference?
-  Locations      Locations?
-  communityUsers CommunityUsers[] /// Relación uno a muchos: Membresías en comunidades asociadas a este UserDetails
-  external_clients    ExternalClients[] /// Clientes externos registrados por este usuario
-  services_as_lawyer  Services[]        @relation("LawyerServices") /// Servicios en los que actúa como abogado
-  services_as_client  Services[]        @relation("ClientServices") /// Servicios en los que actúa como cliente
+  user               Users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Preference         Preference?
+  Locations          Locations?
+  communityUsers     CommunityUsers[] /// Relación uno a muchos: Membresías en comunidades asociadas a este UserDetails
+  external_clients   ExternalClients[] /// Clientes externos registrados por este usuario
+  services_as_lawyer Services[]        @relation("LawyerServices") /// Servicios en los que actúa como abogado
+  services_as_client Services[]        @relation("ClientServices") /// Servicios en los que actúa como cliente
 
   @@map("user_details")
 }
@@ -438,25 +441,25 @@ model Reactions {
 }
 
 model Events {
-  id           Int       @id @default(autoincrement()) /// Identificador del evento
-  lawyer_id    Int       /// Abogado asociado
-  title        String    /// Título del evento
-  description  String?   /// Descripción
-  start_time   DateTime  @db.Time /// Hora de inicio (común para todas las fechas)
-  end_time     DateTime  @db.Time /// Hora de fin (común para todas las fechas)
+  id          Int      @id @default(autoincrement()) /// Identificador del evento
+  lawyer_id   Int /// Abogado asociado
+  title       String /// Título del evento
+  description String? /// Descripción
+  start_time  DateTime @db.Time /// Hora de inicio (común para todas las fechas)
+  end_time    DateTime @db.Time /// Hora de fin (común para todas las fechas)
 
-  lawyer       LawyerDetails @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
-  dates        EventDates[] /// Fechas específicas del evento
+  lawyer LawyerDetails @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  dates  EventDates[] /// Fechas específicas del evento
 
   @@map("events")
 }
 
 model EventDates {
-  id        Int      @id @default(autoincrement()) /// ID único
-  event_id  Int      /// Evento asociado
-  date      DateTime @db.Date /// Fecha específica del evento
+  id       Int      @id @default(autoincrement()) /// ID único
+  event_id Int /// Evento asociado
+  date     DateTime @db.Date /// Fecha específica del evento
 
-  event     Events   @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  event Events @relation(fields: [event_id], references: [id], onDelete: Cascade)
 
   @@unique([event_id, date]) // Evita duplicados
   @@map("event_dates")
@@ -476,46 +479,47 @@ model ExternalClients {
   user_detail     UserDetails   @relation(fields: [user_detail_id], references: [user_id], onDelete: Cascade)
   services        Services[]                                /// Casos/consultas asociados
 
+
   @@map("external_clients")
 }
 
 model Services {
-  id                 Int      @id @default(autoincrement()) /// Identificador único del servicio
-  type               service_type  /// Tipo de servicio (consulta, caso, etc.)
-  created_at         DateTime @default(now()) /// Fecha de creación del servicio
+  id                 Int          @id @default(autoincrement()) /// Identificador único del servicio
+  type               service_type /// Tipo de servicio (consulta, caso, etc.)
+  created_at         DateTime     @default(now()) /// Fecha de creación del servicio
   lawyer_id          Int? /// ID del abogado que atiende el servicio
   client_id          Int? /// ID del cliente registrado
   external_client_id Int? /// ID del cliente externo (opcional)
 
-  lawyer             UserDetails? @relation("LawyerServices", fields: [lawyer_id], references: [user_id])
-  client             UserDetails? @relation("ClientServices", fields: [client_id], references: [user_id])
-  external_client    ExternalClients? @relation(fields: [external_client_id], references: [id])
+  lawyer          UserDetails?     @relation("LawyerServices", fields: [lawyer_id], references: [user_id])
+  client          UserDetails?     @relation("ClientServices", fields: [client_id], references: [user_id])
+  external_client ExternalClients? @relation(fields: [external_client_id], references: [id])
 
-  cases              Cases[] /// Casos asociados a este servicio
-  consultations      Consultations[] /// Consultas asociadas a este servicio
-  calls              Calls[] /// Llamadas asociadas
-  messages           Messages[] /// Mensajes entre abogado y cliente
-  attachments        Attachments[] /// Archivos compartidos
+  cases         Cases[] /// Casos asociados a este servicio
+  consultations Consultations[] /// Consultas asociadas a este servicio
+  calls         Calls[] /// Llamadas asociadas
+  messages      Messages[] /// Mensajes entre abogado y cliente
+  attachments   Attachments[] /// Archivos compartidos
 
   @@map("services")
 }
 
 model CaseCategories {
   id          Int     @id @default(autoincrement()) /// Identificador único de la categoría de caso
-  name        String  @unique/// Nombre de la categoría
+  name        String  @unique /// Nombre de la categoría
   description String? /// Descripción detallada de la categoría
 
-  cases       Cases[] /// Casos que pertenecen a esta categoría
+  cases Cases[] /// Casos que pertenecen a esta categoría
 
   @@map("case_categories")
 }
 
 model CaseStatuses {
   id          Int     @id @default(autoincrement()) /// Identificador único del estado del caso
-  name        String  @unique/// Nombre del estado
+  name        String  @unique /// Nombre del estado
   description String? /// Descripción del estado
 
-  cases       Cases[] /// Casos que tienen este estado
+  cases Cases[] /// Casos que tienen este estado
 
   @@map("case_statuses")
 }
@@ -528,15 +532,15 @@ model Cases {
   category_id    Int /// ID de la categoría asignada
   urgency        case_urgency /// Nivel de urgencia del caso
   status_id      Int /// ID del estado actual del caso
-  is_public      Boolean 
-  reference_code String @default(cuid()) /// Numero de expediente
-  created_at     DateTime @default(now()) /// Fecha de creación del caso
-  archived       Boolean @default(false) 
+  is_public      Boolean
+  reference_code String       @default(cuid()) /// Numero de expediente
+  created_at     DateTime     @default(now()) /// Fecha de creación del caso
+  archived       Boolean      @default(false)
 
-  service        Services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  category       CaseCategories @relation(fields: [category_id], references: [id])
-  status         CaseStatuses   @relation(fields: [status_id], references: [id])
-  histories      CaseHistories[] /// Historial de cambios del caso
+  service   Services        @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category  CaseCategories  @relation(fields: [category_id], references: [id])
+  status    CaseStatuses    @relation(fields: [status_id], references: [id])
+  histories CaseHistories[] /// Historial de cambios del caso
 
   @@map("cases")
 }
@@ -544,42 +548,42 @@ model Cases {
 model CaseHistories {
   id         Int      @id @default(autoincrement()) /// Identificador único del historial
   case_id    Int /// ID del caso asociado
-  changed_by Int  ///Saber quien hizo el cambio
-  field      String   @db.VarChar(60)    ///Saber que campo fue cambiado (estado, archivado o documentado)  
+  changed_by Int ///Saber quien hizo el cambio
+  field      String   @db.VarChar(60) ///Saber que campo fue cambiado (estado, archivado o documentado)  
   old_value  String /// Valor anterior antes del cambio
   new_value  String /// Nuevo valor asignado
   note       String? /// Comentario adicional
   created_at DateTime @default(now()) /// Fecha del cambio
 
-  case       Cases @relation(fields: [case_id], references: [id])
+  case Cases @relation(fields: [case_id], references: [id])
 
   @@map("case_histories")
 }
 
 model Consultations {
-  id             Int                  @id @default(autoincrement()) /// Identificador único de la consulta
-  service_id     Int /// ID del servicio asociado
-  topic          String /// Tema principal de la consulta
-  question       String /// Pregunta detallada del cliente
-  response       String? /// Respuesta del abogado (opcional)
-  status         consultation_status /// Estado actual de la consulta
-  created_at     DateTime @default(now()) /// Fecha de creación
-  answered_at    DateTime? /// Fecha en que fue respondida (opcional)
-  rating         Int? /// Calificación del cliente (1 a 5, opcional)
-  priority       consultation_priority /// Prioridad asignada
-  confidential   Boolean /// Si es confidencial
-  requires_call  Boolean /// Si necesita llamada
+  id            Int                   @id @default(autoincrement()) /// Identificador único de la consulta
+  service_id    Int /// ID del servicio asociado
+  topic         String /// Tema principal de la consulta
+  question      String /// Pregunta detallada del cliente
+  response      String? /// Respuesta del abogado (opcional)
+  status        consultation_status /// Estado actual de la consulta
+  created_at    DateTime              @default(now()) /// Fecha de creación
+  answered_at   DateTime? /// Fecha en que fue respondida (opcional)
+  rating        Int? /// Calificación del cliente (1 a 5, opcional)
+  priority      consultation_priority /// Prioridad asignada
+  confidential  Boolean /// Si es confidencial
+  requires_call Boolean /// Si necesita llamada
 
-  service        Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  service Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   @@map("consultations")
 }
 
 model CallCategories {
-  id     Int     @id @default(autoincrement()) /// Identificador único de la categoría de llamada
-  name   String /// Nombre de la categoría
+  id   Int    @id @default(autoincrement()) /// Identificador único de la categoría de llamada
+  name String /// Nombre de la categoría
 
-  calls  Calls[] /// Llamadas asociadas
+  calls Calls[] /// Llamadas asociadas
 
   @@map("call_categories")
 }
@@ -595,49 +599,49 @@ model Calls {
   notes            String? /// Notas adicionales
   category_id      Int /// ID de la categoría
   service_id       Int /// ID del servicio relacionado
-  created_at       DateTime @default(now()) /// Fecha de creación
+  created_at       DateTime    @default(now()) /// Fecha de creación
 
-  category         CallCategories @relation(fields: [category_id], references: [id])
-  service          Services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category CallCategories @relation(fields: [category_id], references: [id])
+  service  Services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   @@map("calls")
 }
 
 model Messages {
-  id          Int        @id @default(autoincrement()) /// Identificador único del mensaje
-  service_id  Int /// ID del servicio asociado
-  content     String /// Contenido del mensaje
-  sent_by     actor_type /// Emisor: lawyer o client
-  is_read     Boolean /// Si fue leído
-  created_at  DateTime   @default(now()) /// Fecha de envío
+  id         Int        @id @default(autoincrement()) /// Identificador único del mensaje
+  service_id Int /// ID del servicio asociado
+  content    String /// Contenido del mensaje
+  sent_by    actor_type /// Emisor: lawyer o client
+  is_read    Boolean /// Si fue leído
+  created_at DateTime   @default(now()) /// Fecha de envío
 
-  service     Services   @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  service Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
 
 model AttachmentCategories {
-  id           Int     @id @default(autoincrement()) /// Identificador único de la categoría
-  name         String @unique/// Nombre de la categoría
+  id   Int    @id @default(autoincrement()) /// Identificador único de la categoría
+  name String @unique /// Nombre de la categoría
 
-  attachments  Attachments[] /// Archivos asociados
+  attachments Attachments[] /// Archivos asociados
 
   @@map("attachment_categories")
 }
 
 model Attachments {
-  id              Int        @id @default(autoincrement()) /// Identificador único del archivo
-  file_key        String       /// ruta/key en S3
-  label           String /// Nombre o etiqueta del archivo
-  description     String? /// Descripción adicional
-  category_id     Int /// ID de la categoría del archivo
-  uploaded_by     actor_type /// Emisor del archivo: lawyer o client
-  created_at      DateTime   @default(now()) /// Fecha de subida
-  service_id      Int /// Servicio al que pertenece
-  archived        Boolean  @default(false)
+  id          Int        @id @default(autoincrement()) /// Identificador único del archivo
+  file_key    String /// ruta/key en S3
+  label       String /// Nombre o etiqueta del archivo
+  description String? /// Descripción adicional
+  category_id Int /// ID de la categoría del archivo
+  uploaded_by actor_type /// Emisor del archivo: lawyer o client
+  created_at  DateTime   @default(now()) /// Fecha de subida
+  service_id  Int /// Servicio al que pertenece
+  archived    Boolean    @default(false)
 
-  service         Services            @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  category        AttachmentCategories @relation(fields: [category_id], references: [id])
+  service  Services             @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category AttachmentCategories @relation(fields: [category_id], references: [id])
 
   @@map("attachments")
 }

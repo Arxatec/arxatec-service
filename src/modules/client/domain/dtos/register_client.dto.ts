@@ -14,11 +14,6 @@ export const RegisterClientSchema = z
         required_error: MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_OCCUPATION,
       })
       .min(1, MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_OCCUPATION),
-    age_range: z
-      .string({
-        required_error: MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_AGE_RANGE,
-      })
-      .min(1, MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_AGE_RANGE),
     gender: z.enum(["male", "female"], {
       required_error: MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_GENDER,
     }),
@@ -27,7 +22,7 @@ export const RegisterClientSchema = z
         required_error: MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_BIRTH_DATE,
       })
       .min(1, MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_BIRTH_DATE),
-    budget: z.number({
+    budget: z.string({
       required_error: MESSAGES.CLIENT.CLIENT_ERROR_REQUIRED_BUDGET,
     }),
     urgency_level: z

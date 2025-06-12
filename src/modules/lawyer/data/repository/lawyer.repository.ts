@@ -52,196 +52,297 @@ export class LawyerRepository {
   private prisma = new PrismaClient();
 
   async getById(id: number): Promise<Lawyer | null> {
-    const user = await this.prisma.users.findUnique({
-      where: { id },
-      include: {
-        lawyerDetails: {
-          include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { id },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
-        userDetails: true,
-      },
-    });
-    if (!user || user.user_type !== "lawyer") return null;
-    return {
-      userId: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email,
-      licenseNumber: user.lawyerDetails?.license_number || "",
-      gender: user.userDetails?.gender || "",
-      birthDate: user.userDetails?.birth_date
-        ? user.userDetails.birth_date.toISOString()
-        : "",
-      specialty: user.lawyerDetails?.specialty || "",
-      experience: user.lawyerDetails?.experience ?? 0,
-      biography: user.lawyerDetails?.biography || "",
-      linkedin: user.lawyerDetails?.linkedin || "",
-      preferredClient:
-        user.lawyerDetails?.lawyerService?.preferred_client || "",
-      attorneyFees: mapAttorneyFeesToEntity(
-        user.lawyerDetails?.lawyerService?.attorneyFees
-      ),
-      workSchedules: mapWorkSchedulesToEntity(
-        user.lawyerDetails?.lawyerService?.workSchedules
-      ),
-    };
+      });
+      if (!user || user.user_type !== "lawyer") return null;
+      return {
+        userId: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        profilePicture: user.profile_image || "",
+        licenseNumber: user.lawyerDetails?.license_number || "",
+        gender: user.userDetails?.gender || "",
+        birthDate: user.userDetails?.birth_date
+          ? user.userDetails.birth_date.toISOString()
+          : "",
+        specialty: user.lawyerDetails?.specialty || "",
+        experience: user.lawyerDetails?.experience ?? 0,
+        biography: user.lawyerDetails?.biography || "",
+        linkedin: user.lawyerDetails?.linkedin || "",
+        preferredClient:
+          user.lawyerDetails?.lawyerService?.preferred_client || "",
+        location: {
+          fullAddress: user.userDetails?.Locations?.full_address || "",
+          latitude: user.userDetails?.Locations?.latitude ?? 0,
+          longitude: user.userDetails?.Locations?.longitude ?? 0,
+        },
+        communicationPreference:
+          user.userDetails?.Preference?.communication_channel || "",
+        attorneyFees: mapAttorneyFeesToEntity(
+          user.lawyerDetails?.lawyerService?.attorneyFees
+        ),
+        workSchedules: mapWorkSchedulesToEntity(
+          user.lawyerDetails?.lawyerService?.workSchedules
+        ),
+      };
+    } catch (error) {
+      console.error("Error in getById:", error);
+      throw error;
+    }
   }
 
   async getAllLawyers(): Promise<Lawyer[]> {
-    const users = await this.prisma.users.findMany({
-      where: { user_type: "lawyer" },
-      include: {
-        lawyerDetails: {
-          include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+    try {
+      const users = await this.prisma.users.findMany({
+        where: { user_type: "lawyer" },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
-        userDetails: true,
-      },
-    });
-    return users.map((user) => ({
-      userId: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email,
-      licenseNumber: user.lawyerDetails?.license_number || "",
-      gender: user.userDetails?.gender || "",
-      birthDate: user.userDetails?.birth_date
-        ? user.userDetails.birth_date.toISOString()
-        : "",
-      specialty: user.lawyerDetails?.specialty || "",
-      experience: user.lawyerDetails?.experience ?? 0,
-      biography: user.lawyerDetails?.biography || "",
-      linkedin: user.lawyerDetails?.linkedin || "",
-      preferredClient:
-        user.lawyerDetails?.lawyerService?.preferred_client || "",
-      attorneyFees: mapAttorneyFeesToEntity(
-        user.lawyerDetails?.lawyerService?.attorneyFees
-      ),
-      workSchedules: mapWorkSchedulesToEntity(
-        user.lawyerDetails?.lawyerService?.workSchedules
-      ),
-    }));
+      });
+      return users.map((user) => ({
+        userId: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        profilePicture: user.profile_image || "",
+        licenseNumber: user.lawyerDetails?.license_number || "",
+        gender: user.userDetails?.gender || "",
+        birthDate: user.userDetails?.birth_date
+          ? user.userDetails.birth_date.toISOString()
+          : "",
+        specialty: user.lawyerDetails?.specialty || "",
+        experience: user.lawyerDetails?.experience ?? 0,
+        biography: user.lawyerDetails?.biography || "",
+        linkedin: user.lawyerDetails?.linkedin || "",
+        preferredClient:
+          user.lawyerDetails?.lawyerService?.preferred_client || "",
+        location: {
+          fullAddress: user.userDetails?.Locations?.full_address || "",
+          latitude: user.userDetails?.Locations?.latitude ?? 0,
+          longitude: user.userDetails?.Locations?.longitude ?? 0,
+        },
+        communicationPreference:
+          user.userDetails?.Preference?.communication_channel || "",
+        attorneyFees: mapAttorneyFeesToEntity(
+          user.lawyerDetails?.lawyerService?.attorneyFees
+        ),
+        workSchedules: mapWorkSchedulesToEntity(
+          user.lawyerDetails?.lawyerService?.workSchedules
+        ),
+      }));
+    } catch (error) {
+      console.error("Error in getAllLawyers:", error);
+      throw error;
+    }
   }
 
   async updateLawyerProfile(
     userId: number,
     data: UpdateLawyerDTO
   ): Promise<Lawyer> {
-    const user = await this.prisma.users.findUnique({
-      where: { id: userId },
-      include: {
-        lawyerDetails: {
-          include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { id: userId },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
-        },
-        userDetails: true,
-      },
-    });
-    if (
-      !user ||
-      user.user_type !== "lawyer" ||
-      user.status !== user_status.active
-    ) {
-      throw new Error(MESSAGES.LAWYER.LAWYER_ERROR_ACCESS_DENIED);
-    }
-    await this.prisma.users.update({
-      where: { id: userId },
-      data: {
-        first_name: data.first_name ?? user.first_name,
-        last_name: data.last_name ?? user.last_name,
-      },
-    });
-    if (user.lawyerDetails) {
-      await this.prisma.lawyerDetails.update({
-        where: { lawyer_id: userId },
-        data: {
-          license_number:
-            data.license_number ?? user.lawyerDetails.license_number,
-          specialty: data.specialty ?? user.lawyerDetails.specialty,
-          experience: data.experience ?? user.lawyerDetails.experience,
-          biography: data.biography ?? user.lawyerDetails.biography,
-          linkedin: data.linkedin ?? user.lawyerDetails.linkedin,
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
       });
-      if (user.lawyerDetails.lawyerService) {
-        await this.prisma.lawyerService.update({
-          where: { lawyer_id: userId },
+      if (
+        !user ||
+        user.user_type !== "lawyer" ||
+        user.status !== user_status.active
+      ) {
+        throw new Error(MESSAGES.LAWYER.LAWYER_ERROR_ACCESS_DENIED);
+      }
+
+      try {
+        await this.prisma.users.update({
+          where: { id: userId },
           data: {
-            preferred_client:
-              data.preferred_client ??
-              user.lawyerDetails.lawyerService.preferred_client,
-            payment_methods:
-              data.payment_methods ??
-              user.lawyerDetails.lawyerService.payment_methods,
-            currency:
-              data.currency ?? user.lawyerDetails.lawyerService.currency,
+            first_name: data.first_name ?? user.first_name,
+            last_name: data.last_name ?? user.last_name,
+            profile_image: data.profile_picture ?? user.profile_image,
           },
         });
+
+        if (user.lawyerDetails) {
+          await this.prisma.lawyerDetails.update({
+            where: { lawyer_id: userId },
+            data: {
+              license_number:
+                data.license_number ?? user.lawyerDetails.license_number,
+              specialty: data.specialty ?? user.lawyerDetails.specialty,
+              experience: data.experience ?? user.lawyerDetails.experience,
+              biography: data.biography ?? user.lawyerDetails.biography,
+              linkedin: data.linkedin ?? user.lawyerDetails.linkedin,
+            },
+          });
+
+          if (user.lawyerDetails.lawyerService) {
+            await this.prisma.lawyerService.update({
+              where: { lawyer_id: userId },
+              data: {
+                preferred_client:
+                  data.preferred_client ??
+                  user.lawyerDetails.lawyerService.preferred_client,
+                payment_methods:
+                  data.payment_methods ??
+                  user.lawyerDetails.lawyerService.payment_methods,
+                currency:
+                  data.currency ?? user.lawyerDetails.lawyerService.currency,
+              },
+            });
+          }
+        }
+
+        if (user.userDetails) {
+          if (data.coordinates || data.location) {
+            if (user.userDetails.Locations) {
+              await this.prisma.locations.update({
+                where: { user_id: userId },
+                data: {
+                  full_address:
+                    data.location ?? user.userDetails.Locations.full_address,
+                  latitude:
+                    data.coordinates?.latitude ??
+                    user.userDetails.Locations.latitude,
+                  longitude:
+                    data.coordinates?.longitude ??
+                    user.userDetails.Locations.longitude,
+                },
+              });
+            } else {
+              await this.prisma.locations.create({
+                data: {
+                  user_id: userId,
+                  full_address: data.location ?? "",
+                  latitude: data.coordinates?.latitude ?? 0,
+                  longitude: data.coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
+                },
+              });
+            }
+          }
+        }
+      } catch (updateError) {
+        console.error("Error updating lawyer profile data:", updateError);
+        throw new Error("Error updating lawyer profile");
       }
-    }
-    const finalUser = await this.prisma.users.findUnique({
-      where: { id: userId },
-      include: {
-        lawyerDetails: {
-          include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+      const finalUser = await this.prisma.users.findUnique({
+        where: { id: userId },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
-        userDetails: true,
-      },
-    });
-    if (!finalUser) throw new Error(MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND);
-    return {
-      userId: finalUser.id,
-      firstName: finalUser.first_name,
-      lastName: finalUser.last_name,
-      email: finalUser.email,
-      licenseNumber: finalUser.lawyerDetails?.license_number || "",
-      gender: finalUser.userDetails?.gender || "",
-      birthDate: finalUser.userDetails?.birth_date
-        ? finalUser.userDetails.birth_date.toISOString()
-        : "",
-      specialty: finalUser.lawyerDetails?.specialty || "",
-      experience: finalUser.lawyerDetails?.experience ?? 0,
-      biography: finalUser.lawyerDetails?.biography || "",
-      linkedin: finalUser.lawyerDetails?.linkedin || "",
-      preferredClient:
-        finalUser.lawyerDetails?.lawyerService?.preferred_client || "",
-      attorneyFees: mapAttorneyFeesToEntity(
-        finalUser.lawyerDetails?.lawyerService?.attorneyFees
-      ),
-      workSchedules: mapWorkSchedulesToEntity(
-        finalUser.lawyerDetails?.lawyerService?.workSchedules
-      ),
-    };
+      });
+      if (!finalUser) throw new Error(MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND);
+      return {
+        userId: finalUser.id,
+        firstName: finalUser.first_name,
+        lastName: finalUser.last_name,
+        email: finalUser.email,
+        profilePicture: finalUser.profile_image || "",
+        licenseNumber: finalUser.lawyerDetails?.license_number || "",
+        gender: finalUser.userDetails?.gender || "",
+        birthDate: finalUser.userDetails?.birth_date
+          ? finalUser.userDetails.birth_date.toISOString()
+          : "",
+        specialty: finalUser.lawyerDetails?.specialty || "",
+        experience: finalUser.lawyerDetails?.experience ?? 0,
+        biography: finalUser.lawyerDetails?.biography || "",
+        linkedin: finalUser.lawyerDetails?.linkedin || "",
+        preferredClient:
+          finalUser.lawyerDetails?.lawyerService?.preferred_client || "",
+        location: {
+          fullAddress: finalUser.userDetails?.Locations?.full_address || "",
+          latitude: finalUser.userDetails?.Locations?.latitude ?? 0,
+          longitude: finalUser.userDetails?.Locations?.longitude ?? 0,
+        },
+        communicationPreference:
+          finalUser.userDetails?.Preference?.communication_channel || "",
+        attorneyFees: mapAttorneyFeesToEntity(
+          finalUser.lawyerDetails?.lawyerService?.attorneyFees
+        ),
+        workSchedules: mapWorkSchedulesToEntity(
+          finalUser.lawyerDetails?.lawyerService?.workSchedules
+        ),
+      };
+    } catch (error) {
+      console.error("Error in updateLawyerProfile:", error);
+      throw error;
+    }
   }
 
   async registerLawyer(
     userId: number,
+    profilePicture: string,
     licenseNumber: string,
     gender: string,
     birth_date: string,
@@ -252,156 +353,291 @@ export class LawyerRepository {
     preferred_client?: string,
     payment_methods?: string,
     currency?: string,
+    coordinates?: { latitude: number; longitude: number },
+    communication_preference?: string,
+    location?: string,
     attorneyFees?: { service_category_id: number; fee: number }[],
     workSchedules?: { day: string; open_time: string; close_time: string }[]
   ): Promise<Lawyer> {
-    const user = await this.prisma.users.findUnique({ where: { id: userId } });
-    if (!user)
-      throw new AppError(
-        MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND,
-        HttpStatusCodes.NOT_FOUND.code
-      );
-    if (user.user_type === "lawyer")
-      throw new AppError(
-        "This user is already a lawyer",
-        HttpStatusCodes.CONFLICT.code
-      );
-    await this.prisma.users.update({
-      where: { id: userId },
-      data: { user_type: "lawyer" },
-    });
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { id: userId },
+      });
+      if (!user)
+        throw new AppError(
+          MESSAGES.LAWYER.LAWYER_ERROR_NOT_FOUND,
+          HttpStatusCodes.NOT_FOUND.code
+        );
+      if (user.user_type === "lawyer")
+        throw new AppError(
+          "This user is already a lawyer",
+          HttpStatusCodes.CONFLICT.code
+        );
 
-    await this.prisma.userDetails.update({
-      where: { user_id: userId },
-      data: {
-        gender,
-        birth_date: new Date(birth_date),
-      },
-    });
-    await this.prisma.lawyerDetails.create({
-      data: {
-        lawyer_id: userId,
-        license_number: licenseNumber,
-        specialty: specialty ?? "",
-        experience: experience ?? 0,
-        biography: biography ?? "",
-        linkedin: linkedin ?? "",
-      },
-    });
-    await this.prisma.lawyerService.create({
-      data: {
-        lawyer_id: userId,
-        preferred_client: preferred_client ?? "",
-        payment_methods: payment_methods ?? "",
-        currency: currency ?? "",
-      },
-    });
-    if (attorneyFees && attorneyFees.length > 0) {
-      await this.prisma.attorneyFees.createMany({
-        data: attorneyFees.map((fee) => ({
-          lawyer_id: userId,
-          service_category_id: fee.service_category_id,
-          fee: fee.fee,
-        })),
-      });
-    }
-    if (workSchedules && workSchedules.length > 0) {
-      await this.prisma.workSchedules.createMany({
-        data: workSchedules.map((ws) => ({
-          lawyer_id: userId,
-          day: ws.day as work_day,
-          open_time: new Date(`1970-01-01T${ws.open_time}:00Z`),
-          close_time: new Date(`1970-01-01T${ws.close_time}:00Z`),
-        })),
-      });
-    }
-    const finalUser = await this.prisma.users.findUnique({
-      where: { id: userId },
-      include: {
-        lawyerDetails: {
+      try {
+        await this.prisma.users.update({
+          where: { id: userId },
+          data: {
+            user_type: "lawyer",
+            profile_image: profilePicture,
+          },
+        });
+
+        const existingUserDetails = await this.prisma.userDetails.findUnique({
+          where: { user_id: userId },
           include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+            Preference: true,
+          },
+        });
+
+        if (existingUserDetails) {
+          await this.prisma.userDetails.update({
+            where: { user_id: userId },
+            data: {
+              gender,
+              birth_date: new Date(birth_date),
+            },
+          });
+
+          if (coordinates || location) {
+            const existingLocation = await this.prisma.locations.findUnique({
+              where: { user_id: userId },
+            });
+
+            if (existingLocation) {
+              await this.prisma.locations.update({
+                where: { user_id: userId },
+                data: {
+                  full_address: location ?? existingLocation.full_address,
+                  latitude: coordinates?.latitude ?? existingLocation.latitude,
+                  longitude:
+                    coordinates?.longitude ?? existingLocation.longitude,
+                },
+              });
+            } else {
+              await this.prisma.locations.create({
+                data: {
+                  user_id: userId,
+                  full_address: location ?? "",
+                  latitude: coordinates?.latitude ?? 0,
+                  longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
+                },
+              });
+            }
+          }
+
+          if (existingUserDetails.Preference) {
+            await this.prisma.preference.update({
+              where: { user_id: userId },
+              data: {
+                communication_channel:
+                  communication_preference ??
+                  existingUserDetails.Preference.communication_channel,
+              },
+            });
+          } else {
+            await this.prisma.preference.create({
+              data: {
+                user_id: userId,
+                communication_channel: communication_preference ?? "",
+                receive_notifications: true,
+              },
+            });
+          }
+        } else {
+          await this.prisma.userDetails.create({
+            data: {
+              user_id: userId,
+              gender,
+              birth_date: new Date(birth_date),
+              Locations: {
+                create: {
+                  full_address: location ?? "",
+                  latitude: coordinates?.latitude ?? 0,
+                  longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
+                },
+              },
+              Preference: {
+                create: {
+                  communication_channel: communication_preference ?? "",
+                  receive_notifications: true,
+                },
+              },
+            },
+          });
+        }
+
+        await this.prisma.lawyerDetails.create({
+          data: {
+            lawyer_id: userId,
+            license_number: licenseNumber,
+            specialty: specialty ?? "",
+            experience: experience ?? 0,
+            biography: biography ?? "",
+            linkedin: linkedin ?? "",
+          },
+        });
+
+        await this.prisma.lawyerService.create({
+          data: {
+            lawyer_id: userId,
+            preferred_client: preferred_client ?? "",
+            payment_methods: payment_methods ?? "",
+            currency: currency ?? "",
+          },
+        });
+
+        if (workSchedules && workSchedules.length > 0) {
+          await this.prisma.workSchedules.createMany({
+            data: workSchedules.map((ws) => ({
+              lawyer_id: userId,
+              day: ws.day as work_day,
+              open_time: new Date(`1970-01-01T${ws.open_time}:00Z`),
+              close_time: new Date(`1970-01-01T${ws.close_time}:00Z`),
+            })),
+          });
+        }
+      } catch (createError) {
+        console.error("Error creating lawyer data:", createError);
+        throw new Error("Error creating lawyer profile");
+      }
+
+      const finalUser = await this.prisma.users.findUnique({
+        where: { id: userId },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
-        userDetails: true,
-      },
-    });
-    if (!finalUser) throw new Error("Error retrieving user after update");
-    return {
-      userId: finalUser.id,
-      firstName: finalUser.first_name,
-      lastName: finalUser.last_name,
-      email: finalUser.email,
-      licenseNumber: finalUser.lawyerDetails?.license_number || "",
-      gender: finalUser.userDetails?.gender || "",
-      birthDate: finalUser.userDetails?.birth_date
-        ? finalUser.userDetails.birth_date.toISOString()
-        : "",
-      specialty: finalUser.lawyerDetails?.specialty || "",
-      experience: finalUser.lawyerDetails?.experience ?? 0,
-      biography: finalUser.lawyerDetails?.biography || "",
-      linkedin: finalUser.lawyerDetails?.linkedin || "",
-      preferredClient:
-        finalUser.lawyerDetails?.lawyerService?.preferred_client || "",
-      attorneyFees: mapAttorneyFeesToEntity(
-        finalUser.lawyerDetails?.lawyerService?.attorneyFees
-      ),
-      workSchedules: mapWorkSchedulesToEntity(
-        finalUser.lawyerDetails?.lawyerService?.workSchedules
-      ),
-    };
+      });
+      if (!finalUser) throw new Error("Error retrieving user after update");
+      return {
+        userId: finalUser.id,
+        firstName: finalUser.first_name,
+        lastName: finalUser.last_name,
+        email: finalUser.email,
+        profilePicture: finalUser.profile_image || "",
+        licenseNumber: finalUser.lawyerDetails?.license_number || "",
+        gender: finalUser.userDetails?.gender || "",
+        birthDate: finalUser.userDetails?.birth_date
+          ? finalUser.userDetails.birth_date.toISOString()
+          : "",
+        specialty: finalUser.lawyerDetails?.specialty || "",
+        experience: finalUser.lawyerDetails?.experience ?? 0,
+        biography: finalUser.lawyerDetails?.biography || "",
+        linkedin: finalUser.lawyerDetails?.linkedin || "",
+        preferredClient:
+          finalUser.lawyerDetails?.lawyerService?.preferred_client || "",
+        location: {
+          fullAddress: finalUser.userDetails?.Locations?.full_address || "",
+          latitude: finalUser.userDetails?.Locations?.latitude ?? 0,
+          longitude: finalUser.userDetails?.Locations?.longitude ?? 0,
+        },
+        communicationPreference:
+          finalUser.userDetails?.Preference?.communication_channel || "",
+        attorneyFees: mapAttorneyFeesToEntity(
+          finalUser.lawyerDetails?.lawyerService?.attorneyFees
+        ),
+        workSchedules: mapWorkSchedulesToEntity(
+          finalUser.lawyerDetails?.lawyerService?.workSchedules
+        ),
+      };
+    } catch (error) {
+      console.error("Error in registerLawyer:", error);
+      throw error;
+    }
   }
+
   async getLawyersPaginated(skip: number, take: number): Promise<Lawyer[]> {
-    const users = await this.prisma.users.findMany({
-      skip,
-      take,
-      where: { user_type: "lawyer" },
-      include: {
-        lawyerDetails: {
-          include: {
-            lawyerService: {
-              include: {
-                attorneyFees: { include: { serviceCategory: true } },
-                workSchedules: true,
+    try {
+      const users = await this.prisma.users.findMany({
+        skip,
+        take,
+        where: { user_type: "lawyer" },
+        include: {
+          lawyerDetails: {
+            include: {
+              lawyerService: {
+                include: {
+                  attorneyFees: { include: { serviceCategory: true } },
+                  workSchedules: true,
+                },
               },
             },
           },
+          userDetails: {
+            include: {
+              Locations: true,
+              Preference: true,
+            },
+          },
         },
-        userDetails: true,
-      },
-    });
+      });
 
-    return users.map((user) => ({
-      userId: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email,
-      licenseNumber: user.lawyerDetails?.license_number || "",
-      gender: user.userDetails?.gender || "",
-      birthDate: user.userDetails?.birth_date?.toISOString() || "",
-      specialty: user.lawyerDetails?.specialty || "",
-      experience: user.lawyerDetails?.experience ?? 0,
-      biography: user.lawyerDetails?.biography || "",
-      linkedin: user.lawyerDetails?.linkedin || "",
-      preferredClient:
-        user.lawyerDetails?.lawyerService?.preferred_client || "",
-      attorneyFees: mapAttorneyFeesToEntity(
-        user.lawyerDetails?.lawyerService?.attorneyFees
-      ),
-      workSchedules: mapWorkSchedulesToEntity(
-        user.lawyerDetails?.lawyerService?.workSchedules
-      ),
-    }));
+      return users.map((user) => ({
+        userId: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        profilePicture: user.profile_image || "",
+        licenseNumber: user.lawyerDetails?.license_number || "",
+        gender: user.userDetails?.gender || "",
+        birthDate: user.userDetails?.birth_date
+          ? user.userDetails.birth_date.toISOString()
+          : "",
+        specialty: user.lawyerDetails?.specialty || "",
+        experience: user.lawyerDetails?.experience ?? 0,
+        biography: user.lawyerDetails?.biography || "",
+        linkedin: user.lawyerDetails?.linkedin || "",
+        preferredClient:
+          user.lawyerDetails?.lawyerService?.preferred_client || "",
+        location: {
+          fullAddress: user.userDetails?.Locations?.full_address || "",
+          latitude: user.userDetails?.Locations?.latitude ?? 0,
+          longitude: user.userDetails?.Locations?.longitude ?? 0,
+        },
+        communicationPreference:
+          user.userDetails?.Preference?.communication_channel || "",
+        attorneyFees: mapAttorneyFeesToEntity(
+          user.lawyerDetails?.lawyerService?.attorneyFees
+        ),
+        workSchedules: mapWorkSchedulesToEntity(
+          user.lawyerDetails?.lawyerService?.workSchedules
+        ),
+      }));
+    } catch (error) {
+      console.error("Error in getLawyersPaginated:", error);
+      throw error;
+    }
   }
 
   async countLawyers(): Promise<number> {
-    return this.prisma.users.count({
-      where: { user_type: "lawyer" },
-    });
+    try {
+      return this.prisma.users.count({
+        where: { user_type: "lawyer" },
+      });
+    } catch (error) {
+      console.error("Error in countLawyers:", error);
+      throw error;
+    }
   }
 }

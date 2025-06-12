@@ -229,7 +229,7 @@ export class ClientController {
       const parsedData = {
         ...req.body,
         id: Number(req.body.id),
-        budget: Number(req.body.budget),
+        budget: req.body.budget,
         coordinates: req.body.coordinates
           ? typeof req.body.coordinates === "string"
             ? JSON.parse(req.body.coordinates)

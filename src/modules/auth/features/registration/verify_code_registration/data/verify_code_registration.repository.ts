@@ -15,8 +15,15 @@ export class VerifyCodeRegistrationRepositoryImpl
   implements VerifyCodeRegistrationRepository
 {
   async createUser(data: RequestRegistrationDTO): Promise<User> {
+    // TODO: Change for uuid
+    const lastId = await prisma.users.findFirst({
+      orderBy: { id: "desc" },
+    });
+    const newId = lastId ? lastId.id + 1 : 1;
+
     const userData = await prisma.users.create({
       data: {
+        id: newId,
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,

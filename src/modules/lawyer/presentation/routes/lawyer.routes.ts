@@ -2,9 +2,11 @@ import { Router } from "express";
 import { LawyerController } from "../controllers/lawyer.controller";
 import { authenticateToken } from "../../../../middlewares/authenticate_token";
 import { asyncHandler } from "../../../../middlewares/async_handler";
+import multer from "multer";
 
 const router = Router();
 const lawyerController = new LawyerController();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @openapi
@@ -60,10 +62,13 @@ const lawyerController = new LawyerController();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               photo:
+ *                 type: string
+ *                 format: binary
  *               first_name:
  *                 type: string
  *                 example: "John"
@@ -85,6 +90,15 @@ const lawyerController = new LawyerController();
  *               linkedin:
  *                 type: string
  *                 example: "https://linkedin.com/in/lawyer"
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                     example: 19.3728
+ *                   longitude:
+ *                     type: number
+ *                     example: -99.1728
  *     responses:
  *       '200':
  *         description: "Lawyer profile updated successfully."
@@ -104,10 +118,13 @@ const lawyerController = new LawyerController();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               photo:
+ *                 type: string
+ *                 format: binary
  *               id:
  *                 type: number
  *                 example: 123
@@ -142,6 +159,15 @@ const lawyerController = new LawyerController();
  *               currency:
  *                 type: string
  *                 example: "USD"
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                     example: 19.3728
+ *                   longitude:
+ *                     type: number
+ *                     example: -99.1728
  *               attorneyFees:
  *                 type: array
  *                 items:
@@ -174,10 +200,29 @@ const lawyerController = new LawyerController();
  *         description: "Invalid data or request error."
  */
 
-router.get("/profile", authenticateToken, asyncHandler((req, res) => lawyerController.getLawyerProfile(req, res)));
-router.patch("/profile", authenticateToken, asyncHandler((req, res) => lawyerController.updateLawyerProfile(req, res)));
-router.get("/", asyncHandler((req, res) => lawyerController.getAllLawyers(req, res)));
-router.get("/:id", asyncHandler((req, res) => lawyerController.getLawyerById(req, res)));
-router.post("/register", asyncHandler((req, res) => lawyerController.registerLawyer(req, res)));
+router.get(
+  "/profile",
+  authenticateToken,
+  asyncHandler((req, res) => lawyerController.getLawyerProfile(req, res))
+);
+router.patch(
+  "/profile",
+  authenticateToken,
+  upload.fields([{ name: "photo", maxCount: 1 }]),
+  asyncHandler((req, res) => lawyerController.updateLawyerProfile(req, res))
+);
+router.get(
+  "/",
+  asyncHandler((req, res) => lawyerController.getAllLawyers(req, res))
+);
+router.get(
+  "/:id",
+  asyncHandler((req, res) => lawyerController.getLawyerById(req, res))
+);
+router.post(
+  "/register",
+  upload.fields([{ name: "photo", maxCount: 1 }]),
+  asyncHandler((req, res) => lawyerController.registerLawyer(req, res))
+);
 
 export default router;

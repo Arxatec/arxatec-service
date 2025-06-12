@@ -12,10 +12,9 @@ export interface Client {
   profilePicture: string;
   location: Location;
   occupation: string;
-  ageRange: string;
   gender: "male" | "female";
   birthDate: string;
-  budget: number;
+  budget: string;
   urgencyLevel: string;
   communicationPreference: string;
 }

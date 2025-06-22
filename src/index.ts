@@ -10,6 +10,7 @@ import { redisClient } from "./config/redis";
 import { APP_URL, PORT } from "./config/env";
 import { displayWelcomeMessage } from "./utils";
 import { customMorganFormat } from "./utils/cli";
+import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_error_handler";
 
 const app = express();
 const server = http.createServer(app);
@@ -31,6 +32,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Use centralized routes
 app.use(routes);
 
+app.use(multerErrorHandler as express.ErrorRequestHandler);
 // Test route
 app.get("/ping", (_, res) => {
   res.send("pong");

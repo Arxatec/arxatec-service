@@ -14,10 +14,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL_PROD")
-  directUrl = env("DIRECT_URL_PROD")
-  //url       = env("DATABASE_URL")
-  //directUrl = env("DATABASE_URL")
+  //url       = env("DATABASE_URL_PROD")
+  //directUrl = env("DIRECT_URL_PROD")
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 enum user_type {
@@ -250,6 +250,8 @@ model Articles {
   title                 String /// Título del artículo
   content               String /// Contenido del artículo
   banner                String? /// Banner del artículo
+  resume                String
+  reading_time          Int
   category_id           Int /// Identificador de la categoría
   publication_timestamp DateTime /// Fecha de publicación
   status                article_status /// Estado del artículo

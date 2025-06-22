@@ -1,0 +1,1 @@
+export { attachmentRoutes } from "./presentation/routes/attachment.routes";

@@ -1,19 +1,29 @@
 // src/constants/messages/case/index.ts
 export const CASE_MESSAGES = {
+
+    EXTERNAL_CLIENT_CREATED: "External client created successfully.",
+    EXTERNAL_CLIENT_UPDATED: "External client updated successfully.",
+    EXTERNAL_CLIENT_ARCHIVED: "External client archived.",
+    EXTERNAL_CLIENT_RESTORED: "External client restored.",
+    EXTERNAL_CLIENT_NOT_FOUND: "External client not found or not owned by you.",
+    EXTERNAL_CLIENT_EMAIL_IN_USE: "This external client email is already linked to another record.",
+    
+
     /* ──────────────── General ──────────────── */
     INVALID_ID: "Invalid case ID.",  
     NOT_FOUND: "Case not found.",
     ACCESS_DENIED: "Access denied or insufficient permissions.",
     CATEGORIES_SUCCESS: "Categories fetched successfully.",
     STATUSES_SUCCESS: "Statuses fetched successfully.", 
-  
+    HISTORY_NOT_FOUND: "No changes were found in the history of this case.",
+
     /* ──────────────── Creation ──────────────── */
-    CREATED_TITLE: "New case created",  
-    CREATED_SUCCESS: "The case has been successfully created.",
     LIMIT_OPEN_CLIENT: "You have reached the maximum number of open or in-progress cases (5).",
     LIMIT_OPEN_LAWYER: "Lawyer has reached the maximum number of in-progress cases",
-    EXTERNAL_CLIENT_NOT_FOUND: "External client not found.",
-    EXTERNAL_CLIENT_EMAIL_IN_USE: "This external client email is already linked to another record.",
+
+    CREATED_TITLE: "New case created",  
+    CREATED_SUCCESS: "The case has been successfully created.",
+   
   
     /* ────────────────Update/Editing ──────────────── */
     UPDATED_SUCCESS: "The case has been successfully updated.",
@@ -23,6 +33,10 @@ export const CASE_MESSAGES = {
     INVALID_TRANSITION_LAWYER: "Un abogado solo puede avanzar o retroceder un paso en el flujo del caso.",
 
     /* ──────────────── State ──────────────── */
+    ALREADY_CLOSED: "The case is now closed.",
+    STATUS_CHANGED: "Case status updated successfully",
+
+
     INVALID_STATUS: "Invalid status transition.",
     STATUS_UPDATED_SUCCESS: "The case status has been updated.",
     ALREADY_TAKEN: "The case has already been taken by another lawyer.",
@@ -31,12 +45,13 @@ export const CASE_MESSAGES = {
     TAKEN_TITLE: "Your case has been taken",
     TAKEN_SUCCESS: "The case has been successfully taken.",
     LIMIT_INPROGRESS_LAWYER: "You have reached the limit of active in-progress cases.",
-  
+
     /* ──────────────── Archive ──────────────── */
     ARCHIVED_SUCCESS: "The case has been archived.",
     ALREADY_ARCHIVED: "The case is already archived.",
   
     /* ──────────────── Attachments ──────────────── */
+    ONLY_IMAGE_FILES_ALLOWED: "Only image files (jpg, png, webp...) are allowed.",
     ATTACHMENT_ADDED: "Attachment uploaded successfully.",
     ATTACHMENT_ARCHIVED: "Attachment archived successfully.",
     ATTACHMENT_NOT_FOUND: "Attachment not found.",

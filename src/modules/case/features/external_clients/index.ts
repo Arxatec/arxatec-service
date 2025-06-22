@@ -1,0 +1,1 @@
+export { externalClientsRoutes } from "./presentation/routes/external_client.routes";

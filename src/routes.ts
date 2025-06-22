@@ -11,7 +11,7 @@ import lawyerRoutes from "./modules/lawyer/presentation/routes/lawyer.routes";
 import clientRoutes from "./modules/client/presentation/routes/client.routes";
 import communityRoutes from "./modules/community/presentation/routes/community.routes";
 import calendarRoutes from "./modules/calendar/presentation/routes/calendar.routes";
-import casesRoutes from "./modules/case/presentation/routes/case.routes";
+import casesRoutes from "./modules/case/cases.routes";
 import dashboardLawyerRouter from "./modules/dashboard/lawyer/presentation/routes/dashboardLawyer.routes";
 import dashboardClientRouter from "./modules/dashboard/client/presentation/routes/dashboardClient.routes";
 import userRoutes from "./modules/users/presentation/routes/user.routes";

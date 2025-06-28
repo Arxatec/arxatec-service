@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { NODE_ENV } from "./config/env";
 import { authRouter } from "./modules/auth/auth.routes";
 import emailRoutes from "./modules/email/presentation/routes/email.routes";
 import waitlistRoutes from "./modules/waitlist/presentation/routes/waitlist.routes";
@@ -15,6 +16,7 @@ import casesRoutes from "./modules/case/cases.routes";
 import dashboardLawyerRouter from "./modules/dashboard/lawyer/presentation/routes/dashboardLawyer.routes";
 import dashboardClientRouter from "./modules/dashboard/client/presentation/routes/dashboardClient.routes";
 import userRoutes from "./modules/users/presentation/routes/user.routes";
+import devRoutes from './modules/dev/presentation/routes/dev.routes';
 
 const router = Router();
 const API_VERSION = "/api/v1";
@@ -35,5 +37,11 @@ router.use(`${API_VERSION}/cases`, casesRoutes);
 router.use(`${API_VERSION}/dashboard`, dashboardLawyerRouter);
 router.use(`${API_VERSION}/dashboard`, dashboardClientRouter);
 router.use(`${API_VERSION}/users`, userRoutes);
+
+// --- RUTAS PARA DESARROLLO ---
+// Solo se activará si la variable de entorno NODE_ENV es 'development'.
+if (NODE_ENV === 'development') {
+  router.use(`${API_VERSION}/dev`, devRoutes);
+}
 
 export default router;

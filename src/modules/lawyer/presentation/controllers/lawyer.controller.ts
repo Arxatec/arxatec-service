@@ -201,62 +201,61 @@ export class LawyerController {
     try {
       const lawyerReq = req as LawyerRequest;
 
-      try {
-        const photoFile = lawyerReq.files?.photo?.[0];
-        const maxPhotoSizeBytes = 5 * 1024 * 1024; // 5 MB
-        const allowedPhotoTypes = [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-        ];
+      // Validación del archivo
+      const photoFile = lawyerReq.files?.photo?.[0];
+      const maxPhotoSizeBytes = 5 * 1024 * 1024; // 5 MB
+      const allowedPhotoTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
 
-        if (!photoFile) {
-          throw new AppError(
-            "The 'photo' file is required.",
-            HttpStatusCodes.BAD_REQUEST.code
-          );
-        }
-
-        if (!allowedPhotoTypes.includes(photoFile.mimetype)) {
-          throw new AppError(
-            "File type for 'photo' not allowed. Only JPEG, PNG, GIF or WebP.",
-            HttpStatusCodes.BAD_REQUEST.code
-          );
-        }
-
-        if (photoFile.size > maxPhotoSizeBytes) {
-          throw new AppError(
-            `Photo file size exceeds the limit (${
-              maxPhotoSizeBytes / 1024 / 1024
-            }MB).`,
-            HttpStatusCodes.BAD_REQUEST.code
-          );
-        }
-
-        const data = RegisterLawyerSchema.parse(req.body);
-        const lawyer = await lawyerService.registerLawyer(data, photoFile);
-        return res
-          .status(HttpStatusCodes.CREATED.code)
-          .json(
-            buildHttpResponse(
-              HttpStatusCodes.CREATED.code,
-              MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
-              "/lawyers/register",
-              lawyer
-            )
-          );
-      } catch (validationError) {
-        console.error("Error validating registration data:", validationError);
-        if (validationError instanceof ZodError) {
-          const zodResp = handleZodError(validationError, req);
-          zodResp.path = "/lawyers/register";
-          return res.status(zodResp.status).json(zodResp);
-        }
-        throw validationError;
+      if (!photoFile) {
+        throw new AppError(
+          "The 'photo' file is required.",
+          HttpStatusCodes.BAD_REQUEST.code
+        );
       }
+
+      if (!allowedPhotoTypes.includes(photoFile.mimetype)) {
+        throw new AppError(
+          "File type for 'photo' not allowed. Only JPEG, PNG, GIF or WebP.",
+          HttpStatusCodes.BAD_REQUEST.code
+        );
+      }
+
+      if (photoFile.size > maxPhotoSizeBytes) {
+        throw new AppError(
+          `Photo file size exceeds the 5MB limit.`,
+          HttpStatusCodes.BAD_REQUEST.code
+        );
+      }
+
+      // Validación del cuerpo con Zod
+      const data = RegisterLawyerSchema.parse(req.body);
+
+      // Registro del abogado
+      const lawyer = await lawyerService.registerLawyer(data, photoFile);
+
+      return res.status(HttpStatusCodes.CREATED.code).json(
+        buildHttpResponse(
+          HttpStatusCodes.CREATED.code,
+          MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
+          "/lawyers/register",
+          lawyer
+        )
+      );
     } catch (error) {
       console.error("Error in registerLawyer controller:", error);
+
+      // Si es error Zod, manejarlo separado
+      if (error instanceof ZodError) {
+        const zodResp = handleZodError(error, req);
+        zodResp.path = "/lawyers/register";
+        return res.status(zodResp.status).json(zodResp);
+      }
+
       return handleServerError(res, req, error);
     }
   }

@@ -24,6 +24,36 @@ export class CaseDetailService {
       throw new AppError(CASE_MESSAGES.ACCESS_DENIED, HttpStatusCodes.FORBIDDEN.code);
     }
 
-    return found;
+    return {
+      id: found.id,
+      title: found.title,
+      description: found.description,
+      category: { id: found.category.id, name: found.category.name },
+      status: { id: found.status.id, name: found.status.name },
+      urgency: found.urgency,
+      is_public: found.is_public,
+      created_at: found.created_at,
+      service: {
+        id: found.service.id,
+        lawyer_id: found.service.lawyer_id,
+        client_id: found.service.client_id,
+        external_client_id: found.service.external_client_id,
+      },
+      attachments: found.service.attachments.map((a) => ({
+        id: a.id,
+        label: a.label,
+        category_id: a.category_id,
+        uploaded_by: a.uploaded_by,
+        created_at: a.created_at,
+      })),
+      histories: found.histories.map((h) => ({
+        id: h.id,
+        field: h.field,
+        old_value: h.old_value,
+        new_value: h.new_value,
+        created_at: h.created_at,
+      })),
+    };
+
   }
 }

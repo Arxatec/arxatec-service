@@ -238,24 +238,18 @@ export class LawyerController {
       // Registro del abogado
       const lawyer = await lawyerService.registerLawyer(data, photoFile);
 
-      return res.status(HttpStatusCodes.CREATED.code).json(
-        buildHttpResponse(
-          HttpStatusCodes.CREATED.code,
-          MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
-          "/lawyers/register",
-          lawyer
-        )
-      );
+      return res
+        .status(HttpStatusCodes.CREATED.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.CREATED.code,
+            MESSAGES.LAWYER.LAWYER_SUCCESS_REGISTERED,
+            "/lawyers/register",
+            lawyer
+          )
+        );
     } catch (error) {
       console.error("Error in registerLawyer controller:", error);
-
-      // Si es error Zod, manejarlo separado
-      if (error instanceof ZodError) {
-        const zodResp = handleZodError(error, req);
-        zodResp.path = "/lawyers/register";
-        return res.status(zodResp.status).json(zodResp);
-      }
-
       return handleServerError(res, req, error);
     }
   }

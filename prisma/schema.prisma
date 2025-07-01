@@ -14,10 +14,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  //url       = env("DATABASE_URL_PROD")
-  //directUrl = env("DIRECT_URL_PROD")
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
+  url       = env("DATABASE_URL_PROD")
+  directUrl = env("DIRECT_URL_PROD")
+  //url       = env("DATABASE_URL")
+  // directUrl = env("DATABASE_URL")
 }
 
 enum user_type {
@@ -468,19 +468,18 @@ model EventDates {
 }
 
 model ExternalClients {
-  id              Int           @id @default(autoincrement())   /// PK
-  user_detail_id  Int                                       /// Abogado que creó este cliente
-  profile_image   String?                                   /// URL pública en S3 (*avatars*)
-  full_name       String                                    /// Nombre completo
-  email           String?       @default("")                 /// Correo opcional
-  phone           String                                    /// Teléfono
-  dni             String                                    /// DNI
-  created_at      DateTime      @default(now())              /// Fecha de creación
-  archived        Boolean       @default(false)               /// Soft-delete flag
+  id             Int      @id @default(autoincrement()) /// PK
+  user_detail_id Int /// Abogado que creó este cliente
+  profile_image  String? /// URL pública en S3 (*avatars*)
+  full_name      String /// Nombre completo
+  email          String?  @default("") /// Correo opcional
+  phone          String /// Teléfono
+  dni            String /// DNI
+  created_at     DateTime @default(now()) /// Fecha de creación
+  archived       Boolean  @default(false) /// Soft-delete flag
 
-  user_detail     UserDetails   @relation(fields: [user_detail_id], references: [user_id], onDelete: Cascade)
-  services        Services[]                                /// Casos/consultas asociados
-
+  user_detail UserDetails @relation(fields: [user_detail_id], references: [user_id], onDelete: Cascade)
+  services    Services[] /// Casos/consultas asociados
 
   @@map("external_clients")
 }

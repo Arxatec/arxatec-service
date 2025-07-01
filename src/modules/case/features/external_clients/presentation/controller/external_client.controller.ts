@@ -29,7 +29,9 @@ export class ExternalClientsController {
   /* ───────────── CREATE ───────────── */
   async create(req: AuthenticatedRequest, res: Response) {
     try {
-      const dto: CreateExternalClientDTO = CreateExternalClientSchema.parse(req.body);
+      const dto: CreateExternalClientDTO = CreateExternalClientSchema.parse(
+        req.body
+      );
       const avatar = req.file as Express.Multer.File | undefined;
       const userDetailId = req.user!.id;
 
@@ -39,21 +41,17 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.CREATED.code).json(
-        buildHttpResponse(HttpStatusCodes.CREATED.code, "External client created", req.path, {
-          client: created,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.CREATED.code,
+          "External client created",
+          req.path,
+          {
+            client: created,
+            user,
+          }
+        )
       );
     } catch (error) {
-      if (error instanceof ZodError) {
-        const parsed = handleZodError(error, req);
-        return res.status(parsed.status).json(parsed);
-      }
-      if (error instanceof AppError) {
-        return res.status(error.statusCode).json(
-          buildHttpResponse(error.statusCode, error.message, req.path),
-        );
-      }
       return handleServerError(res, req, error);
     }
   }
@@ -68,10 +66,15 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "External clients", req.path, {
-          clients,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "External clients",
+          req.path,
+          {
+            clients,
+            user,
+          }
+        )
       );
     } catch (error) {
       return handleServerError(res, req, error);
@@ -82,7 +85,9 @@ export class ExternalClientsController {
   async update(req: AuthenticatedRequest, res: Response) {
     try {
       const id = Number(req.params.id);
-      const body: UpdateExternalClientDTO = UpdateExternalClientSchema.parse(req.body);
+      const body: UpdateExternalClientDTO = UpdateExternalClientSchema.parse(
+        req.body
+      );
       const avatar = req.file as Express.Multer.File | undefined;
       const userDetailId = req.user!.id;
 
@@ -92,10 +97,15 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "External client updated", req.path, {
-          client: updated,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "External client updated",
+          req.path,
+          {
+            client: updated,
+            user,
+          }
+        )
       );
     } catch (error) {
       if (error instanceof ZodError) {
@@ -103,9 +113,9 @@ export class ExternalClientsController {
         return res.status(parsed.status).json(parsed);
       }
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json(
-          buildHttpResponse(error.statusCode, error.message, req.path),
-        );
+        return res
+          .status(error.statusCode)
+          .json(buildHttpResponse(error.statusCode, error.message, req.path));
       }
       return handleServerError(res, req, error);
     }
@@ -123,10 +133,15 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "External client archived", req.path, {
-          client: archived,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "External client archived",
+          req.path,
+          {
+            client: archived,
+            user,
+          }
+        )
       );
     } catch (error) {
       return handleServerError(res, req, error);
@@ -145,10 +160,15 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "External client restored", req.path, {
-          client: restored,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "External client restored",
+          req.path,
+          {
+            client: restored,
+            user,
+          }
+        )
       );
     } catch (error) {
       return handleServerError(res, req, error);
@@ -166,10 +186,15 @@ export class ExternalClientsController {
       ]);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "Archived external clients", req.path, {
-          clients,
-          user,
-        }),
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "Archived external clients",
+          req.path,
+          {
+            clients,
+            user,
+          }
+        )
       );
     } catch (error) {
       return handleServerError(res, req, error);

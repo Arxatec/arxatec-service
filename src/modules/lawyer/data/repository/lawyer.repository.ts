@@ -360,16 +360,18 @@ export class LawyerRepository {
     workSchedules?: { day: string; open_time: string; close_time: string }[]
   ): Promise<Lawyer> {
     try {
-      // 🔍 Validar existencia y tipo de usuario
-      const user = await this.prisma.users.findUnique({
-        where: { id: userId },
-      });
+      let user;
+      try {
+        user = await this.prisma.users.findUnique({
+          where: { id: userId },
+        });
+      } catch (error) {
+        console.error("Error finding user:", error);
+        throw error;
+      }
 
       if (!user) {
-        throw new AppError(
-          "User not found",
-          HttpStatusCodes.NOT_FOUND.code
-        );
+        throw new AppError("User not found", HttpStatusCodes.NOT_FOUND.code);
       }
 
       if (user.user_type === "lawyer") {
@@ -379,166 +381,255 @@ export class LawyerRepository {
         );
       }
 
-      // 🧠 Actualización de usuario
-      await this.prisma.users.update({
-        where: { id: userId },
-        data: {
-          user_type: "lawyer",
-          profile_image: profilePicture,
-        },
-      });
-
-      const existingUserDetails = await this.prisma.userDetails.findUnique({
-        where: { user_id: userId },
-        include: { Preference: true },
-      });
-
-      if (existingUserDetails) {
-        await this.prisma.userDetails.update({
-          where: { user_id: userId },
+      try {
+        await this.prisma.users.update({
+          where: { id: userId },
           data: {
-            gender,
-            birth_date: new Date(birth_date),
+            user_type: "lawyer",
+            profile_image: profilePicture,
           },
         });
+      } catch (error) {
+        console.error("Error updating user:", error);
+        throw error;
+      }
+
+      let existingUserDetails;
+      try {
+        existingUserDetails = await this.prisma.userDetails.findUnique({
+          where: { user_id: userId },
+          include: { Preference: true },
+        });
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        throw error;
+      }
+
+      if (existingUserDetails) {
+        try {
+          await this.prisma.userDetails.update({
+            where: { user_id: userId },
+            data: {
+              gender,
+              birth_date: new Date(birth_date),
+            },
+          });
+        } catch (error) {
+          console.error("Error updating user details:", error);
+          throw error;
+        }
 
         if (coordinates || location) {
-          const existingLocation = await this.prisma.locations.findUnique({
-            where: { user_id: userId },
-          });
+          let existingLocation;
+          try {
+            existingLocation = await this.prisma.locations.findUnique({
+              where: { user_id: userId },
+            });
+          } catch (error) {
+            console.error("Error finding existing location:", error);
+            throw error;
+          }
 
           if (existingLocation) {
-            await this.prisma.locations.update({
-              where: { user_id: userId },
-              data: {
-                full_address: location ?? existingLocation.full_address,
-                latitude: coordinates?.latitude ?? existingLocation.latitude,
-                longitude: coordinates?.longitude ?? existingLocation.longitude,
-              },
-            });
+            try {
+              await this.prisma.locations.update({
+                where: { user_id: userId },
+                data: {
+                  full_address: location ?? existingLocation.full_address,
+                  latitude: coordinates?.latitude ?? existingLocation.latitude,
+                  longitude:
+                    coordinates?.longitude ?? existingLocation.longitude,
+                },
+              });
+            } catch (error) {
+              console.error("Error updating location:", error);
+              throw error;
+            }
           } else {
-            await this.prisma.locations.create({
-              data: {
-                user_id: userId,
-                full_address: location ?? "",
-                latitude: coordinates?.latitude ?? 0,
-                longitude: coordinates?.longitude ?? 0,
-                country: "Mexico",
-                state: "Jalisco",
-                city: "Guadalajara",
-              },
-            });
+            try {
+              await this.prisma.locations.create({
+                data: {
+                  user_id: userId,
+                  full_address: location ?? "",
+                  latitude: coordinates?.latitude ?? 0,
+                  longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
+                },
+              });
+            } catch (error) {
+              console.error("Error creating location:", error);
+              throw error;
+            }
           }
         }
 
         if (existingUserDetails.Preference) {
-          await this.prisma.preference.update({
-            where: { user_id: userId },
-            data: {
-              communication_channel:
-                communication_preference ??
-                existingUserDetails.Preference.communication_channel,
-            },
-          });
-        } else {
-          await this.prisma.preference.create({
-            data: {
-              user_id: userId,
-              communication_channel: communication_preference ?? "",
-              receive_notifications: true,
-            },
-          });
-        }
-      } else {
-        await this.prisma.userDetails.create({
-          data: {
-            user_id: userId,
-            gender,
-            birth_date: new Date(birth_date),
-            Locations: {
-              create: {
-                full_address: location ?? "",
-                latitude: coordinates?.latitude ?? 0,
-                longitude: coordinates?.longitude ?? 0,
-                country: "Mexico",
-                state: "Jalisco",
-                city: "Guadalajara",
+          try {
+            await this.prisma.preference.update({
+              where: { user_id: userId },
+              data: {
+                communication_channel:
+                  communication_preference ??
+                  existingUserDetails.Preference.communication_channel,
               },
-            },
-            Preference: {
-              create: {
+            });
+          } catch (error) {
+            console.error("Error updating preference:", error);
+            throw error;
+          }
+        } else {
+          try {
+            await this.prisma.preference.create({
+              data: {
+                user_id: userId,
                 communication_channel: communication_preference ?? "",
                 receive_notifications: true,
               },
-            },
-          },
-        });
-      }
-
-      // 👨‍⚖️ Detalles de abogado
-      await this.prisma.lawyerDetails.create({
-        data: {
-          lawyer_id: userId,
-          license_number: licenseNumber,
-          specialty: specialty ?? "",
-          experience: experience ?? 0,
-          biography: biography ?? "",
-          linkedin: linkedin ?? "",
-        },
-      });
-
-      await this.prisma.lawyerService.create({
-        data: {
-          lawyer_id: userId,
-          preferred_client: preferred_client ?? "",
-          payment_methods: payment_methods ?? "",
-          currency: currency ?? "",
-        },
-      });
-
-      if (attorneyFees && attorneyFees.length > 0) {
-        await this.prisma.attorneyFees.createMany({
-          data: attorneyFees.map((fee) => ({
-            lawyer_id: userId, 
-            service_category_id: fee.service_category_id,
-            fee: fee.fee,
-          })),
-        });
-      }
-
-      if (workSchedules && workSchedules.length > 0) {
-        await this.prisma.workSchedules.createMany({
-          data: workSchedules.map((ws) => ({
-            lawyer_id: userId, 
-            day: ws.day.toLowerCase() as work_day,
-            open_time: new Date(`1970-01-01T${ws.open_time}:00Z`),
-            close_time: new Date(`1970-01-01T${ws.close_time}:00Z`),
-          })),
-        });
-      }
-
-      // 🔄 Obtener resultado final completo
-      const finalUser = await this.prisma.users.findUnique({
-        where: { id: userId },
-        include: {
-          lawyerDetails: {
-            include: {
-              lawyerService: {
-                include: {
-                  attorneyFees: { include: { serviceCategory: true } },
-                  workSchedules: true,
+            });
+          } catch (error) {
+            console.error("Error creating preference:", error);
+            throw error;
+          }
+        }
+      } else {
+        try {
+          await this.prisma.userDetails.create({
+            data: {
+              user_id: userId,
+              gender,
+              birth_date: new Date(birth_date),
+              Locations: {
+                create: {
+                  full_address: location ?? "",
+                  latitude: coordinates?.latitude ?? 0,
+                  longitude: coordinates?.longitude ?? 0,
+                  country: "Mexico",
+                  state: "Jalisco",
+                  city: "Guadalajara",
+                },
+              },
+              Preference: {
+                create: {
+                  communication_channel: communication_preference ?? "",
+                  receive_notifications: true,
                 },
               },
             },
+          });
+        } catch (error) {
+          console.error(
+            "Error creating userDetails, location, or preference:",
+            error
+          );
+          throw error;
+        }
+      }
+
+      try {
+        await this.prisma.lawyerDetails.create({
+          data: {
+            lawyer_id: userId,
+            license_number: licenseNumber,
+            specialty: specialty ?? "",
+            experience: experience ?? 0,
+            biography: biography ?? "",
+            linkedin: linkedin ?? "",
           },
-          userDetails: {
-            include: {
-              Locations: true,
-              Preference: true,
+        });
+      } catch (error) {
+        console.error("Error creating lawyerDetails:", error);
+        throw error;
+      }
+
+      try {
+        await this.prisma.lawyerService.create({
+          data: {
+            lawyer_id: userId,
+            preferred_client: preferred_client ?? "",
+            payment_methods: payment_methods ?? "",
+            currency: currency ?? "",
+          },
+        });
+      } catch (error) {
+        console.error("Error creating lawyerService:", error);
+        throw error;
+      }
+
+      if (attorneyFees && attorneyFees.length > 0) {
+        try {
+          await this.prisma.attorneyFees.createMany({
+            data: attorneyFees.map((fee) => ({
+              lawyer_id: userId,
+              service_category_id: fee.service_category_id,
+              fee: fee.fee,
+            })),
+          });
+        } catch (error) {
+          console.error("Error creating attorneyFees:", error);
+          throw error;
+        }
+      }
+
+      function parseHourToDate(hour: string): Date {
+        const [h, m] = hour.split(":");
+        const paddedHour = h.padStart(2, "0");
+        const paddedMinute = m.padStart(2, "0");
+
+        const iso = `1970-01-01T${paddedHour}:${paddedMinute}:00Z`;
+        const date = new Date(iso);
+
+        if (isNaN(date.getTime())) {
+          throw new Error(`Invalid hour format received: "${hour}"`);
+        }
+
+        return date;
+      }
+
+      if (workSchedules && workSchedules.length > 0) {
+        try {
+          await this.prisma.workSchedules.createMany({
+            data: workSchedules.map((ws) => ({
+              lawyer_id: userId,
+              day: ws.day.toLowerCase() as work_day,
+              open_time: parseHourToDate(ws.open_time),
+              close_time: parseHourToDate(ws.close_time),
+            })),
+          });
+        } catch (error) {
+          console.error("Error creating workSchedules:", error);
+          throw error;
+        }
+      }
+
+      let finalUser;
+      try {
+        finalUser = await this.prisma.users.findUnique({
+          where: { id: userId },
+          include: {
+            lawyerDetails: {
+              include: {
+                lawyerService: {
+                  include: {
+                    attorneyFees: { include: { serviceCategory: true } },
+                    workSchedules: true,
+                  },
+                },
+              },
+            },
+            userDetails: {
+              include: {
+                Locations: true,
+                Preference: true,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        console.error("Error retrieving final user:", error);
+        throw error;
+      }
 
       if (!finalUser) {
         throw new Error("Error retrieving user after update");

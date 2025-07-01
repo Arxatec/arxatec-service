@@ -21,6 +21,7 @@ export class LoginGoogleUseCase {
       };
       const response = await axios.get(url, config);
       const userInfo = response.data;
+      console.log(userInfo);
 
       if (!userInfo || !userInfo.email) {
         throw new AppError(
@@ -63,6 +64,7 @@ export class LoginGoogleUseCase {
       if (error instanceof AppError) {
         throw error;
       }
+      console.log(error);
       throw new AppError(
         "Authentication failed",
         HttpStatusCodes.UNAUTHORIZED.code

@@ -1,4 +1,3 @@
-// src/modules/cases/cases.routes.ts
 import { Router } from "express";
 
 import { archiveCaseRoutes } from "./features/archive_case";

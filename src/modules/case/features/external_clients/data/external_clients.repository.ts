@@ -9,7 +9,7 @@ export class ExternalClientsRepository {
 
   findManyByLawyer(
     userDetailId: number,
-    includeArchived = false,
+    includeArchived = false
   ): Promise<ExternalClients[]> {
     return this.prisma.externalClients.findMany({
       where: {
@@ -23,7 +23,7 @@ export class ExternalClientsRepository {
   findByIdAndLawyer(
     id: number,
     userDetailId: number,
-    includeArchived = false,
+    includeArchived = false
   ): Promise<ExternalClients | null> {
     return this.prisma.externalClients.findFirst({
       where: { id, user_detail_id: userDetailId, archived: includeArchived },
@@ -32,7 +32,7 @@ export class ExternalClientsRepository {
 
   update(
     id: number,
-    data: Prisma.ExternalClientsUpdateInput,
+    data: Prisma.ExternalClientsUpdateInput
   ): Promise<ExternalClients> {
     return this.prisma.externalClients.update({ where: { id }, data });
   }

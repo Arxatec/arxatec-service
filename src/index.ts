@@ -41,7 +41,7 @@ app.get("/ping", (_, res) => {
 // Start server
 const main = async () => {
   await redisClient.connect();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     displayWelcomeMessage(appUrl);
   });
 };

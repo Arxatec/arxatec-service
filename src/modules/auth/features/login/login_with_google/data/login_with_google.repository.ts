@@ -50,8 +50,17 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
     lastName: string;
     profileImage: string;
   }): Promise<User> {
+    const base = Date.now().toString();
+    const lastDigits = base.slice(-4);
+    const rand = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0");
+
+    const id = Number(lastDigits + rand);
     const newUser = await prisma.users.create({
       data: {
+        // TODO: Change type "number" to "uuid"
+        id: id,
         email: userData.email,
         first_name: userData.firstName,
         last_name: userData.lastName,

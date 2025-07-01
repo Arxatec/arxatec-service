@@ -17,13 +17,17 @@ export class ChangeStatusController {
 
   patch = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const id  = Number(req.params.id);
+      const id = Number(req.params.id);
       const dto = ChangeStatusSchema.parse(req.body);
 
-      const [result, user] = await Promise.all([
-        this.svc.execute(id, dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.execute(id, dto, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -33,8 +37,8 @@ export class ChangeStatusController {
           {
             case: result,
             user,
-          },
-        ),
+          }
+        )
       );
     } catch (err) {
       if (err instanceof ZodError) {

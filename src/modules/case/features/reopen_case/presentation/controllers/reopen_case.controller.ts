@@ -19,10 +19,14 @@ export class ReopenCaseController {
       const id = Number(req.params.id);
       const dto = ReopenCaseSchema.parse({ id });
 
-      const [data, user] = await Promise.all([
-        this.svc.execute(dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const data = await this.svc.execute(dto, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(HttpStatusCodes.OK.code, "Case reopened", req.path, {

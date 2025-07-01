@@ -35,10 +35,13 @@ export class ExternalClientsController {
       const avatar = req.file as Express.Multer.File | undefined;
       const userDetailId = req.user!.id;
 
-      const [created, user] = await Promise.all([
-        this.svc.createExternalClient(dto, avatar, userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+      const created = await this.svc.createExternalClient(
+        dto,
+        avatar,
+        userDetailId
+      );
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.CREATED.code).json(
         buildHttpResponse(
@@ -60,10 +63,10 @@ export class ExternalClientsController {
   async list(req: AuthenticatedRequest, res: Response) {
     try {
       const userDetailId = req.user!.id;
-      const [clients, user] = await Promise.all([
-        this.svc.listExternalClients(userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+
+      const clients = await this.svc.listExternalClients(userDetailId);
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -91,10 +94,14 @@ export class ExternalClientsController {
       const avatar = req.file as Express.Multer.File | undefined;
       const userDetailId = req.user!.id;
 
-      const [updated, user] = await Promise.all([
-        this.svc.updateExternalClient(id, body, avatar, userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+      const updated = await this.svc.updateExternalClient(
+        id,
+        body,
+        avatar,
+        userDetailId
+      );
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -127,10 +134,9 @@ export class ExternalClientsController {
       const id = Number(req.params.id);
       const userDetailId = req.user!.id;
 
-      const [archived, user] = await Promise.all([
-        this.svc.archiveExternalClient(id, userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+      const archived = await this.svc.archiveExternalClient(id, userDetailId);
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -154,10 +160,9 @@ export class ExternalClientsController {
       const id = Number(req.params.id);
       const userDetailId = req.user!.id;
 
-      const [restored, user] = await Promise.all([
-        this.svc.restoreExternalClient(id, userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+      const restored = await this.svc.restoreExternalClient(id, userDetailId);
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -180,10 +185,9 @@ export class ExternalClientsController {
     try {
       const userDetailId = req.user!.id;
 
-      const [clients, user] = await Promise.all([
-        this.svc.listArchivedExternalClients(userDetailId),
-        getAuthenticatedUser(req),
-      ]);
+      const clients = await this.svc.listArchivedExternalClients(userDetailId);
+
+      const user = await getAuthenticatedUser(req);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(

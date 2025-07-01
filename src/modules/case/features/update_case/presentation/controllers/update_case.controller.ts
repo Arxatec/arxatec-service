@@ -22,10 +22,14 @@ export class UpdateCaseController {
       const { id } = UpdateCaseParamsSchema.parse(req.params);
       const dto = UpdateCaseSchema.parse(req.body);
 
-      const [data, user] = await Promise.all([
-        this.service.execute(id, dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const data = await this.service.execute(id, dto, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
@@ -35,7 +39,7 @@ export class UpdateCaseController {
           {
             case: data,
             user,
-          },
+          }
         )
       );
     } catch (err) {

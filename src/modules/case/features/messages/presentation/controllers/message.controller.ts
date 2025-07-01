@@ -19,24 +19,26 @@ export class MessageController {
       const dto = SendMessageSchema.parse(req.body);
       const caseId = Number(req.params.id);
 
-      const [result, user] = await Promise.all([
-        this.svc.send(caseId, dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
 
-      return res
-        .status(HttpStatusCodes.CREATED.code)
-        .json(
-          buildHttpResponse(
-            HttpStatusCodes.CREATED.code,
-            "Message sent successfully",
-            req.path,
-            {
-              message: result,
-              user,
-            },
-          )
-        );
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.send(caseId, dto, newUser);
+
+      return res.status(HttpStatusCodes.CREATED.code).json(
+        buildHttpResponse(
+          HttpStatusCodes.CREATED.code,
+          "Message sent successfully",
+          req.path,
+          {
+            message: result,
+            user,
+          }
+        )
+      );
     } catch (err) {
       if (err instanceof ZodError) {
         const zErr = handleZodError(err, req);

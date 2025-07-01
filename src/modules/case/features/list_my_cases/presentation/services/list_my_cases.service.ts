@@ -8,7 +8,10 @@ export class ListMyCasesService {
   constructor(private repo = new ListMyCasesRepository()) {}
 
   async execute(user: CurrentUser): Promise<ListMyCasesResponseDTO[]> {
+    console.log("USER", user);
     const result = await this.repo.findCases(user.id, user.role);
+
+    console.log("RESULT", result);
 
     return result.map((c) => ({
       id: c.id,

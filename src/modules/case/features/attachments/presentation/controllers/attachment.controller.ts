@@ -1,7 +1,10 @@
 import { Response } from "express";
 import { AttachmentService } from "../services/attachment.service";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
-import { handleServerError, handleZodError } from "../../../../../../utils/error_handler";
+import {
+  handleServerError,
+  handleZodError,
+} from "../../../../../../utils/error_handler";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import { AddAttachmentSchema } from "../../domain/dtos/add_attachment.schema";
 import { ZodError } from "zod";
@@ -21,19 +24,31 @@ export class AttachmentController {
       });
 
       if (!req.file) {
-        throw new AppError("File is required", HttpStatusCodes.BAD_REQUEST.code);
+        throw new AppError(
+          "File is required",
+          HttpStatusCodes.BAD_REQUEST.code
+        );
       }
 
-      const [result, user] = await Promise.all([
-        this.svc.add(caseId, dto, req.file, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.add(caseId, dto, req.file, newUser);
 
       return res.status(HttpStatusCodes.CREATED.code).json(
-        buildHttpResponse(HttpStatusCodes.CREATED.code, "Attachment uploaded", req.path, {
-          attachment: result,
-          user,
-        })
+        buildHttpResponse(
+          HttpStatusCodes.CREATED.code,
+          "Attachment uploaded",
+          req.path,
+          {
+            attachment: result,
+            user,
+          }
+        )
       );
     } catch (err) {
       if (err instanceof ZodError) {
@@ -48,16 +63,25 @@ export class AttachmentController {
     try {
       const caseId = Number(req.params.id);
 
-      const [result, user] = await Promise.all([
-        this.svc.list(caseId, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.list(caseId, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "Attachments listed", req.path, {
-          attachments: result,
-          user,
-        })
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "Attachments listed",
+          req.path,
+          {
+            attachments: result,
+            user,
+          }
+        )
       );
     } catch (err) {
       return handleServerError(res, req, err);
@@ -69,16 +93,25 @@ export class AttachmentController {
       const caseId = Number(req.params.id);
       const attId = Number(req.params.attId);
 
-      const [result, user] = await Promise.all([
-        this.svc.archive(caseId, attId, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.archive(caseId, attId, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "Attachment archived", req.path, {
-          archivedAttachment: result,
-          user,
-        })
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "Attachment archived",
+          req.path,
+          {
+            archivedAttachment: result,
+            user,
+          }
+        )
       );
     } catch (err) {
       return handleServerError(res, req, err);

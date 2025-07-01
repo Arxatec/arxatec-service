@@ -1,4 +1,3 @@
-// src/modules/cases/features/change_status/data/change_status.repository.ts
 import { PrismaClient } from "@prisma/client";
 import { CatalogRepository } from "../../shared/catalog/catalog.repository";
 
@@ -61,9 +60,14 @@ export class ChangeStatusRepository {
     note?: string
   ) {
     return prisma.$transaction(async (tx) => {
+      const isPrivate = newStatus === "En revisión" || newStatus === "Tomado";
+
       await tx.cases.update({
         where: { id: caseId },
-        data: { status_id: newStatusId },
+        data: {
+          status_id: newStatusId,
+          is_public: !isPrivate,
+        },
       });
 
       await tx.caseHistories.create({

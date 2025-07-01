@@ -9,23 +9,35 @@ import { S3FileService } from "../../../shared/s3_file/s3_file.service";
 type CurrentUser = { id: number; role: "client" | "lawyer" };
 
 export class AttachmentService {
-   constructor(
+  constructor(
     private readonly repo = new AttachmentRepository(),
     private readonly s3 = new S3FileService()
   ) {}
- async add(caseId: number, dto: Omit<AddAttachmentDTO, "file_key">, file: Express.Multer.File, user: CurrentUser) {
+  async add(
+    caseId: number,
+    dto: Omit<AddAttachmentDTO, "file_key">,
+    file: Express.Multer.File,
+    user: CurrentUser
+  ) {
     const caseData = await this.repo.findCaseById(caseId);
     if (!caseData) {
-      throw new AppError(CASE_MESSAGES.NOT_FOUND, HttpStatusCodes.NOT_FOUND.code);
+      throw new AppError(
+        CASE_MESSAGES.NOT_FOUND,
+        HttpStatusCodes.NOT_FOUND.code
+      );
     }
 
     const { lawyer_id, client_id } = caseData.service;
+
     const isOwner =
       (user.role === "client" && client_id === user.id) ||
       (user.role === "lawyer" && lawyer_id === user.id);
 
     if (!isOwner) {
-      throw new AppError(CASE_MESSAGES.ACCESS_DENIED, HttpStatusCodes.FORBIDDEN.code);
+      throw new AppError(
+        CASE_MESSAGES.ACCESS_DENIED,
+        HttpStatusCodes.FORBIDDEN.code
+      );
     }
 
     const uploaded = await this.s3.upload(file, "private/cases");

@@ -13,16 +13,20 @@ export class GetCaseHistoryController {
     try {
       const caseId = Number(req.params.id);
 
-      const [data, user] = await Promise.all([
-        this.svc.execute(caseId),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const data = await this.svc.execute(caseId);
 
       return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(HttpStatusCodes.OK.code, "Case history retrieved", req.path, {
-          history: data,
-          user,
-        })
+        buildHttpResponse(
+          HttpStatusCodes.OK.code,
+          "Case history retrieved",
+          req.path,
+          {
+            history: data,
+            user,
+          }
+        )
       );
     } catch (err) {
       return handleServerError(res, req, err);

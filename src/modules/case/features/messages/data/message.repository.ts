@@ -22,4 +22,11 @@ export class MessageRepository {
   async createMessage(data: Prisma.MessagesCreateInput) {
     return prisma.messages.create({ data });
   }
+
+  async getMessagesByCaseId(caseId: number) {
+    return prisma.messages.findMany({
+      where: { service_id: caseId },  
+      orderBy: { created_at: "asc" },
+    });
+  }
 }

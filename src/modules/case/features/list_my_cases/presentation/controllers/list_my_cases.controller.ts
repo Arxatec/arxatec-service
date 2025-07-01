@@ -2,10 +2,7 @@
 import { Response } from "express";
 import { ListMyCasesService } from "../services/list_my_cases.service";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
-import {
-  handleServerError,
-  handleZodError,
-} from "../../../../../../utils/error_handler";
+import { handleServerError, handleZodError } from "../../../../../../utils/error_handler";
 import { ListMyCasesSchema } from "../../domain/list_my_cases.schema";
 import { HttpStatusCodes } from "../../../../../../constants";
 import { ZodError } from "zod";
@@ -17,7 +14,7 @@ export class ListMyCasesController {
 
   async handle(req: AuthenticatedRequest, res: Response) {
     try {
-      ListMyCasesSchema.parse(req.query); // futura validación de filtros
+      ListMyCasesSchema.parse(req.query); 
 
       const [cases, user] = await Promise.all([
         this.service.execute(req.user!),
@@ -29,10 +26,7 @@ export class ListMyCasesController {
           HttpStatusCodes.OK.code,
           HttpStatusCodes.OK.message,
           req.path,
-          {
-            cases,
-            user,
-          },
+          { cases, user },
         ),
       );
     } catch (error) {

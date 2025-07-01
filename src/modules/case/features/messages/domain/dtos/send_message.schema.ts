@@ -1,3 +1,5 @@
+// src/modules/case/features/messages/domain/dtos/send_messages.schema.ts
+
 import { z } from "zod";
 
 export const SendMessageSchema = z.object({

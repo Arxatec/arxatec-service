@@ -19,11 +19,13 @@ export class ExploreCasesController {
     try {
       const QuerySchema = z.object({
         category_id: z.coerce.number().int().positive().optional(),
-        status_id:   z.coerce.number().int().positive().optional(),
-        lawyer_id:   z.coerce.number().int().positive().optional(),
+        status_id: z.coerce.number().int().positive().optional(),
+        lawyer_id: z.coerce.number().int().positive().optional(),
       });
 
-      const { category_id, status_id, lawyer_id } = QuerySchema.parse(req.query);
+      const { category_id, status_id, lawyer_id } = QuerySchema.parse(
+        req.query
+      );
 
       const filters = {
         ...(category_id && { category_id }),
@@ -44,8 +46,8 @@ export class ExploreCasesController {
           {
             cases: data,
             ...(user && { user }),
-          },
-        ),
+          }
+        )
       );
     } catch (err) {
       if (err instanceof ZodError) {
@@ -71,8 +73,8 @@ export class ExploreCasesController {
           {
             categories: data,
             ...(user && { user }),
-          },
-        ),
+          }
+        )
       );
     } catch (err) {
       return handleServerError(res, req, err);
@@ -95,8 +97,8 @@ export class ExploreCasesController {
           {
             statuses: data,
             ...(user && { user }),
-          },
-        ),
+          }
+        )
       );
     } catch (err) {
       return handleServerError(res, req, err);

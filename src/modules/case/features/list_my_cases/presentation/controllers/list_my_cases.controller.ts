@@ -14,20 +14,29 @@ export class ListMyCasesController {
 
   async handle(req: AuthenticatedRequest, res: Response) {
     try {
-      ListMyCasesSchema.parse(req.query); 
 
-      const [cases, user] = await Promise.all([
-        this.service.execute(req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      ListMyCasesSchema.parse(req.query);
 
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const cases = await this.service.execute(newUser);
+
+      console.log("HOLAAAAAAAAAAAAAAAAAAAAAAA");
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(
           HttpStatusCodes.OK.code,
           HttpStatusCodes.OK.message,
           req.path,
-          { cases, user },
-        ),
+          {
+            cases,
+            user,
+          }
+        )
       );
     } catch (error) {
       if (error instanceof ZodError) {

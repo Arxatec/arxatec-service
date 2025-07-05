@@ -19,10 +19,14 @@ export class CreateCaseController {
     try {
       const dto = CreateCaseSchema.parse(req.body);
 
-      const [result, user] = await Promise.all([
-        this.service.execute(dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.service.execute(dto, newUser);
 
       const response: CaseEntity = {
         id: result.case_id,

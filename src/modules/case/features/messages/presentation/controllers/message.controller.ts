@@ -34,23 +34,23 @@ export class MessageController {
     }
   };
 
-  getHistory = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const caseId = Number(req.params.id);
-      const user = req.user!;
+getHistory = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const caseId = Number(req.params.id);
+    const user = req.user!;
 
-      const messages = await this.messageHistoryService.getMessageHistory(caseId, user);
+    const messages = await this.messageHistoryService.getMessageHistory(caseId, user);
 
-      return res.status(HttpStatusCodes.OK.code).json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          "Messages fetched successfully",
-          req.path,
-          { messages }
-        )
-      );
-    } catch (err) {
-      return handleServerError(res, req, err);
-    }
-  };
+    return res.status(HttpStatusCodes.OK.code).json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "Messages fetched successfully",
+        req.path,
+        { messages }
+      )
+    );
+  } catch (err) {
+    return handleServerError(res, req, err);
+  }
+};
 }

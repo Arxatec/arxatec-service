@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 
 export class ListMyCasesRepository {
   async findCases(userId: number, role: "client" | "lawyer") {
+    console.log("USER ID", userId);
+    console.log("ROLE", role);
     return prisma.cases.findMany({
       where: {
         archived: false,

@@ -2,7 +2,10 @@ import { Response } from "express";
 import { ArchiveCaseService } from "../services/archive_case.service";
 import { ArchiveCaseSchema } from "../../domain/dtos/archive_case.schema";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
-import { handleServerError, handleZodError } from "../../../../../../utils/error_handler";
+import {
+  handleServerError,
+  handleZodError,
+} from "../../../../../../utils/error_handler";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import { ZodError } from "zod";
 import { getAuthenticatedUser } from "../../../../../../utils/authenticated_user/authenticated_user";
@@ -16,10 +19,14 @@ export class ArchiveCaseController {
       const id = Number(req.params.id);
       const dto = ArchiveCaseSchema.parse({ id });
 
-      const [result, user] = await Promise.all([
-        this.svc.execute(dto, req.user!),
-        getAuthenticatedUser(req),
-      ]);
+      const user = await getAuthenticatedUser(req);
+
+      const newUser = {
+        id: user?.id!,
+        role: user?.user_type! as "client" | "lawyer",
+      };
+
+      const result = await this.svc.execute(dto, newUser);
 
       return res.status(HttpStatusCodes.OK.code).json(
         buildHttpResponse(HttpStatusCodes.OK.code, "Case archived", req.path, {

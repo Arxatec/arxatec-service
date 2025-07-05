@@ -1,50 +1,56 @@
-import { Response } from "express";
+// src/modules/case/features/messages/controllers/message.controller.ts
 import { MessageService } from "../services/message.service";
-import { SendMessageSchema } from "../../domain/dtos/send_message.schema";
+import { MessageHistoryService } from "../services/message_history.service";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../../../../../../middlewares/authenticate_token";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
-import {
-  handleServerError,
-  handleZodError,
-} from "../../../../../../utils/error_handler";
-import { ZodError } from "zod";
-import { AuthenticatedRequest } from "../../../../../../middlewares/authenticate_token";
-import { getAuthenticatedUser } from "../../../../../../utils/authenticated_user/authenticated_user";
+import { handleServerError } from "../../../../../../utils/error_handler";
 
 export class MessageController {
-  constructor(private readonly svc = new MessageService()) {}
+  constructor(
+    private readonly messageService = new MessageService(),
+    private readonly messageHistoryService = new MessageHistoryService()
+  ) {}
 
   send = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const dto = SendMessageSchema.parse(req.body);
+      const dto = req.body;
       const caseId = Number(req.params.id);
+      const user = req.user!;
 
-      const user = await getAuthenticatedUser(req);
-
-      const newUser = {
-        id: user?.id!,
-        role: user?.user_type! as "client" | "lawyer",
-      };
-
-      const result = await this.svc.send(caseId, dto, newUser);
+      const message = await this.messageService.send(caseId, dto, user);
 
       return res.status(HttpStatusCodes.CREATED.code).json(
         buildHttpResponse(
           HttpStatusCodes.CREATED.code,
           "Message sent successfully",
           req.path,
-          {
-            message: result,
-            user,
-          }
+          { message }
         )
       );
     } catch (err) {
-      if (err instanceof ZodError) {
-        const zErr = handleZodError(err, req);
-        return res.status(zErr.status).json(zErr);
-      }
       return handleServerError(res, req, err);
     }
   };
+
+getHistory = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const caseId = Number(req.params.id);
+    const user = req.user!;
+
+    const messages = await this.messageHistoryService.getMessageHistory(caseId, user);
+
+    return res.status(HttpStatusCodes.OK.code).json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "Messages fetched successfully",
+        req.path,
+        { messages }
+      )
+    );
+  } catch (err) {
+    return handleServerError(res, req, err);
+  }
+};
 }

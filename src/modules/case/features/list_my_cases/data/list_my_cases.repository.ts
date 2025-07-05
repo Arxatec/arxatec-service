@@ -11,7 +11,7 @@ export class ListMyCasesRepository {
       where: {
         archived: false,
         service: {
-          ...(role === "client"
+          ...(role === "client" 
             ? { client_id: userId }
             : { lawyer_id: userId }),
         },

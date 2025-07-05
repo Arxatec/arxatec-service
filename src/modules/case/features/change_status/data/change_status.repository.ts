@@ -61,7 +61,6 @@ export class ChangeStatusRepository {
   ) {
     return prisma.$transaction(async (tx) => {
       const isPrivate = newStatus === "En revisión" || newStatus === "Tomado";
-
       await tx.cases.update({
         where: { id: caseId },
         data: {

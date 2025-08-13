@@ -1,1 +1,0 @@
-export { reopenCaseRoutes } from "./presentation/routes/reopen_case.routes";

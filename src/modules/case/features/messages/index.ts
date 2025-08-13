@@ -1,1 +1,0 @@
-export { messageRoutes } from "./presentation/routes/message.routes";

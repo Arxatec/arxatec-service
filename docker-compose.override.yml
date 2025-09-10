@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: labase-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: labase-service
+      POSTGRES_USER: labase
+      POSTGRES_PASSWORD: labase
+    volumes:
+      - pg_data_labase:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U labase -d labase-service"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: labase-redis
+    command: ["redis-server", "--requirepass", "labase", "--appendonly", "yes"]
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_labase:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "labase", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_data_labase:
+  redis_data_labase:

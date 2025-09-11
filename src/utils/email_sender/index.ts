@@ -1,6 +1,6 @@
 import { Attachment } from "nodemailer/lib/mailer";
 import transporter from "../../config/email";
-import { EMAIL_USER } from "../../config";
+import { EMAIL_ADMIN } from "../../config";
 import { resolveImagePath } from "../../utils";
 
 export async function sendEmail(
@@ -14,7 +14,7 @@ export async function sendEmail(
     const logoPath = resolveImagePath("logo.png");
 
     const info = await transporter.sendMail({
-      from: EMAIL_USER,
+      from: EMAIL_ADMIN,
       to,
       subject,
       text,

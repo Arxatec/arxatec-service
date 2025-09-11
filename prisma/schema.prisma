@@ -1,3 +1,8 @@
+// npx prisma migrate reset 
+// npx prisma migrate dev --init
+// npx prisma generate
+// npx prisma studio 
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,4 +11,620 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+enum user_type {
+  admin
+  client
+  lawyer
+}
+
+enum user_status {
+  active
+  suspended
+  pending
+}
+
+enum work_day {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+enum article_status {
+  pending
+  accepted
+  rejected
+}
+
+enum service_type {
+  case
+  consultation
+}
+
+enum community_user_type {
+  moderator   // moderador de la comunidad
+  member      // miembro de la comunidad
+}
+
+enum reaction_type {
+  like
+  dislike
+}
+
+enum reaction_target {
+  publication
+  comment
+  reply
+}
+
+enum notification_type {
+  info
+  success
+  error
+  alert
+}
+
+enum case_urgency {
+  alta
+  media
+  baja
+}
+
+enum case_status {
+  abierto
+  en_progreso
+  cerrado
+  archivado
+}
+
+enum consultation_status {
+  pendiente
+  respondida
+  cerrada
+}
+
+enum consultation_priority {
+  alta
+  media
+  baja
+}
+
+enum call_status {
+  scheduled
+  completed
+  cancelled
+  missed
+}
+
+enum actor_type {
+  lawyer
+  client
+}
+
+model users {
+  id                 String      @id @default(uuid()) @db.Uuid
+  first_name         String
+  last_name          String
+  email              String      @unique
+  password           String
+  user_type          user_type?
+  profile_image      String?
+  phone              String?
+  status             user_status
+  creation_timestamp DateTime    @default(now())
+
+  lawyer_details   lawyer_details?
+  client_details   client_details?
+  admin_details    admin_details?
+  user_details     user_details?
+}
+
+model lawyer_details {
+  lawyer_id      String   @id @db.Uuid
+  license_number String
+  specialty      String
+  experience     Int
+  biography      String
+  linkedin       String
+
+  user           users           @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
+  lawyer_service lawyer_service?
+  events         events[]
+}
+
+model client_details {
+  client_id        String  @id @db.Uuid
+  budget_range     String?
+  urgency_level    String?
+  requirement_type String?
+  occupation       String?
+
+  user users @relation(fields: [client_id], references: [id], onDelete: Cascade)
+}
+
+model admin_details {
+  admin_id String @id @db.Uuid
+  notes    String?
+
+  user users @relation(fields: [admin_id], references: [id], onDelete: Cascade)
+}
+
+model user_details {
+  user_id    String   @id @db.Uuid
+  gender     String?
+  birth_date DateTime? @db.Date
+
+  user         users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  preference   preferences?
+  locations    locations?
+
+  community_users     community_users[]
+  external_clients    external_clients[]
+  services_as_lawyer  services[]      @relation("LawyerServices")
+  services_as_client  services[]      @relation("ClientServices")
+
+  articles articles[]
+}
+
+model preferences {
+  id                    String @id @default(uuid()) @db.Uuid
+  user_id               String @unique @db.Uuid
+  communication_channel String?
+  receive_notifications Boolean
+  notification_channels String?
+
+  user_details user_details @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+}
+
+model locations {
+  id           String @id @default(uuid()) @db.Uuid
+  user_id      String @unique @db.Uuid
+  country      String @db.VarChar(100)
+  state        String @db.VarChar(100)
+  city         String @db.VarChar(100)
+  latitude     Float
+  longitude    Float
+  full_address String? @db.VarChar(255)
+  postal_code  String? @db.VarChar(20)
+
+  user_details user_details @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+}
+
+model articles {
+  id                    String         @id @default(uuid()) @db.Uuid
+  user_id               String         @db.Uuid
+  title                 String
+  content               String
+  banner                String?
+  resume                String
+  reading_time          Int
+  category_id           String         @db.Uuid
+  publication_timestamp DateTime
+  status                article_status
+
+  user_details     user_details       @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  article_category article_categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
+}
+
+model article_categories {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+
+  articles articles[]
+}
+
+model lawyer_service {
+  lawyer_id        String @id @db.Uuid
+  preferred_client String
+  payment_methods  String
+  currency         String
+
+  lawyer_details  lawyer_details  @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  attorney_fees   attorney_fees[]
+  work_schedules  work_schedules[]
+}
+
+model attorney_fees {
+  id                  String  @id @default(uuid()) @db.Uuid
+  lawyer_id           String  @db.Uuid
+  service_category_id String  @db.Uuid
+  fee                 Decimal @db.Decimal(12, 2)
+
+  lawyer_service   lawyer_service     @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  service_category service_categories @relation(fields: [service_category_id], references: [id], onDelete: Cascade)
+
+  @@index([lawyer_id])
+  @@index([service_category_id])
+}
+
+model service_categories {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+
+  attorney_fees attorney_fees[]
+}
+
+model work_schedules {
+  id         String   @id @default(uuid()) @db.Uuid
+  lawyer_id  String   @db.Uuid
+  day        work_day
+  open_time  DateTime @db.Time
+  close_time DateTime @db.Time
+
+  lawyer_service lawyer_service @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+
+  @@index([lawyer_id, day])
+}
+
+// ===============================
+// COMMUNITY
+// ===============================
+
+model community_users {
+  id           String               @id @default(uuid()) @db.Uuid
+  user_id      String               @db.Uuid
+  community_id String               @db.Uuid
+  type         community_user_type
+  created_at   DateTime             @default(now())
+
+  user         user_details  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  community    communities   @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  publications publications[]
+  comments     comments[]
+  replies      comment_replies[]
+  reactions    reactions[]
+
+  @@index([user_id])
+  @@index([community_id])
+}
+
+model communities {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?
+  banner       String?
+  icon         String?
+  category_id  String?
+  created_at   DateTime  @default(now())
+
+  community_users     community_users[]
+  community_category  community_categories? @relation(fields: [category_id], references: [id])
+  community_markers   community_markers[]
+  community_rules     community_rules[]
+  publications        publications[]
+}
+
+model community_categories {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+
+  communities communities[]
+}
+
+model community_markers {
+  id           String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  marker       String
+
+  community communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+
+  @@index([community_id])
+}
+
+model community_rules {
+  id           String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  rule         String
+
+  community communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+
+  @@index([community_id])
+}
+
+model publications {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String
+  description       String
+  community_id      String   @db.Uuid
+  multimedia        String?
+  link              String?
+  community_user_id String   @db.Uuid
+  created_at        DateTime @default(now())
+
+  community      communities     @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  community_user community_users @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+  comments       comments[]
+
+  @@index([community_id])
+  @@index([community_user_id])
+}
+
+model comments {
+  id                String   @id @default(uuid()) @db.Uuid
+  community_user_id String   @db.Uuid
+  comment           String
+  publication_id    String   @db.Uuid
+  created_at        DateTime @default(now())
+
+  publication    publications    @relation(fields: [publication_id], references: [id], onDelete: Cascade)
+  community_user community_users @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+  replies        comment_replies[]
+
+  @@index([publication_id])
+  @@index([community_user_id])
+}
+
+model comment_replies {
+  id                String   @id @default(uuid()) @db.Uuid
+  comment_id        String   @db.Uuid
+  community_user_id String   @db.Uuid
+  reply             String
+  created_at        DateTime @default(now())
+
+  comment        comments        @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  community_user community_users @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+
+  @@index([comment_id])
+  @@index([community_user_id])
+}
+
+model reactions {
+  id                String          @id @default(uuid()) @db.Uuid
+  community_user_id String          @db.Uuid
+  target_id         String          @db.Uuid
+  target_type       reaction_target
+  type              reaction_type
+  created_at        DateTime        @default(now())
+
+  community_user community_users @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+
+  @@unique([community_user_id, target_id, target_type])
+  @@index([community_user_id])
+  @@index([target_id, target_type])
+}
+
+// ===============================
+// EVENTS (agenda simple por abogado)
+// ===============================
+
+model events {
+  id          String   @id @default(uuid()) @db.Uuid
+  lawyer_id   String   @db.Uuid
+  title       String
+  description String?
+  start_time  DateTime @db.Time
+  end_time    DateTime @db.Time
+
+  lawyer lawyer_details @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  dates  event_dates[]
+
+  @@index([lawyer_id])
+}
+
+model event_dates {
+  id       String   @id @default(uuid()) @db.Uuid
+  event_id String   @db.Uuid
+  date     DateTime @db.Date
+
+  event events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, date])
+  @@index([event_id, date])
+}
+
+// ===============================
+// EXTERNAL CLIENTS + SERVICES
+// ===============================
+
+model external_clients {
+  id             String   @id @default(uuid()) @db.Uuid
+  user_detail_id String   @db.Uuid
+  profile_image  String?
+  full_name      String
+  email          String?  @default("")
+  phone          String
+  dni            String
+  created_at     DateTime @default(now())
+  archived       Boolean  @default(false)
+
+  user_detail user_details @relation(fields: [user_detail_id], references: [user_id], onDelete: Cascade)
+  services    services[]
+
+  @@index([user_detail_id])
+}
+
+model services {
+  id                 String       @id @default(uuid()) @db.Uuid
+  type               service_type
+  created_at         DateTime     @default(now())
+  lawyer_id          String?      @db.Uuid
+  client_id          String?      @db.Uuid
+  external_client_id String?      @db.Uuid
+
+  lawyer          user_details?     @relation("LawyerServices", fields: [lawyer_id], references: [user_id])
+  client          user_details?     @relation("ClientServices", fields: [client_id], references: [user_id])
+  external_client external_clients? @relation(fields: [external_client_id], references: [id])
+
+  cases         cases[]
+  consultations consultations[]
+  calls         calls[]
+  messages      messages[]
+  attachments   attachments[]
+
+  @@index([lawyer_id])
+  @@index([client_id])
+  @@index([external_client_id])
+}
+
+// ===============================
+// CASES
+// ===============================
+
+model case_categories {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String @unique
+  description String?
+
+  cases cases[]
+}
+
+model case_statuses {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String @unique
+  description String?
+
+  cases cases[]
+}
+
+model cases {
+  id             String       @id @default(uuid()) @db.Uuid
+  service_id     String       @db.Uuid
+  title          String
+  description    String
+  category_id    String       @db.Uuid
+  urgency        case_urgency
+  status_id      String       @db.Uuid
+  is_public      Boolean
+  reference_code String       @default(cuid())
+  created_at     DateTime     @default(now())
+  archived       Boolean      @default(false)
+
+  service   services        @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category  case_categories @relation(fields: [category_id], references: [id])
+  status    case_statuses   @relation(fields: [status_id], references: [id])
+  histories case_histories[]
+
+  @@index([service_id])
+  @@index([category_id])
+  @@index([status_id])
+  @@index([reference_code])
+}
+
+model case_histories {
+  id         String   @id @default(uuid()) @db.Uuid
+  case_id    String   @db.Uuid
+  changed_by String   @db.Uuid
+  field      String   @db.VarChar(60) 
+  old_value  String
+  new_value  String
+  note       String?
+  created_at DateTime @default(now())
+
+  case cases @relation(fields: [case_id], references: [id])
+
+  @@index([case_id, created_at])
+}
+
+// ===============================
+// CONSULTATIONS & CALLS & MESSAGES
+// ===============================
+
+model consultations {
+  id            String                @id @default(uuid()) @db.Uuid
+  service_id    String                @db.Uuid
+  topic         String
+  question      String
+  response      String?
+  status        consultation_status
+  created_at    DateTime              @default(now())
+  answered_at   DateTime?
+  rating        Int?
+  priority      consultation_priority
+  confidential  Boolean
+  requires_call Boolean
+
+  service services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@index([service_id])
+  @@index([status, priority])
+}
+
+model call_categories {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  calls calls[]
+}
+
+model calls {
+  id               String      @id @default(uuid()) @db.Uuid
+  type             String
+  scheduled_date   DateTime
+  scheduled_time   DateTime
+  duration_minutes Int
+  status           call_status
+  meeting_link     String
+  notes            String?
+  category_id      String      @db.Uuid
+  service_id       String      @db.Uuid
+  created_at       DateTime    @default(now())
+
+  category call_categories @relation(fields: [category_id], references: [id])
+  service  services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@index([service_id])
+  @@index([category_id])
+  @@index([status])
+}
+
+model messages {
+  id         String     @id @default(uuid()) @db.Uuid
+  service_id String     @db.Uuid
+  content    String
+  sent_by    actor_type
+  is_read    Boolean
+  created_at DateTime   @default(now())
+
+  service services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@index([service_id, created_at])
+}
+
+// ===============================
+// ATTACHMENTS
+// ===============================
+
+model attachment_categories {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  attachments attachments[]
+}
+
+model attachments {
+  id          String   @id @default(uuid()) @db.Uuid
+  file_key    String        
+  label       String
+  description String?
+  category_id String   @db.Uuid
+  uploaded_by actor_type
+  created_at  DateTime @default(now())
+  service_id  String   @db.Uuid
+  archived    Boolean  @default(false)
+
+  service  services              @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  category attachment_categories @relation(fields: [category_id], references: [id])
+
+  @@index([service_id])
+  @@index([category_id])
+  @@index([uploaded_by])
+}
+
+// ===============================
+// SUBSCRIBERS
+// ===============================
+
+model arxatec_subscribers {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @db.VarChar(100)
+  email      String   @unique @db.VarChar(255)
+  created_at DateTime @default(now())
 }

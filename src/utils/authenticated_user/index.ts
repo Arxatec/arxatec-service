@@ -1,41 +1,45 @@
+// src/utils/authenticated_user/index.ts
 import prisma from "../../config/prisma_client";
 import { AuthenticatedRequest } from "../../middlewares/authenticate_token";
-import { AppError } from "../../utils";
+import { AppError } from "../../utils/errors";
 import { HttpStatusCodes } from "../../constants/http_status_codes";
 
-// TODO: Add the user type to the user
 export interface CurrentUser {
   id: string;
-  role: "admin" | "client" | "employee";
-  admin_role?: "superadmin" | "manager";
+  role: "admin" | "client" | "lawyer";
+  // admin_role?: "superadmin" | "manager";
 }
 
 export const getAuthenticatedUser = async (
   req: AuthenticatedRequest
 ): Promise<CurrentUser> => {
-  const id = req.user?.id;
+  const rawId = req.user?.id;
 
-  if (!id) {
+  if (!rawId) {
     throw new AppError(
       "Token de autenticación no válido o no proporcionado",
       HttpStatusCodes.UNAUTHORIZED.code
     );
   }
 
+  if (typeof rawId !== "string" || rawId.length < 10) {
+    throw new AppError(
+      "Identificador de usuario inválido",
+      HttpStatusCodes.UNAUTHORIZED.code
+    );
+  }
+
   const user = await prisma.users.findUniqueOrThrow({
-    where: { id },
+    where: { id: rawId },
     select: {
       id: true,
       user_type: true,
-      admin_details: { select: { role: true } },
     },
   });
 
   if (
     !user.user_type ||
-    (user.user_type !== "admin" &&
-      user.user_type !== "client" &&
-      user.user_type !== "employee")
+    !["admin", "client", "lawyer"].includes(user.user_type)
   ) {
     throw new AppError(
       "Tipo de usuario no permitido",
@@ -43,11 +47,8 @@ export const getAuthenticatedUser = async (
     );
   }
 
-  const result: CurrentUser = {
+  return {
     id: user.id,
     role: user.user_type,
-    admin_role: user.admin_details?.role ?? undefined,
   };
-
-  return result;
 };

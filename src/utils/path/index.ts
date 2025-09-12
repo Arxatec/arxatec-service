@@ -1,14 +1,12 @@
-import path, { dirname } from "path";
-import { dirname as dirnameConstants } from "../../constants";
+// src/utils/path/index.ts
+import path from "path";
 import { fileURLToPath } from "url";
-import { ENVIRONMENT } from "../../config";
+import { IMAGES_DIR } from "../../constants/path";
 
 export const getDirname = (importMetaUrl: string) => {
   const __filename = fileURLToPath(importMetaUrl);
-  return dirname(__filename);
+  return path.dirname(__filename);
 };
 
-export const resolveImagePath = (file: string) =>
-  ENVIRONMENT === "production"
-    ? path.join(dirnameConstants, "public/images", file)
-    : path.join(dirnameConstants, "../../../public/images", file);
+// Siempre resuelve desde la carpeta pública de imágenes del proyecto
+export const resolveImagePath = (file: string) => path.join(IMAGES_DIR, file);

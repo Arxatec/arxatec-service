@@ -1,8 +1,7 @@
+// src/index.ts (o .js si ya transpilado)
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./docs/swagger.js";
 import routes from "./routes.js";
 import http from "http";
 import { initSocket } from "./config/socket/index.js";
@@ -14,12 +13,13 @@ import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_er
 import { globalErrorHandler } from "./middlewares/global_error_handler/index.js";
 import { buildHttpResponse } from "./utils/build_http_response/index.js";
 import { HttpStatusCodes } from "./constants/http_status_codes/index.js";
+import { mountSwagger } from "./docs";
 
 const app = express();
 const server = http.createServer(app);
 
 // App URL fallback
-const appUrl = `${APP_URL}` || `http://localhost:${PORT}`;
+const appUrl: string = APP_URL ?? `http://localhost:${PORT}`;
 
 // Initialize sockets
 initSocket(server);
@@ -30,8 +30,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// ✅ Swagger
+mountSwagger(app);
 
 // API Routes
 app.use(routes);
@@ -47,8 +47,8 @@ app.use((req, res) => {
       buildHttpResponse(
         HttpStatusCodes.NOT_FOUND.code,
         "Route not found",
-        req.path,
-      ),
+        req.path
+      )
     );
 });
 
@@ -60,7 +60,6 @@ app.get("/ping", (_, res) => res.send("pong"));
 
 // Start server
 const main = async () => {
-  // Redis
   try {
     await redisClient.connect();
   } catch (e) {
@@ -69,7 +68,6 @@ const main = async () => {
 
   server.listen(PORT, () => {
     displayWelcomeMessage(appUrl);
-    console.log(`[HTTP] Server on :${PORT}`);
   });
 };
 

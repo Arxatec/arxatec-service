@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+      rel="stylesheet"
+    />
+    <title>Recuperación de cuenta - Arxatec</title>
+  </head>
+  <body style="font-family: 'DM Sans', Arial, sans-serif">
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+
+      @font-face {
+        font-family: "DM Sans";
+        src: url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+      }
+    </style>
+
+    <div
+      style="
+        width: 100%;
+        max-width: 600px;
+        margin: 1rem auto;
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      "
+    >
+      <img
+        src="https://www.arxatec.net/assets/logo.png"
+        alt="logo"
+        width="120"
+      />
+      <h1
+        style="
+          font-size: 1rem;
+          color: #111827;
+          font-weight: 900;
+          font-family: 'DM Sans', Arial, sans-serif;
+          text-align: left;
+          margin-top: 1rem;
+        "
+      >
+        Código de verificación
+      </h1>
+
+      <p
+        style="
+          font-size: 0.8rem;
+          color: #4b5563;
+          font-family: 'DM Sans', Arial, sans-serif;
+        "
+      >
+        Para recuperar tu cuenta en Arxatec, utiliza el siguiente código de
+        verificación. No lo compartas. Es exclusivo para completar el proceso de
+        recuperación de forma segura.
+      </p>
+      <b
+        style="
+          font-size: 2rem;
+          color: #4b5563;
+          letter-spacing: 0.2rem;
+          font-weight: 900;
+          font-family: 'DM Sans', Arial, sans-serif;
+          text-align: center;
+          display: block;
+          margin-top: 1rem;
+        "
+      >
+        <%= code %>
+      </b>
+
+      <a
+        href="https://arxatec-platform.vercel.app/verify-reset?code=<%= code %>"
+        style="
+          text-decoration: none;
+          margin: 1.5rem 0rem;
+          background-color: #2563eb;
+          padding: 0.8rem 1rem;
+          color: #fff;
+          font-family: 'DM Sans', Arial, sans-serif;
+          font-weight: 600;
+          border-radius: 0.3rem;
+          display: block;
+          font-size: 0.8rem;
+          text-align: center;
+        "
+      >
+        Verificar código y continuar
+      </a>
+
+      <p
+        style="
+          font-size: 0.8rem;
+          margin-top: 0.2rem;
+          color: #4b5563;
+          font-family: 'DM Sans', Arial, sans-serif;
+        "
+      >
+        Si no solicitaste esta recuperación, ignora este mensaje.
+      </p>
+
+      <div
+        style="
+          border-top: 1px solid #d1d5db;
+          margin-top: 32px;
+          padding-top: 10px;
+          font-size: 12px;
+          color: #9ca3af;
+        "
+      >
+        <p style="font-family: 'DM Sans', Arial, sans-serif">
+          Este es un mensaje automático del sistema de Arxatec.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

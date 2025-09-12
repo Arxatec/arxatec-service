@@ -1,7 +1,14 @@
+// src/utils/email_sender/index.ts
 import { Attachment } from "nodemailer/lib/mailer";
 import transporter from "../../config/email";
 import { EMAIL_ADMIN } from "../../config";
-import { resolveImagePath } from "../../utils";
+import fs from "fs";
+import path from "path";
+
+function tryResolveAsset(file: string): string | null {
+  const p = path.join(process.cwd(), "public", "assets", file);
+  return fs.existsSync(p) ? p : null;
+}
 
 export async function sendEmail(
   to: string,
@@ -10,25 +17,28 @@ export async function sendEmail(
   html?: string,
   attachments?: Attachment[]
 ): Promise<void> {
-  try {
-    const logoPath = resolveImagePath("logo.png");
+  const baseAttachments: Attachment[] = [];
+  const logoPath = tryResolveAsset("logo.png");
 
-    const info = await transporter.sendMail({
+  if (logoPath) {
+    baseAttachments.push({
+      filename: "logo.png",
+      path: logoPath,
+      cid: "logo",
+    });
+  }
+
+  try {
+    await transporter.sendMail({
       from: EMAIL_ADMIN,
       to,
       subject,
       text,
       html,
-      attachments: [
-        {
-          filename: "logo.png",
-          path: logoPath,
-          cid: "logo",
-        },
-        ...(attachments || []),
-      ],
+      attachments: [...baseAttachments, ...(attachments || [])],
     });
-  } catch (error) {
-    throw new Error("Error al enviar el correo electrónico");
+  } catch (err: any) {
+    const reason = err?.response || err?.message || String(err);
+    throw new Error(`Error al enviar el correo electrónico: ${reason}`);
   }
 }

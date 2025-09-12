@@ -6,7 +6,7 @@ services:
     container_name: arxatec-postgres
     restart: always
     ports:
-      - "5433:5433"
+      - "5433:5432"
     environment:
       POSTGRES_DB: arxatec-service
       POSTGRES_USER: arxatec
@@ -25,7 +25,7 @@ services:
     command: ["redis-server", "--requirepass", "arxatec", "--appendonly", "yes"]
     restart: always
     ports:
-      - "6380:6380" # No choca con 6379 de labase
+      - "6381:6379"
     volumes:
       - redis_data_arxatec:/data
     healthcheck:

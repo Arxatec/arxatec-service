@@ -5,20 +5,11 @@ import helmet from "helmet";
 import type { Express } from "express";
 
 const isProd = "production";
-const isStaging = "staging";
 
 const servers: OAS3Definition["servers"] = [
-  !isProd && !isStaging
-    ? { url: "http://localhost:3000", description: "Local" }
-    : undefined,
-  isStaging
-    ? { url: "https://api-staging.arxatec.io/v1", description: "Staging" }
-    : undefined,
-  isProd
-    ? { url: "https://api.arxatec.io/v1", description: "Production" }
-    : undefined,
-].filter(Boolean) as OAS3Definition["servers"];
-
+  { url: "http://localhost:3001", description: "Local" },
+  { url: "https://api.arxatec/api/v1", description: "Production" },
+];
 const swaggerDefinition: OAS3Definition = {
   openapi: "3.0.3",
   info: {
@@ -110,7 +101,7 @@ export const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 export function mountSwagger(app: Express) {
   app.use(
-    "/docs",
+    "/api-docs",
     helmet({
       contentSecurityPolicy: {
         useDefaults: true,
@@ -130,8 +121,7 @@ export function mountSwagger(app: Express) {
       ? [
           basicAuth({
             users: {
-              [process.env.SWAGGER_USER!]:
-                process.env.SWAGGER_PASS!,
+              [process.env.SWAGGER_USER!]: process.env.SWAGGER_PASS!,
             },
             challenge: true,
           }),

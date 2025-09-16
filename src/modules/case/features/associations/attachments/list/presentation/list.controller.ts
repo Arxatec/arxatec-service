@@ -2,12 +2,12 @@
 import { Request, Response } from "express";
 import { buildHttpResponse } from "../../../../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../../../../constants/http_status_codes";
-import { getAuthenticatedUser } from "../../../../../../../utils/authenticated_user";
 import { ListAttachmentService } from "./list.service";
 import {
   ListAttachmentsParamsSchema,
   ListAttachmentsQuerySchema,
 } from "../domain/list.schema";
+import { requireClientOrLawyer } from "../../../../../../../utils/authenticated_user";
 
 export class ListAttachmentController {
   constructor(private readonly svc = new ListAttachmentService()) {}
@@ -15,12 +15,9 @@ export class ListAttachmentController {
   list = async (req: Request, res: Response) => {
     const { id } = ListAttachmentsParamsSchema.parse(req.params);
     const query = ListAttachmentsQuerySchema.parse(req.query);
-    const user = await getAuthenticatedUser(req as any);
-    const result = await this.svc.list(
-      id,
-      { id: String(user.id), role: user.user_type as "client" | "lawyer" },
-      query
-    );
+    const user = await requireClientOrLawyer(req as any);
+
+    const result = await this.svc.list(id, user, query);
 
     return res
       .status(HttpStatusCodes.OK.code)

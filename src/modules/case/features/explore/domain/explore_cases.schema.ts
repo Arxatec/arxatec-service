@@ -2,11 +2,37 @@
 import { z } from "zod";
 
 export const ExploreCasesQuerySchema = z.object({
-  category_id: z.string().uuid("INVALID_CATEGORY_ID").optional(),
-  status_id: z.string().uuid("INVALID_STATUS_ID").optional(),
-  lawyer_id: z.string().uuid("INVALID_LAWYER_ID").optional(),
-  page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().max(100).optional(),
+  category_id: z
+    .string()
+    .uuid("El ID de la categoría debe tener formato UUID")
+    .optional(),
+
+  status_id: z
+    .string()
+    .uuid("El ID del estado debe tener formato UUID")
+    .optional(),
+
+  lawyer_id: z
+    .string()
+    .uuid("El ID del abogado debe tener formato UUID")
+    .optional(),
+
+  page: z.coerce
+    .number({
+      invalid_type_error: "La página debe ser un número",
+    })
+    .int("La página debe ser un número entero")
+    .positive("La página debe ser un número positivo")
+    .optional(),
+
+  limit: z.coerce
+    .number({
+      invalid_type_error: "El límite debe ser un número",
+    })
+    .int("El límite debe ser un número entero")
+    .positive("El límite debe ser un número positivo")
+    .max(100, "El límite máximo permitido es 100")
+    .optional(),
 });
 
 export type ExploreCasesQueryDTO = z.infer<typeof ExploreCasesQuerySchema>;

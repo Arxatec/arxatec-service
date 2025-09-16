@@ -10,7 +10,7 @@ const ctrl = new EditProfileController();
 /**
  * Edit user profile
  * @openapi
- * /user/profile:
+ * /user/get-profile:
  *   put:
  *     security:
  *       - bearerAuth: []

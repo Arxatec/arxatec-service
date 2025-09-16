@@ -4,9 +4,20 @@ import { AuthenticatedRequest } from "../../middlewares/authenticate_token";
 import { AppError } from "../../utils/errors";
 import { HttpStatusCodes } from "../../constants/http_status_codes";
 
+type Role = "admin" | "client" | "lawyer";
+
 export interface CurrentUser {
   id: string;
-  role: "admin" | "client" | "lawyer";
+  role: Role;
+}
+
+export type ClientOrLawyer = {
+  id: string;
+  role: Exclude<Role, "admin">;
+};
+
+function isClientOrLawyer(u: CurrentUser): u is ClientOrLawyer {
+  return u.role !== "admin";
 }
 
 export const getAuthenticatedUser = async (
@@ -30,10 +41,7 @@ export const getAuthenticatedUser = async (
 
   const user = await prisma.users.findUniqueOrThrow({
     where: { id: rawId },
-    select: {
-      id: true,
-      user_type: true,
-    },
+    select: { id: true, user_type: true },
   });
 
   if (
@@ -46,8 +54,19 @@ export const getAuthenticatedUser = async (
     );
   }
 
-  return {
-    id: user.id,
-    role: user.user_type,
-  };
+  return { id: user.id, role: user.user_type as CurrentUser["role"] };
+};
+
+export const requireClientOrLawyer = async (
+  req: AuthenticatedRequest
+): Promise<ClientOrLawyer> => {
+  const u = await getAuthenticatedUser(req);
+
+  if (!isClientOrLawyer(u)) {
+    throw new AppError(
+      "Solo clientes o abogados pueden realizar esta operación",
+      HttpStatusCodes.FORBIDDEN.code
+    );
+  }
+  return u;
 };

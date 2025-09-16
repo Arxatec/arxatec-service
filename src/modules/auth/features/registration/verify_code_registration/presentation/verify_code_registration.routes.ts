@@ -16,7 +16,7 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  * /auth/register/verify-code:
  *   post:
  *     tags:
- *       - Auth
+ *       - Register
  *     summary: "Verify registration code"
  *     description: "Verifica el código enviado al correo para completar el registro y crear la cuenta."
  *     requestBody:

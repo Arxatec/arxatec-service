@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const ReopenCaseParamsSchema = z.object({
   id: z
-    .string({ required_error: "Case ID is required" })
-    .uuid("INVALID_CASE_ID"),
+    .string({ required_error: "El ID del caso es obligatorio" })
+    .uuid("El ID del caso debe tener formato UUID"),
 });
+
 export type ReopenCaseDTO = z.infer<typeof ReopenCaseParamsSchema>;

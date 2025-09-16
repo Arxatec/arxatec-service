@@ -2,9 +2,21 @@
 import { z } from "zod";
 
 export const GetExternalClientsQuerySchema = z.object({
-  page: z.string().regex(/^\d+$/).optional(),
-  limit: z.string().regex(/^\d+$/).optional(),
-  q: z.string().trim().min(1).optional(),
+  page: z
+    .string()
+    .regex(/^\d+$/, "La página debe ser un número entero positivo")
+    .optional(),
+
+  limit: z
+    .string()
+    .regex(/^\d+$/, "El límite debe ser un número entero positivo")
+    .optional(),
+
+  q: z
+    .string()
+    .trim()
+    .min(1, "El parámetro de búsqueda no puede estar vacío")
+    .optional(),
 });
 
 export type GetExternalClientsQueryDTO = z.infer<

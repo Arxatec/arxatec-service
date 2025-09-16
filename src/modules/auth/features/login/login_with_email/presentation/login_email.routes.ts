@@ -11,12 +11,12 @@ const loginController = new LoginController(loginService);
 /**
  * Login user
  * @openapi
- * /api/v1/auth/login:
+ * /auth/login:
  *   post:
  *     tags:
  *       - Auth
  *     summary: "Login user"
- *     description: "Allows a user to authenticate in the system and obtain their access token"
+ *     description: "Permite autenticar a un usuario y obtener su token de acceso (JWT)."
  *     requestBody:
  *       required: true
  *       content:
@@ -34,7 +34,7 @@ const loginController = new LoginController(loginService);
  *               password:
  *                 type: string
  *                 minLength: 6
- *                 example: "contraseña123"
+ *                 example: "contrasena123"
  *     responses:
  *       '200':
  *         description: "Login successful"
@@ -54,7 +54,7 @@ const loginController = new LoginController(loginService);
  *                   example: "Login successful"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login"
@@ -78,16 +78,18 @@ const loginController = new LoginController(loginService);
  *                           example: "usuario@example.com"
  *                         userType:
  *                           type: string
+ *                           nullable: true
+ *                           enum: [admin, client, lawyer, null]
  *                           example: "client"
  *                         role:
  *                           type: string
  *                           nullable: true
- *                           example: "superadmin"
+ *                           example: null
  *                     token:
  *                       type: string
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       '400':
- *         description: "Bad Request"
+ *         description: "Bad Request (errores de validación Zod)"
  *         content:
  *           application/json:
  *             schema:
@@ -103,21 +105,21 @@ const loginController = new LoginController(loginService);
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Email is required"
+ *                       example: "El correo electrónico es obligatorio"
  *                     - type: string
- *                       example: "Invalid email format"
+ *                       example: "El formato del correo electrónico no es válido, revisa que esté escrito correctamente"
  *                     - type: string
- *                       example: "Password is required"
+ *                       example: "La contraseña es obligatoria"
  *                     - type: string
- *                       example: "Password must have at least 6 characters"
+ *                       example: "La contraseña debe tener al menos 6 caracteres"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login"
  *       '401':
- *         description: "Unauthorized"
+ *         description: "Unauthorized (credenciales inválidas o usuario no verificado)"
  *         content:
  *           application/json:
  *             schema:
@@ -133,17 +135,17 @@ const loginController = new LoginController(loginService);
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Invalid credentials"
+ *                       example: "Credenciales inválidas, revisa que el correo electrónico y la contraseña sean correctos."
  *                     - type: string
- *                       example: "User is not verified"
+ *                       example: "El usuario no está verificado, por favor verifica tu correo electrónico."
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login"
  *       '404':
- *         description: "Not Found"
+ *         description: "Not Found (usuario no existe)"
  *         content:
  *           application/json:
  *             schema:
@@ -157,10 +159,10 @@ const loginController = new LoginController(loginService);
  *                   example: "Not Found"
  *                 description:
  *                   type: string
- *                   example: "User not found"
+ *                   example: "El usuario no existe, revisa que el correo electrónico sea correcto."
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login"
@@ -179,14 +181,15 @@ const loginController = new LoginController(loginService);
  *                   example: "Internal Server Error"
  *                 description:
  *                   type: string
- *                   example: "Error message details"
+ *                   example: "Error inesperado en el servidor"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login"
  */
+
 loginRouter.post(
   "/",
   asyncHandler((req, res) => loginController.login(req, res))

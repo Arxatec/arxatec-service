@@ -6,7 +6,7 @@ export function globalErrorHandler(
   err: unknown,
   req: Request,
   res: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ) {
   return handleServerError(res, req, err);
 }

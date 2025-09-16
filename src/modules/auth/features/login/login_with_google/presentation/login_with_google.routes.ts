@@ -11,12 +11,12 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
 /**
  * Login user with Google
  * @openapi
- * /api/v1/auth/login/google:
+ * /auth/login/google:
  *   post:
  *     tags:
  *       - Auth
  *     summary: "Login user with Google"
- *     description: "Allows a user to authenticate in the system using Google authentication"
+ *     description: "Autentica al usuario con Google y retorna JWT. Crea el usuario si no existe."
  *     requestBody:
  *       required: true
  *       content:
@@ -28,10 +28,10 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *             properties:
  *               googleToken:
  *                 type: string
- *                 example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFlOTczZWUwZTE..."
+ *                 example: "ya29.a0AfH6SMC... (Google OAuth access token)"
  *     responses:
  *       '200':
- *         description: "Login successful"
+ *         description: "Login with Google successful"
  *         content:
  *           application/json:
  *             schema:
@@ -48,7 +48,7 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *                   example: "Login with Google successful"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login/google"
@@ -73,8 +73,11 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *                     token:
  *                       type: string
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     isNewUser:
+ *                       type: boolean
+ *                       example: true
  *       '400':
- *         description: "Bad Request"
+ *         description: "Bad Request (validación Zod)"
  *         content:
  *           application/json:
  *             schema:
@@ -91,12 +94,12 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *                   example: "Google token is required"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login/google"
  *       '401':
- *         description: "Unauthorized"
+ *         description: "Unauthorized (token inválido o fallo de autenticación)"
  *         content:
  *           application/json:
  *             schema:
@@ -115,11 +118,9 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *                       example: "Invalid Google token"
  *                     - type: string
  *                       example: "Authentication failed"
- *                     - type: string
- *                       example: "User is not verified"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login/google"
@@ -138,14 +139,15 @@ const loginGoogleController = new LoginGoogleController(loginGoogleService);
  *                   example: "Internal Server Error"
  *                 description:
  *                   type: string
- *                   example: "Error message details"
+ *                   example: "Error inesperado en el servidor"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/login/google"
  */
+
 loginGoogleRouter.post(
   "/google",
   asyncHandler((req, res) => loginGoogleController.loginWithGoogle(req, res))

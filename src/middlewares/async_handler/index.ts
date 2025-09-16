@@ -1,5 +1,6 @@
+// src/middlewares/async_handler/index.ts
 import { Request, Response, NextFunction } from "express";
-import { handleServerError } from "../../utils";
+import { handleServerError } from "../../utils/error_handler";
 
 export const asyncHandler = (
   fn: (req: Request, res: Response, next: NextFunction) => any | Promise<any>

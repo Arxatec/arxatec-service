@@ -9,15 +9,16 @@ const verifyCodeRegistrationService = new VerifyCodeRegistrationService();
 const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
   verifyCodeRegistrationService
 );
+
 /**
  * Verify registration code
  * @openapi
- * /api/v1/auth/register/verify-code:
+ * /auth/register/verify-code:
  *   post:
  *     tags:
  *       - Auth
  *     summary: "Verify registration code"
- *     description: "Verify the code sent to user's email to complete registration"
+ *     description: "Verifica el código enviado al correo para completar el registro y crear la cuenta."
  *     requestBody:
  *       required: true
  *       content:
@@ -36,6 +37,7 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                 type: string
  *                 minLength: 4
  *                 maxLength: 4
+ *                 pattern: "^[0-9]{4}$"
  *                 example: "1234"
  *     responses:
  *       '201':
@@ -50,15 +52,18 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                   example: 201
  *                 message:
  *                   type: string
+ *                   example: "Created"
+ *                 description:
+ *                   type: string
  *                   example: "User verified and registered successfully"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/register/verify-code"
  *       '400':
- *         description: "Bad Request"
+ *         description: "Bad Request (código inválido/expirado o datos temporales inválidos)"
  *         content:
  *           application/json:
  *             schema:
@@ -69,21 +74,34 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                   example: 400
  *                 message:
  *                   type: string
- *                   enum:
- *                     - "Bad Request"
+ *                   example: "Bad Request"
  *                 description:
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Invalid or expired verification code"
+ *                       example: "Código expirado o no encontrado, solicita uno nuevo."
  *                     - type: string
- *                       example: "Temporary user data not found"
+ *                       example: "Código inválido, solicita uno nuevo."
  *                     - type: string
- *                       example: "Verification code is required"
+ *                       example: "Datos temporales inválidos, solicita un nuevo código."
  *                     - type: string
- *                       example: "Invalid email format"
+ *                       example: "El correo electrónico es obligatorio"
+ *                     - type: string
+ *                       example: "El formato del correo electrónico no es válido, revisa que esté escrito correctamente"
+ *                     - type: string
+ *                       example: "El código de verificación es obligatorio"
+ *                     - type: string
+ *                       example: "El código de verificación debe tener exactamente 4 caracteres"
+ *                     - type: string
+ *                       example: "El código de verificación debe contener solo dígitos"
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2025-09-15T19:30:00.000Z"
+ *                 path:
+ *                   type: string
+ *                   example: "/api/v1/auth/register/verify-code"
  *       '401':
- *         description: "Unauthorized"
+ *         description: "Unauthorized (código incorrecto)"
  *         content:
  *           application/json:
  *             schema:
@@ -97,9 +115,15 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                   example: "Unauthorized"
  *                 description:
  *                   type: string
- *                   example: "Invalid verification code"
+ *                   example: "Código de verificación inválido, por favor verifica que el código sea correcto."
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2025-09-15T19:30:00.000Z"
+ *                 path:
+ *                   type: string
+ *                   example: "/api/v1/auth/register/verify-code"
  *       '409':
- *         description: "Conflict"
+ *         description: "Conflict (correo ya registrado)"
  *         content:
  *           application/json:
  *             schema:
@@ -113,7 +137,13 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                   example: "Conflict"
  *                 description:
  *                   type: string
- *                   example: "Email is already registered"
+ *                   example: "El correo electrónico ya está registrado."
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2025-09-15T19:30:00.000Z"
+ *                 path:
+ *                   type: string
+ *                   example: "/api/v1/auth/register/verify-code"
  *       '500':
  *         description: "Internal Server Error"
  *         content:
@@ -131,16 +161,23 @@ const verifyCodeRegistrationController = new VerifyCodeRegistrationController(
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Error creating user"
+ *                       example: "Error creando usuario"
  *                     - type: string
- *                       example: "Error retrieving verification code"
+ *                       example: "Error obteniendo código de verificación"
  *                     - type: string
- *                       example: "Error retrieving temporary user data"
+ *                       example: "Error obteniendo datos temporales de usuario"
  *                     - type: string
- *                       example: "Error removing temporary data"
+ *                       example: "Error eliminando datos temporales"
  *                     - type: string
- *                       example: "Verification process failed"
+ *                       example: "Fallo inesperado en el proceso de verificación"
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2025-09-15T19:30:00.000Z"
+ *                 path:
+ *                   type: string
+ *                   example: "/api/v1/auth/register/verify-code"
  */
+
 verifyCodeRegistrationRouter.post(
   "/verify-code",
   asyncHandler((req, res) =>

@@ -9,15 +9,16 @@ const requestRegistrationService = new RequestRegistrationService();
 const requestRegistrationController = new RequestRegistrationController(
   requestRegistrationService
 );
+
 /**
  * Request user registration
  * @openapi
- * /api/v1/auth/register/request:
+ * /auth/register/request:
  *   post:
  *     tags:
  *       - Auth
  *     summary: "Request user registration"
- *     description: "Initiate the registration process for a new user and send verification code to email"
+ *     description: "Inicia el registro de un nuevo usuario y envía un código de verificación al correo."
  *     requestBody:
  *       required: true
  *       content:
@@ -46,11 +47,11 @@ const requestRegistrationController = new RequestRegistrationController(
  *               password:
  *                 type: string
  *                 minLength: 8
- *                 example: "password123"
+ *                 example: "Password123"
  *               confirm_password:
  *                 type: string
  *                 minLength: 8
- *                 example: "password123"
+ *                 example: "Password123"
  *     responses:
  *       '200':
  *         description: "Registration request processed successfully"
@@ -64,15 +65,18 @@ const requestRegistrationController = new RequestRegistrationController(
  *                   example: 200
  *                 message:
  *                   type: string
+ *                   example: "OK"
+ *                 description:
+ *                   type: string
  *                   example: "Verification code sent successfully."
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/register/request"
  *       '400':
- *         description: "Bad Request"
+ *         description: "Bad Request (validación/negocio)"
  *         content:
  *           application/json:
  *             schema:
@@ -83,26 +87,37 @@ const requestRegistrationController = new RequestRegistrationController(
  *                   example: 400
  *                 message:
  *                   type: string
- *                   enum:
- *                     - "Bad Request"
+ *                   example: "Bad Request"
  *                 description:
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Email is already in use"
+ *                       example: "El nombre es obligatorio"
  *                     - type: string
- *                       example: "First name must have at least 2 characters"
+ *                       example: "El nombre debe tener al menos 2 caracteres"
  *                     - type: string
- *                       example: "Last name must have at least 2 characters"
+ *                       example: "El apellido es obligatorio"
  *                     - type: string
- *                       example: "Invalid email format"
+ *                       example: "El apellido debe tener al menos 2 caracteres"
  *                     - type: string
- *                       example: "Password must have at least 8 characters"
+ *                       example: "El correo electrónico es obligatorio"
  *                     - type: string
- *                       example: "Passwords do not match"
+ *                       example: "El formato del correo electrónico no es válido, revisa que esté escrito correctamente"
+ *                     - type: string
+ *                       example: "La contraseña es obligatoria"
+ *                     - type: string
+ *                       example: "La contraseña debe tener al menos 8 caracteres"
+ *                     - type: string
+ *                       example: "La confirmación de contraseña es obligatoria"
+ *                     - type: string
+ *                       example: "La confirmación de contraseña debe tener al menos 8 caracteres"
+ *                     - type: string
+ *                       example: "Las contraseñas no coinciden, vuelve a intentar por favor"
+ *                     - type: string
+ *                       example: "El correo electrónico ya está en uso, por favor verifica que el correo electrónico sea correcto."
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/register/request"
@@ -123,20 +138,21 @@ const requestRegistrationController = new RequestRegistrationController(
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Error creating temporary user"
+ *                       example: "Error creando usuario temporal"
  *                     - type: string
- *                       example: "Error generating email template"
+ *                       example: "Error al generar la plantilla del correo"
  *                     - type: string
- *                       example: "Error sending verification email"
+ *                       example: "Error al enviar el correo de verificación"
  *                     - type: string
- *                       example: "Registration process failed"
+ *                       example: "Fallo inesperado en el proceso de registro"
  *                 timestamp:
  *                   type: string
- *                   example: "2023-10-15T14:30:00.000Z"
+ *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
  *                   example: "/api/v1/auth/register/request"
  */
+
 requestRegistrationRouter.post(
   "/request",
   asyncHandler((req, res) =>

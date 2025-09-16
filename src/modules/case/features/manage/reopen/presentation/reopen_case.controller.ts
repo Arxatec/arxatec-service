@@ -1,0 +1,50 @@
+// src/modules/cases/features/manage/reopen_case/presentation/reopen_case.controller.ts
+import { Response } from "express";
+import { ReopenCaseService } from "./reopen_case.service";
+import { ReopenCaseParamsSchema } from "../domain/reopen_case.schema";
+import { buildHttpResponse } from "../../../../../../utils/build_http_response";
+import {
+  handleServerError,
+  handleZodError,
+} from "../../../../../../utils/error_handler";
+import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
+import { AuthenticatedRequest } from "../../../../../../middlewares/authenticate_token";
+import { getAuthenticatedUser } from "../../../../../../utils/authenticated_user";
+import { ZodError } from "zod";
+
+export class ReopenCaseController {
+  constructor(private readonly svc = new ReopenCaseService()) {}
+
+  reopen = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id } = ReopenCaseParamsSchema.parse(req.params);
+
+      const user = await getAuthenticatedUser(req);
+
+      const data = await this.svc.execute(
+        { id },
+        {
+          id: String(user.id),
+          role: user.user_type as "client" | "lawyer",
+        }
+      );
+
+      return res
+        .status(HttpStatusCodes.OK.code)
+        .json(
+          buildHttpResponse(
+            HttpStatusCodes.OK.code,
+            "Case reopened",
+            req.path,
+            { case: data, user }
+          )
+        );
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const z = handleZodError(err, req);
+        return res.status(z.status).json(z);
+      }
+      return handleServerError(res, req, err);
+    }
+  };
+}

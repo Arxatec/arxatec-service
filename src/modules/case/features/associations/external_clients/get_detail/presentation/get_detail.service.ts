@@ -10,7 +10,7 @@ export const getExternalClientDetailService = async (
   const client = await repo.findByIdAndLawyer(id, userDetailId);
   if (!client)
     throw new AppError(
-      "EXTERNAL_CLIENT_NOT_FOUND",
+      "Cliente externo no encontrado",
       HttpStatusCodes.NOT_FOUND.code
     );
   return client;

@@ -1,16 +1,17 @@
 // src/modules/auth/features/login/login_with_google/presentation/login_with_google.controller.ts
-import { Request, Response } from "express";
-import { HttpStatusCodes } from "../../../../../../constants";
-import { buildHttpResponse } from "../../../../../../utils";
-import { LoginGoogleService } from "./login_with_google.service";
-import { LoginGoogleSchema } from "../domain/login_with_google.schema";
+import { Request, Response, NextFunction } from "express";
+import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
+import { buildHttpResponse } from "../../../../../../utils/build_http_response";
+import {
+  LoginGoogleSchema,
+  OAuthStateSchema,
+} from "../domain/login_with_google.schema";
+import { loginWithGoogleLegacy } from "./login_with_google.service";
 
-export class LoginGoogleController {
-  constructor(private readonly loginGoogleService: LoginGoogleService) {}
-
-  async loginWithGoogle(req: Request, res: Response): Promise<Response> {
-    const data = LoginGoogleSchema.parse(req.body);
-    const result = await this.loginGoogleService.loginWithGoogle(data);
+export class LoginWithGoogleController {
+  async postLoginWithGoogle(req: Request, res: Response): Promise<Response> {
+    const dto = LoginGoogleSchema.parse(req.body);
+    const result = await loginWithGoogleLegacy(dto);
 
     return res
       .status(HttpStatusCodes.OK.code)
@@ -22,5 +23,10 @@ export class LoginGoogleController {
           result
         )
       );
+  }
+
+  validateOAuthState(req: Request, _res: Response, next: NextFunction) {
+    OAuthStateSchema.parse(req.query);
+    next();
   }
 }

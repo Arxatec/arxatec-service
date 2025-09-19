@@ -17,7 +17,6 @@ ${bright}${cyan}
 ║                 ARXATEC SERVICE                   ║
 ║                                                   ║
 ╚═══════════════════════════════════════════════════╝
-${reset}
 Server running on:
 ${cyan}${appUrl}${reset}
 

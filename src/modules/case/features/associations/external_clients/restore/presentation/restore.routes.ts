@@ -44,7 +44,7 @@ const ctrl = new RestoreExternalClientController();
  *                       type: object
  *                       properties:
  *                         id: { type: string, format: uuid, example: "84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
- *                         message: { type: string, example: "EXTERNAL_CLIENT_RESTORED" }
+ *                         message: { type: string, example: "Cliente externo restaurado correctamente" }
  *                     user:
  *                       type: object
  *                       properties:
@@ -72,7 +72,7 @@ const ctrl = new RestoreExternalClientController();
  *               properties:
  *                 status:      { type: number, example: 404 }
  *                 message:     { type: string, example: "Not Found" }
- *                 description: { type: string, example: "EXTERNAL_CLIENT_NOT_FOUND" }
+ *                 description: { type: string, example: "Cliente externo no encontrado" }
  *                 timestamp:   { type: string, example: "2025-09-16T19:05:00.000Z" }
  *                 path:        { type: string, example: "/api/v1/cases/external-clients/restore/84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
  *       '500':

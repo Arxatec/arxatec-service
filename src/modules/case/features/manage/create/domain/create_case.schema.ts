@@ -27,20 +27,13 @@ export const CreateCaseSchema = z.object({
         message: "La urgencia debe ser 'alta', 'media' o 'baja'",
       }),
     })
-    .optional()
-    .default("media"),
+    .default("media")
+    .optional(),
 
   status_id: z
     .string({ required_error: "El ID del estado debe ser una cadena" })
     .uuid("El ID del estado debe tener formato UUID")
     .optional(),
-
-  is_public: z
-    .boolean({
-      required_error: "El campo 'is_public' debe ser verdadero o falso",
-    })
-    .optional()
-    .default(true),
 
   reference_code: z
     .string({ required_error: "El código de referencia debe ser una cadena" })

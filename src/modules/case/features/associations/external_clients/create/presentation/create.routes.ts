@@ -8,13 +8,7 @@ import { CreateExternalClientController } from "./create.controller";
 const router = Router();
 const ctrl = new CreateExternalClientController();
 
-const imageMimeTypes = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
+const imageMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
 const fileFilter = (
   _: Request,
   file: Express.Multer.File,
@@ -91,7 +85,7 @@ const upload = multer({ storage: multer.memoryStorage(), fileFilter });
  *                       type: object
  *                       properties:
  *                         id: { type: string, format: uuid, example: "84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
- *                         message: { type: string, example: "EXTERNAL_CLIENT_CREATED" }
+ *                         message: { type: string, example: "Cliente externo creado exitosamente" }
  *                     user:
  *                       type: object
  *                       properties:

@@ -1,30 +1,17 @@
 // src/middlewares/authenticate_token/index.ts
-import { Request, Response, NextFunction } from "express";
+import type { RequestHandler } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "../../config";
 import { HttpStatusCodes } from "../../constants";
 import { buildHttpResponse } from "../../utils";
 
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string;
-    user_type: "admin" | "client" | "employee";
-  };
-}
-
 interface TokenPayload {
   id: string;
-  user_type: "admin" | "client" | "employee";
-  //admin_role?: "superadmin" | "manager"
+  user_type: "admin" | "client" | "lawyer";
   email?: string;
 }
 
-export function authenticateToken(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export const authenticateToken: RequestHandler = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
@@ -54,14 +41,14 @@ export function authenticateToken(
 
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload & TokenPayload;
 
-    req.user = {
+    (req as any).user = {
       id: payload.id,
       email: payload.email,
       user_type: payload.user_type,
     };
 
-    return next();
-  } catch (error) {
+    next();
+  } catch {
     return res
       .status(HttpStatusCodes.UNAUTHORIZED.code)
       .json(
@@ -72,4 +59,4 @@ export function authenticateToken(
         )
       );
   }
-}
+};

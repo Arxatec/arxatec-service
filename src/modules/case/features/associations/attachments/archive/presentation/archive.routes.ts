@@ -110,7 +110,7 @@ const controller = new ArchiveAttachmentController();
  */
 
 router.patch(
-  "/:id/archive/:attId ",
+  "/:id/archive/:attId",
   authenticateToken,
   asyncHandler(controller.archive)
 );

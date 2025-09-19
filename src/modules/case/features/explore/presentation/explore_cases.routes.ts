@@ -109,7 +109,7 @@ const ctrl = new ExploreCasesController();
  *       '500':
  *         description: "Internal Server Error"
  */
-router.get("/explore", ctrl.explore);
+router.get("/", ctrl.explore);
 
 /**
  * List case categories
@@ -149,16 +149,16 @@ router.get("/explore", ctrl.explore);
  *       '500':
  *         description: "Internal Server Error"
  */
-router.get("/categories", ctrl.categories);
+router.get("/", ctrl.categories);
 
 /**
  * List case statuses
  * @openapi
- * /cases/statuses:
+ * /cases/status:
  *   get:
  *     tags:
  *       - Cases - Explore
- *     summary: "List statuses"
+ *     summary: "List status"
  *     description: "Devuelve los estados disponibles para los casos."
  *     responses:
  *       '200':
@@ -189,6 +189,6 @@ router.get("/categories", ctrl.categories);
  *       '500':
  *         description: "Internal Server Error"
  */
-router.get("/statuses", ctrl.statuses);
+router.get("/", ctrl.statuses);
 
 export { router as exploreCasesRoutes };

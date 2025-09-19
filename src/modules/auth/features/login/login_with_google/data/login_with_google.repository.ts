@@ -16,7 +16,7 @@ export interface LoginGoogleRepository {
 
 export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
   async getByEmail(email: string): Promise<User | null> {
-    const userData = await prisma.users.findUnique({
+    const u = await prisma.users.findUnique({
       where: { email },
       select: {
         id: true,
@@ -31,17 +31,17 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
       },
     });
 
-    return userData
+    return u
       ? new User(
-          userData.id,
-          userData.first_name,
-          userData.last_name,
-          userData.email,
-          userData.password,
-          userData.status,
-          userData.creation_timestamp ?? undefined,
-          userData.user_type,
-          userData.profile_image ?? undefined
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.email,
+          u.password,
+          u.status,
+          u.creation_timestamp ?? undefined,
+          u.user_type,
+          u.profile_image ?? undefined
         )
       : null;
   }
@@ -52,10 +52,11 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
     lastName: string;
     profileImage: string;
   }): Promise<User> {
+    // Password dummy para cumplir esquema; usuario se considera "google"
     const randomPassword = crypto.randomBytes(24).toString("hex");
     const hashed = await bcrypt.hash(randomPassword, 10);
 
-    const newUser = await prisma.users.create({
+    const nu = await prisma.users.create({
       data: {
         email: userData.email,
         first_name: userData.firstName,
@@ -63,10 +64,10 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
         password: hashed,
         status: "active",
         profile_image: userData.profileImage,
-        user_type: "client",
+        user_type: "client", // default
       },
       select: {
-        id: true, // UUID string
+        id: true,
         first_name: true,
         last_name: true,
         email: true,
@@ -79,15 +80,15 @@ export class LoginGoogleRepositoryImpl implements LoginGoogleRepository {
     });
 
     return new User(
-      newUser.id,
-      newUser.first_name,
-      newUser.last_name,
-      newUser.email,
-      newUser.password,
-      newUser.status,
-      newUser.creation_timestamp ?? undefined,
-      newUser.user_type,
-      newUser.profile_image ?? undefined
+      nu.id,
+      nu.first_name,
+      nu.last_name,
+      nu.email,
+      nu.password,
+      nu.status,
+      nu.creation_timestamp ?? undefined,
+      nu.user_type,
+      nu.profile_image ?? undefined
     );
   }
 }

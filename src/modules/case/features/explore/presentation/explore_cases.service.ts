@@ -23,11 +23,20 @@ export class ExploreCasesService {
 
   async explore(filters: ExploreFilters, query: any) {
     const { page, limit, skip } = Pagination.getPaginationParams(query);
+
+    const safeFilters: ExploreFilters = {
+      ...filters,
+      is_public: true,
+      archived: false,
+    };
+
     const [total, rows] = await Promise.all([
-      this.repo.count(filters),
-      this.repo.find(filters, skip, limit),
+      this.repo.count(safeFilters),
+      this.repo.find(safeFilters, skip, limit),
     ]);
+
     const meta = Pagination.buildPaginationMeta(total, page, limit);
+
     return { items: rows, meta };
   }
 }

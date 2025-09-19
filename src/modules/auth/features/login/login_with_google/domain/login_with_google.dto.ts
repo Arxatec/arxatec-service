@@ -6,11 +6,11 @@ export type LoginGoogleDTO = z.infer<typeof LoginGoogleSchema>;
 
 export interface LoginGoogleResponseDTO {
   user: {
-    id: string;
+    id: string;   
     firstName: string;
     lastName: string;
     email: string;
   };
-  token: string;
+  token: string;  
   isNewUser: boolean;
 }

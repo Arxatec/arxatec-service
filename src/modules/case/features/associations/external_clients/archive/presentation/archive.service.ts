@@ -10,9 +10,9 @@ export const archiveExternalClientService = async (
   const client = await repo.findByIdAndLawyer(id, userDetailId, false);
   if (!client)
     throw new AppError(
-      "EXTERNAL_CLIENT_NOT_FOUND",
+      "Cliente externo no encontrado",
       HttpStatusCodes.NOT_FOUND.code
     );
   await repo.archive(id);
-  return { id, message: "EXTERNAL_CLIENT_ARCHIVED" };
+  return { id, message: "Cliente externo archivado exitosamente" };
 };

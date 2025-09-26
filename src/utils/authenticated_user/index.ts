@@ -7,7 +7,6 @@ import { HttpStatusCodes } from "../../constants/http_status_codes";
 export interface CurrentUser {
   id: string;
   role: "admin" | "client" | "lawyer";
-  // admin_role?: "superadmin" | "manager";
 }
 
 export const getAuthenticatedUser = async (

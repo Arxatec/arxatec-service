@@ -1,4 +1,4 @@
-// utils/pagination.ts
+// src/utils/pagination.ts
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;

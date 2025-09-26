@@ -1,0 +1,1 @@
+export { archiveCaseRoutes } from "./presentation/archive_case.routes";

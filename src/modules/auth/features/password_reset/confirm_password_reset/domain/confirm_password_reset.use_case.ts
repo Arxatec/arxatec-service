@@ -8,7 +8,6 @@ import {
 } from "./confirm_password_reset.dto";
 import bcrypt from "bcrypt";
 
-// 👇 importa la interfaz de tu repo de verificación (Redis)
 import {
   VerifyCodePasswordResetRepository,
   VerifyCodePasswordResetRepositoryImpl,
@@ -37,7 +36,6 @@ export class ConfirmPasswordResetUseCase {
       );
     }
 
-    // 🔐 buena práctica: invalidar el código temporal tras el cambio
     await this.verifyRepo.removeTemporaryCode(normalizedEmail);
 
     return { message: "Password reset successfully" };

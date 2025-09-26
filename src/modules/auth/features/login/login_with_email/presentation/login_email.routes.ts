@@ -79,7 +79,7 @@ const loginController = new LoginController(loginService);
  *                         userType:
  *                           type: string
  *                           nullable: true
- *                           enum: [admin, client, lawyer, null]
+ *                           enum: [admin, client, lawyer]
  *                           example: "client"
  *                         role:
  *                           type: string

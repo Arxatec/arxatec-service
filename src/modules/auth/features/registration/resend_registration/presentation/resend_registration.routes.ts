@@ -16,7 +16,7 @@ const resendRegistrationController = new ResendRegistrationController(
  * /auth/register/resend:
  *   post:
  *     tags:
- *       - Auth
+ *       - Register
  *     summary: "Resend registration verification code"
  *     description: "Reenvía el código de verificación para completar el registro (requiere que exista un usuario temporal en espera de verificación)."
  *     requestBody:

@@ -30,6 +30,6 @@ export class CreateExternalClientService {
       user_detail: { connect: { user_id: userDetailId } },
     });
 
-    return { id: created.id, message: "EXTERNAL_CLIENT_CREATED" };
+    return { id: created.id, message: "Cliente externo creado exitosamente" };
   }
 }

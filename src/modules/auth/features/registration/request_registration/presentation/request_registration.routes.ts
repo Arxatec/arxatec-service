@@ -16,7 +16,7 @@ const requestRegistrationController = new RequestRegistrationController(
  * /auth/register/request:
  *   post:
  *     tags:
- *       - Auth
+ *       - Register
  *     summary: "Request user registration"
  *     description: "Inicia el registro de un nuevo usuario y envía un código de verificación al correo."
  *     requestBody:

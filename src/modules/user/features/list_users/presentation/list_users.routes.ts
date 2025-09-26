@@ -25,7 +25,7 @@ const controller = new ListUsersController();
  *           type: integer
  *           minimum: 1
  *           example: 1
- *         description: Número de página (por defecto: 1).
+ *         description: "Número de página (por defecto: 1)."
  *       - in: query
  *         name: limit
  *         schema:
@@ -33,13 +33,13 @@ const controller = new ListUsersController();
  *           minimum: 1
  *           maximum: 100
  *           example: 10
- *         description: Cantidad de registros por página (por defecto: 10).
+ *         description: "Cantidad de registros por página (por defecto: 10)."
  *       - in: query
  *         name: q
  *         schema:
  *           type: string
  *           example: "juan"
- *         description: Texto de búsqueda (nombre, apellido o email).
+ *         description: "Texto de búsqueda (nombre, apellido o email)."
  *     responses:
  *       '200':
  *         description: "Lista de usuarios obtenida correctamente"

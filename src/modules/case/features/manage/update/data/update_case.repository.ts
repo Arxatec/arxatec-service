@@ -9,7 +9,11 @@ export class UpdateCaseRepository {
   getById(caseId: string) {
     return prisma.cases.findUnique({
       where: { id: caseId },
-      include: { service: true, category: true, status: true },
+      include: {
+        service: true,
+        category: true,
+        status: true,
+      },
     });
   }
 
@@ -23,5 +27,40 @@ export class UpdateCaseRepository {
 
   update(caseId: string, data: Prisma.casesUpdateInput) {
     return prisma.cases.update({ where: { id: caseId }, data });
+  }
+
+  assignLawyerToService(serviceId: string, lawyerUserId: string) {
+    return prisma.services.update({
+      where: { id: serviceId },
+      data: {
+        lawyer: {
+          connect: { user_id: lawyerUserId },
+        },
+      },
+    });
+  }
+
+  assignExternalClientToService(serviceId: string, externalClientId: string) {
+    return prisma.services.update({
+      where: { id: serviceId },
+      data: {
+        external_client: {
+          connect: { id: externalClientId },
+        },
+      },
+    });
+  }
+
+  findExternalClientByIdForLawyer(
+    externalClientId: string,
+    lawyerUserId: string
+  ) {
+    return prisma.external_clients.findFirst({
+      where: {
+        id: externalClientId,
+        user_detail_id: lawyerUserId,
+        archived: false,
+      },
+    });
   }
 }

@@ -14,6 +14,7 @@ import { globalErrorHandler } from "./middlewares/global_error_handler/index.js"
 import { buildHttpResponse } from "./utils/build_http_response/index.js";
 import { HttpStatusCodes } from "./constants/http_status_codes/index.js";
 import { mountSwagger } from "./docs";
+import passport from "./config/passport";
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +30,9 @@ app.use(morgan(customMorganFormat));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//Ṕassport
+app.use(passport.initialize());
 
 // ✅ Swagger
 mountSwagger(app);
@@ -52,11 +56,11 @@ app.use((req, res) => {
     );
 });
 
-// Global Error Handler
-app.use(globalErrorHandler);
-
 // Test route
 app.get("/ping", (_, res) => res.send("pong"));
+
+// Global Error Handler
+app.use(globalErrorHandler);
 
 // Start server
 const main = async () => {

@@ -10,7 +10,7 @@ export class RestoreExternalClientService {
     const client = await this.repo.findByIdAndLawyer(id, userDetailId);
     if (!client) {
       throw new AppError(
-        "EXTERNAL_CLIENT_NOT_FOUND",
+        "Cliente externo no encontrado",
         HttpStatusCodes.NOT_FOUND.code
       );
     }
@@ -19,6 +19,6 @@ export class RestoreExternalClientService {
       await this.repo.restore(id);
     }
 
-    return { id, message: "EXTERNAL_CLIENT_RESTORED" };
+    return { id, message: "Cliente externo restaurado correctamente" };
   }
 }

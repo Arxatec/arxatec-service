@@ -7,8 +7,8 @@ import type { Express } from "express";
 const isProd = "production";
 
 const servers: OAS3Definition["servers"] = [
-  { url: "http://localhost:3001", description: "Local" },
-  { url: "https://api.arxatec/api/v1", description: "Production" },
+  { url: "http://localhost:3001/api/v1", description: "Local" },
+  { url: "https://api.arxatec.com/api/v1", description: "Production" },
 ];
 const swaggerDefinition: OAS3Definition = {
   openapi: "3.0.3",
@@ -93,9 +93,10 @@ const swaggerDefinition: OAS3Definition = {
 
 const swaggerOptions: OAS3Options = {
   definition: swaggerDefinition,
-  apis: ["./src/modules/**/*.route.ts"],
+  apis: ["./src/modules/**/*.routes.ts"],
   failOnErrors: true,
 };
+
 
 export const swaggerSpec = swaggerJSDoc(swaggerOptions);
 

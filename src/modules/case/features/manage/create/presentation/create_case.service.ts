@@ -5,7 +5,7 @@ import { CatalogRepository } from "../../../shared/catalog/catalog.repository";
 import { CapacityPolicyService } from "../../../shared/capacity_policy/capacity_policy.service";
 import { AppError } from "../../../../../../utils/errors";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
-import { CASE_MESSAGES } from "../../../../../../constants/messages/case";
+import { MESSAGES } from "../../../../../../constants/messages/";
 import { service_type } from "@prisma/client";
 
 interface CurrentUser {
@@ -21,16 +21,8 @@ export class CreateCaseService {
   ) {}
 
   async execute(dto: CreateCaseDTO, user: CurrentUser) {
-    const statuses = await this.catalog.getAllStatuses();
-    if (statuses.length < 2) {
-      throw new AppError(
-        "NEED_MIN_2_STATUSES",
-        HttpStatusCodes.INTERNAL_SERVER_ERROR.code
-      );
-    }
-
-    const initialStatusId = statuses[0].id;
-    const takenStatusId = statuses[1].id;
+    const { openStatusId, takenStatusId } =
+      await this.catalog.getOpenAndTakenStatusIds();
 
     if (user.role === "client") {
       await this.policy.assertClientCanCreate(user.id);
@@ -38,36 +30,59 @@ export class CreateCaseService {
       await this.policy.assertLawyerCanTake(user.id);
     }
 
-    if (dto.external_client_id) {
+    if (user.role === "lawyer") {
+      if (!dto.external_client_id) {
+        throw new AppError(
+          MESSAGES.CASE.EXTERNAL_CLIENT_REQUIRED_FOR_LAWYER,
+          HttpStatusCodes.FORBIDDEN.code
+        );
+      }
       const found = await this.repo.findExternalClientByIdForLawyer(
         dto.external_client_id,
         user.id
       );
       if (!found) {
         throw new AppError(
-          CASE_MESSAGES.EXTERNAL_CLIENT_NOT_FOUND,
+          MESSAGES.CASE.EXTERNAL_CLIENT_NOT_FOUND,
+          HttpStatusCodes.FORBIDDEN.code
+        );
+      }
+    } else {
+      if (dto.external_client_id) {
+        throw new AppError(
+          MESSAGES.CASE.EXTERNAL_CLIENT_NOT_ALLOWED_FOR_CLIENT,
           HttpStatusCodes.FORBIDDEN.code
         );
       }
     }
 
-    const status_id =
-      dto.status_id ??
-      (dto.selected_lawyer_id || user.role === "lawyer"
-        ? takenStatusId
-        : initialStatusId);
+    let isPublic: boolean;
+    let assignedLawyerUserId: string | undefined;
+    let statusId: string;
 
-    const lawyer_id =
-      dto.selected_lawyer_id ??
-      (user.role === "lawyer" && dto.is_public === false ? user.id : undefined);
+    if (user.role === "lawyer") {
+      isPublic = false;
+      assignedLawyerUserId = user.id;
+      statusId = dto.status_id ?? takenStatusId;
+    } else if (dto.selected_lawyer_id) {
+      isPublic = false;
+      assignedLawyerUserId = dto.selected_lawyer_id;
+      statusId = dto.status_id ?? takenStatusId;
+    } else {
+      isPublic = true;
+      assignedLawyerUserId = undefined;
+      statusId = dto.status_id ?? openStatusId;
+    }
 
     const service = await this.repo.createService({
       type: service_type.case,
-      ...(lawyer_id ? { lawyer: { connect: { user_id: lawyer_id } } } : {}),
+      ...(assignedLawyerUserId
+        ? { lawyer: { connect: { user_id: assignedLawyerUserId } } }
+        : {}),
       ...(user.role === "client"
         ? { client: { connect: { user_id: user.id } } }
         : {}),
-      ...(dto.external_client_id
+      ...(user.role === "lawyer" && dto.external_client_id
         ? { external_client: { connect: { id: dto.external_client_id } } }
         : {}),
     });
@@ -78,13 +93,13 @@ export class CreateCaseService {
       description: dto.description,
       category: { connect: { id: dto.category_id } },
       urgency: dto.urgency ?? "media",
-      status: { connect: { id: status_id } },
-      is_public: dto.is_public ?? true,
+      status: { connect: { id: statusId } },
+      is_public: isPublic,
       reference_code: dto.reference_code,
     });
 
     return {
-      message: CASE_MESSAGES.CREATED_SUCCESS,
+      message: MESSAGES.CASE.CREATED_SUCCESS,
       case: {
         id: caseCreated.id,
         service_id: service.id,

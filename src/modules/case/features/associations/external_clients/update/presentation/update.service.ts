@@ -20,7 +20,7 @@ export class UpdateExternalClientService {
     const client = await this.repo.findByIdAndLawyer(id, userDetailId, false);
     if (!client) {
       throw new AppError(
-        "EXTERNAL_CLIENT_NOT_FOUND",
+        "Cliente externo no encontrado",
         HttpStatusCodes.NOT_FOUND.code
       );
     }
@@ -47,6 +47,6 @@ export class UpdateExternalClientService {
       profile_image,
     });
 
-    return { id, message: "EXTERNAL_CLIENT_UPDATED" };
+    return { id, message: "Cliente externo actualizado exitosamente" };
   }
 }

@@ -4,11 +4,20 @@ import { z } from "zod";
 export const CreateExternalClientSchema = z.object({
   full_name: z
     .string()
-    .min(2, "FULL_NAME_TOO_SHORT")
-    .max(120, "FULL_NAME_TOO_LONG"),
-  phone: z.string().min(7, "PHONE_TOO_SHORT").max(15, "PHONE_TOO_LONG"),
-  dni: z.string().length(8, "DNI_MUST_BE_8_DIGITS"),
-  email: z.string().email("EMAIL_INVALID_FORMAT").optional(),
+    .min(2, "El nombre completo debe tener al menos 2 caracteres")
+    .max(120, "El nombre completo no puede superar los 120 caracteres"),
+
+  phone: z
+    .string()
+    .min(7, "El teléfono debe tener al menos 7 dígitos")
+    .max(15, "El teléfono no puede superar los 15 dígitos"),
+
+  dni: z.string().length(8, "El DNI debe tener exactamente 8 dígitos"),
+
+  email: z
+    .string()
+    .email("El formato del correo electrónico no es válido")
+    .optional(),
 });
 
 export type CreateExternalClientDTO = z.infer<

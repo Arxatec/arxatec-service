@@ -2,6 +2,7 @@
 import { z } from "zod";
 
 export const CaseHistoryParamsSchema = z.object({
-  id: z.string().uuid("INVALID_CASE_ID"),
+  id: z.string().uuid("El ID del caso debe tener formato UUID"),
 });
+
 export type CaseHistoryParamsDTO = z.infer<typeof CaseHistoryParamsSchema>;

@@ -47,8 +47,8 @@ enum service_type {
 }
 
 enum community_user_type {
-  moderator   // moderador de la comunidad
-  member      // miembro de la comunidad
+  moderator  
+  member
 }
 
 enum reaction_type {
@@ -291,11 +291,11 @@ model communities {
   description  String?
   banner       String?
   icon         String?
-  category_id  String?
+  category_id  String? @db.Uuid 
   created_at   DateTime  @default(now())
 
   community_users     community_users[]
-  community_category  community_categories? @relation(fields: [category_id], references: [id])
+  community_category  community_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull)
   community_markers   community_markers[]
   community_rules     community_rules[]
   publications        publications[]

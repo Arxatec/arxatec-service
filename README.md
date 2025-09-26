@@ -52,8 +52,10 @@ Arxatec Service es un backend modular construido con Node.js, Express y TypeScri
 4. Configurar base de datos
 
 - Opción A: Docker
-  docker compose -f docker-compose.arxatec.yml up -d
-  npx prisma migrate dev --name init
+
+  - docker-compose up -d
+  - docker compose -f docker-compose.arxatec.yml up -d
+    npx prisma migrate dev --name init
 
 - Opción B: Local
   Instala PostgreSQL y Redis manualmente y luego:

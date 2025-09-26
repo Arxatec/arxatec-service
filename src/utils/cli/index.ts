@@ -1,7 +1,10 @@
 import express from "express";
 import morgan from "morgan";
 
-export const displayWelcomeMessage = (appUrl: string) => {
+export const displayWelcomeMessage = (
+  appUrl: string,
+  docsUrl: string = `${appUrl}/api-docs`
+) => {
   const reset = "\x1b[0m";
   const bright = "\x1b[1m";
   const cyan = "\x1b[34m";
@@ -19,7 +22,7 @@ Server running on:
 ${cyan}${appUrl}${reset}
 
 Swagger Docs available on:
-${cyan}${appUrl}/api-docs${reset}
+${cyan}${docsUrl}${reset}
 
 ${bright}Main commands:${reset}
 

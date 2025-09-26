@@ -1,6 +1,6 @@
+//src/config/env.index.ts
 import { config } from "dotenv";
-
-config();
+config({quiet: true }); 
 
 // ENVIRONMENT
 export const ENVIRONMENT = process.env.ENVIRONMENT;

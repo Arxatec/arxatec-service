@@ -33,7 +33,7 @@ export const AWS_KEY_ACCESS = process.env.AWS_KEY_ACCESS;
 export const AWS_KEY_ACCESS_SECRET = process.env.AWS_KEY_ACCESS_SECRET;
 
 // EMAIL (SMTP)
-export const EMAIL_USER = process.env.EMAIL_USER;
+export const EMAIL_ADMIN = process.env.EMAIL_ADMIN;
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 export const SMTP_HOST = process.env.SMTP_HOST;
 export const SMTP_PORT = process.env.SMTP_PORT;

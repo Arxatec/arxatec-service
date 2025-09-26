@@ -3,37 +3,37 @@ version: "3.8"
 services:
   db:
     image: postgres:16
-    container_name: labase-postgres
+    container_name: arxatec-postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5433"
     environment:
-      POSTGRES_DB: labase-service
-      POSTGRES_USER: labase
-      POSTGRES_PASSWORD: labase
+      POSTGRES_DB: arxatec-service
+      POSTGRES_USER: arxatec
+      POSTGRES_PASSWORD: arxatec
     volumes:
-      - pg_data_labase:/var/lib/postgresql/data
+      - pg_data_arxatec:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U labase -d labase-service"]
+      test: ["CMD-SHELL", "pg_isready -U arxatec -d arxatec-service"]
       interval: 5s
       timeout: 3s
       retries: 10
 
   redis:
     image: redis:7-alpine
-    container_name: labase-redis
-    command: ["redis-server", "--requirepass", "labase", "--appendonly", "yes"]
+    container_name: arxatec-redis
+    command: ["redis-server", "--requirepass", "arxatec", "--appendonly", "yes"]
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6380" # No choca con 6379 de labase
     volumes:
-      - redis_data_labase:/data
+      - redis_data_arxatec:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "labase", "ping"]
+      test: ["CMD", "redis-cli", "-a", "arxatec", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
 
 volumes:
-  pg_data_labase:
-  redis_data_labase:
+  pg_data_arxatec:
+  redis_data_arxatec:

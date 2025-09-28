@@ -8,25 +8,30 @@ import {
 } from "../domain/login_with_google.schema";
 import { loginWithGoogleLegacy } from "./login_with_google.service";
 
-export class LoginWithGoogleController {
-  async postLoginWithGoogle(req: Request, res: Response): Promise<Response> {
-    const dto = LoginGoogleSchema.parse(req.body);
-    const result = await loginWithGoogleLegacy(dto);
+export async function postLoginWithGoogle(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const dto = LoginGoogleSchema.parse(req.body);
+  const result = await loginWithGoogleLegacy(dto);
 
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          "Login with Google successful",
-          req.path,
-          result
-        )
-      );
-  }
+  return res
+    .status(HttpStatusCodes.OK.code)
+    .json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "Login with Google successful",
+        req.path,
+        result
+      )
+    );
+}
 
-  validateOAuthState(req: Request, _res: Response, next: NextFunction) {
-    OAuthStateSchema.parse(req.query);
-    next();
-  }
+export function validateOAuthState(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) {
+  OAuthStateSchema.parse(req.query);
+  next();
 }

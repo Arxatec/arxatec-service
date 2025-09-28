@@ -2,15 +2,13 @@
 import axios from "axios";
 import { generateToken } from "../../../../../../infrastructure/jwt";
 import {
-  LoginGoogleRepository,
-  LoginGoogleRepositoryImpl,
+  getByEmailGoogle,
+  createFromGoogle,
 } from "../data/login_with_google.repository";
 import {
   LoginGoogleDTO,
   LoginGoogleResponseDTO,
 } from "../domain/login_with_google.dto";
-
-const repo: LoginGoogleRepository = new LoginGoogleRepositoryImpl();
 
 export async function loginWithGoogleLegacy(
   data: LoginGoogleDTO
@@ -24,11 +22,11 @@ export async function loginWithGoogleLegacy(
     throw new Error("Invalid Google token");
   }
 
-  let user = await repo.getByEmail(userInfo.email.toLowerCase());
+  let user = await getByEmailGoogle(userInfo.email.toLowerCase());
   let isNewUser = false;
 
   if (!user) {
-    user = await repo.createFromGoogle({
+    user = await createFromGoogle({
       email: userInfo.email.toLowerCase(),
       firstName: userInfo.given_name || "",
       lastName: userInfo.family_name || "",
@@ -71,11 +69,11 @@ export async function loginWithGoogleCallback(
   const profileImage =
     profile?.photos?.[0]?.value ?? profile?._json?.picture ?? "";
 
-  let user = await repo.getByEmail(email);
+  let user = await getByEmailGoogle(email);
   let isNewUser = false;
 
   if (!user) {
-    user = await repo.createFromGoogle({
+    user = await createFromGoogle({
       email,
       firstName,
       lastName,

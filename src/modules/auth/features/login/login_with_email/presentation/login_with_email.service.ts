@@ -1,21 +1,56 @@
-//src/modules/auth/features/login/login_with_email/presentation/login_with_email.service.ts
-import { LoginDTO, LoginResponseDTO } from "../domain/login_with_email.dto";
-import { LoginUseCase } from "../domain/login_with_email.use_case";
+import { generateToken } from "../../../../../../infrastructure/jwt";
+import { AppError } from "../../../../../../utils";
+import { HttpStatusCodes } from "../../../../../../constants";
+import { getByEmail } from "../data/login_with_email.repository";
 import {
-  LoginRepository,
-  LoginRepositoryImpl,
-} from "../data/login_with_email.repository";
+  LoginResponse,
+  LoginRequest,
+} from "../domain/login_with_email.payload";
+import bcrypt from "bcrypt";
 
-export class LoginService {
-  private readonly loginRepository: LoginRepository;
-  private readonly loginUseCase: LoginUseCase;
-
-  constructor() {
-    this.loginRepository = new LoginRepositoryImpl();
-    this.loginUseCase = new LoginUseCase(this.loginRepository);
+export async function loginWithEmail(
+  data: LoginRequest
+): Promise<LoginResponse> {
+  const user = await getByEmail(data.email);
+  if (!user) {
+    throw new AppError(
+      "El usuario no existe, revisa que el correo electrónico sea correcto.",
+      HttpStatusCodes.NOT_FOUND.code
+    );
   }
 
-  async login(data: LoginDTO): Promise<LoginResponseDTO> {
-    return this.loginUseCase.execute(data);
+  const isPasswordValid = await bcrypt.compare(data.password, user.password);
+
+  if (!isPasswordValid) {
+    throw new AppError(
+      "Credenciales inválidas, revisa que el correo electrónico y la contraseña sean correctos.",
+      HttpStatusCodes.UNAUTHORIZED.code
+    );
   }
+
+  if (!user.isActive()) {
+    throw new AppError(
+      "El usuario no está verificado, por favor verifica tu correo electrónico.",
+      HttpStatusCodes.UNAUTHORIZED.code
+    );
+  }
+
+  const userType: "admin" | "client" | "lawyer" | null = user.user_type ?? null;
+
+  const token = generateToken({
+    id: user.id,
+    user_type: userType ?? "client",
+  });
+
+  return {
+    user: {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      userType: userType,
+      role: null,
+    },
+    token,
+  };
 }

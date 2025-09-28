@@ -1,4 +1,3 @@
-// src/modules/auth/features/registration/verify_code_registration/domain/verify_code_registration.schema.ts
 import { z } from "zod";
 
 export const VerifyCodeRegistrationSchema = z.object({

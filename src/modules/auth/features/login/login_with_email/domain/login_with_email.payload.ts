@@ -1,10 +1,9 @@
-// src/modules/auth/features/login/login_with_email/domain/login_with_email.dto.ts
 import { z } from "zod";
 import { LoginSchema } from "./login_with_email.schema";
 
-export type LoginDTO = z.infer<typeof LoginSchema>;
+export type LoginRequest = z.infer<typeof LoginSchema>;
 
-export interface LoginResponseDTO {
+export interface LoginResponse {
   user: {
     id: string;
     firstName: string;

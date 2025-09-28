@@ -4,11 +4,13 @@ import { asyncHandler } from "../../../../../../middlewares/async_handler";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import passport from "../../../../../../config/passport";
-import { LoginWithGoogleController } from "./login_with_google.controller";
+import {
+  postLoginWithGoogle,
+  validateOAuthState,
+} from "./login_with_google.controller";
 import { loginWithGoogleCallback } from "./login_with_google.service";
 
 export const loginGoogleRouter = Router();
-const controller = new LoginWithGoogleController();
 
 /**
  * Legacy (POST): body { googleToken }
@@ -34,7 +36,7 @@ const controller = new LoginWithGoogleController();
  */
 loginGoogleRouter.post(
   "/google",
-  asyncHandler((req, res) => controller.postLoginWithGoogle(req, res))
+  asyncHandler((req, res) => postLoginWithGoogle(req, res))
 );
 
 /**
@@ -51,7 +53,7 @@ loginGoogleRouter.post(
  */
 loginGoogleRouter.get(
   "/google",
-  (req, res, next) => controller.validateOAuthState(req, res, next),
+  (req, res, next) => validateOAuthState(req, res, next),
   (req, res, next) =>
     passport.authenticate("google", {
       scope: ["openid", "email", "profile"],

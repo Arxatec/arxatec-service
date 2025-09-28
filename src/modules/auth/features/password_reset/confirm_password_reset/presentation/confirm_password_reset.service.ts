@@ -1,28 +1,25 @@
-// src/modules/auth/features/password_reset/confirm_password_reset/presentation/confirm_password_reset.service.ts
+import { HttpStatusCodes } from "../../../../../../constants";
+import { AppError } from "../../../../../../utils";
+import { updatePassword } from "../data/confirm_password_reset.repository";
 import {
-  ConfirmPasswordResetRepository,
-  ConfirmPasswordResetRepositoryImpl,
-} from "../data/confirm_password_reset.repository";
-import {
-  ConfirmPasswordResetDTO,
-  ConfirmPasswordResetResponseDTO,
-} from "../domain/confirm_password_reset.dto";
-import { ConfirmPasswordResetUseCase } from "../domain/confirm_password_reset.use_case";
+  ConfirmPasswordResetRequest,
+  ConfirmPasswordResetResponse,
+} from "../domain/confirm_password_reset.payload";
+import bcrypt from "bcrypt";
+import { removeTemporaryCode } from "../../verify_code_password_reset/data/verify_code_password_reset.repository";
 
-// 👇 opcional: si quieres inyectar explícitamente el verifyRepo aquí, puedes hacerlo.
+export async function confirmPasswordReset(
+  data: ConfirmPasswordResetRequest
+): Promise<ConfirmPasswordResetResponse> {
+  const normalizedEmail = data.email.trim().toLowerCase();
+  const hashed = await bcrypt.hash(data.password, 10);
 
-export class ConfirmPasswordResetService {
-  private readonly repository: ConfirmPasswordResetRepository;
-  private readonly useCase: ConfirmPasswordResetUseCase;
-
-  constructor() {
-    this.repository = new ConfirmPasswordResetRepositoryImpl();
-    this.useCase = new ConfirmPasswordResetUseCase(this.repository);
+  const updated = await updatePassword(normalizedEmail, hashed);
+  if (!updated) {
+    throw new AppError("Usuario no encontrado", HttpStatusCodes.NOT_FOUND.code);
   }
 
-  async confirmPasswordReset(
-    data: ConfirmPasswordResetDTO
-  ): Promise<ConfirmPasswordResetResponseDTO> {
-    return this.useCase.execute(data);
-  }
+  await removeTemporaryCode(normalizedEmail);
+
+  return { message: "Contraseña restablecida correctamente." };
 }

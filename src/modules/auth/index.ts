@@ -1,6 +1,5 @@
-//src/modules/auth/index.ts
 import { Router } from "express";
-import { loginRouter, loginGoogleRouter } from "./features/login";
+import { loginRouter } from "./features/login";
 import {
   requestRegistrationRouter,
   verifyCodeRegistrationRouter,
@@ -21,7 +20,6 @@ authRouter.use("/register", resendRegistrationRouter);
 
 // Login
 authRouter.use("/login", loginRouter);
-authRouter.use("/login", loginGoogleRouter);
 
 // Password Reset
 authRouter.use("/password-reset", requestPasswordResetRouter);

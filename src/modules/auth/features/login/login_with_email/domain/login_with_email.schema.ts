@@ -1,4 +1,3 @@
-//src/modules/auth/features/login/login_with_email/domain/login_with_email.schema.ts
 import { z } from "zod";
 
 export const LoginSchema = z.object({

@@ -1,4 +1,3 @@
-// src/modules/auth/features/password_reset/verify_code_password_reset/domain/verify_code_password_reset.schema.ts
 import { z } from "zod";
 
 export const VerifyCodePasswordResetSchema = z.object({

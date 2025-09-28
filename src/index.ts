@@ -1,4 +1,3 @@
-// src/index.ts (o .js si ya transpilado)
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -31,10 +30,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//Ṕassport
+// Passport
 app.use(passport.initialize());
 
-// ✅ Swagger
+// Swagger
 mountSwagger(app);
 
 // API Routes

@@ -1,4 +1,3 @@
-// src/modules/auth/features/password_reset/request_password_reset/domain/request_password_reset.schema.ts
 import { z } from "zod";
 
 export const RequestPasswordResetSchema = z.object({

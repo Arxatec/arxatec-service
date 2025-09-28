@@ -1,4 +1,3 @@
-// src/utils/authenticated_user/index.ts
 import type { Request } from "express";
 import prisma from "../../config/prisma_client";
 import { AppError } from "../../utils/errors";

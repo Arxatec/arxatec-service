@@ -1,4 +1,3 @@
-// src/modules/auth/features/password_reset/confirm_password_reset/domain/confirm_password_reset.schema.ts
 import { z } from "zod";
 
 export const ConfirmPasswordResetSchema = z

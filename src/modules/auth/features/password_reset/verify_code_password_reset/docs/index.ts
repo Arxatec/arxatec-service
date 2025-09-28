@@ -1,20 +1,12 @@
-// src/modules/waitlist/presentation/waitlist.routes.ts
-import { Router } from "express";
-import { asyncHandler } from "../../../middlewares/async_handler";
-import { WaitlistController } from "./waitlist.controller";
-
-const router = Router();
-const ctrl = new WaitlistController();
-
 /**
- * Subscribe to waitlist
+ * Verify password reset code
  * @openapi
- * /waitlist:
+ * /auth/password-reset/verify-code:
  *   post:
  *     tags:
- *       - Waitlist
- *     summary: "Subscribe to waitlist"
- *     description: "Suscribe un usuario a la lista de espera y envía un correo de confirmación."
+ *       - Forgot Password
+ *     summary: "Verify password reset code"
+ *     description: "Verifica el código enviado al correo del usuario para el proceso de restablecimiento."
  *     requestBody:
  *       required: true
  *       content:
@@ -22,20 +14,22 @@ const ctrl = new WaitlistController();
  *           schema:
  *             type: object
  *             required:
- *               - name
  *               - email
+ *               - code
  *             properties:
- *               name:
- *                 type: string
- *                 minLength: 2
- *                 example: "Yems"
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "yems@example.com"
+ *                 example: "usuario@ejemplo.com"
+ *               code:
+ *                 type: string
+ *                 minLength: 4
+ *                 maxLength: 4
+ *                 pattern: "^[0-9]{4}$"
+ *                 example: "1234"
  *     responses:
- *       '200':
- *         description: "Suscripción exitosa"
+ *       '201':
+ *         description: "Code verified successfully"
  *         content:
  *           application/json:
  *             schema:
@@ -43,21 +37,21 @@ const ctrl = new WaitlistController();
  *               properties:
  *                 status:
  *                   type: number
- *                   example: 200
+ *                   example: 201
  *                 message:
  *                   type: string
- *                   example: "OK"
+ *                   example: "Created"
  *                 description:
  *                   type: string
- *                   example: "Te has suscrito correctamente a la lista de espera."
+ *                   example: "Code verified successfully"
  *                 timestamp:
  *                   type: string
  *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
- *                   example: "/api/v1/waitlist"
+ *                   example: "/api/v1/auth/password-reset/verify-code"
  *       '400':
- *         description: "Bad Request (ya suscrito o validación Zod)"
+ *         description: "Bad Request (validación/flujo de verificación)"
  *         content:
  *           application/json:
  *             schema:
@@ -73,21 +67,29 @@ const ctrl = new WaitlistController();
  *                   type: string
  *                   oneOf:
  *                     - type: string
- *                       example: "Ya estás suscrito a la lista de espera."
+ *                       example: "El código de verificación es obligatorio"
  *                     - type: string
- *                       example: "El nombre es obligatorio"
+ *                       example: "El código de verificación debe tener exactamente 4 caracteres"
  *                     - type: string
- *                       example: "El nombre debe tener al menos 2 caracteres"
+ *                       example: "El código de verificación debe contener solo dígitos"
  *                     - type: string
  *                       example: "El correo electrónico es obligatorio"
  *                     - type: string
  *                       example: "El formato del correo electrónico no es válido, revisa que esté escrito correctamente"
+ *                     - type: string
+ *                       example: "Se superó el máximo de intentos. Solicita un nuevo código."
+ *                     - type: string
+ *                       example: "Código no encontrado o expirado, solicita uno nuevo."
+ *                     - type: string
+ *                       example: "Código inválido, solicita uno nuevo."
+ *                     - type: string
+ *                       example: "Código inválido, verifica que sea correcto."
  *                 timestamp:
  *                   type: string
  *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
- *                   example: "/api/v1/waitlist"
+ *                   example: "/api/v1/auth/password-reset/verify-code"
  *       '500':
  *         description: "Internal Server Error"
  *         content:
@@ -103,19 +105,11 @@ const ctrl = new WaitlistController();
  *                   example: "Internal Server Error"
  *                 description:
  *                   type: string
- *                   oneOf:
- *                     - type: string
- *                       example: "Error al enviar el correo de confirmación"
- *                     - type: string
- *                       example: "Error inesperado al suscribirse a la lista de espera"
+ *                   example: "Error inesperado en el servidor"
  *                 timestamp:
  *                   type: string
  *                   example: "2025-09-15T19:30:00.000Z"
  *                 path:
  *                   type: string
- *                   example: "/api/v1/waitlist"
+ *                   example: "/api/v1/auth/password-reset/verify-code"
  */
-
-router.post("/", asyncHandler(ctrl.subscribe));
-
-export { router as waitlistRoute };

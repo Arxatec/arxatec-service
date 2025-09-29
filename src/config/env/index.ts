@@ -1,6 +1,6 @@
 //src/config/env.index.ts
 import { config } from "dotenv";
-config({quiet: true }); 
+config({ quiet: true });
 
 // ENVIRONMENT
 export const ENVIRONMENT = process.env.ENVIRONMENT;
@@ -37,3 +37,11 @@ export const EMAIL_ADMIN = process.env.EMAIL_ADMIN;
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 export const SMTP_HOST = process.env.SMTP_HOST;
 export const SMTP_PORT = process.env.SMTP_PORT;
+
+// GOOGLE
+export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+
+// FACEBOOK
+export const FACEBOOK_CLIENT_ID = process.env.FACEBOOK_CLIENT_ID;
+export const FACEBOOK_CLIENT_SECRET = process.env.FACEBOOK_CLIENT_SECRET;

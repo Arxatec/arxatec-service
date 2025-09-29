@@ -2,7 +2,6 @@
 import { Router, Request } from "express";
 import multer from "multer";
 import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../../../middlewares/async_handler";
 import { UpdateExternalClientController } from "./update.controller";
 
 const router = Router();
@@ -143,7 +142,7 @@ router.put(
   "/:id",
   authenticateToken,
   upload.single("avatar"),
-  asyncHandler((req, res) => ctrl.updateExternalClient(req, res))
+  ctrl.updateExternalClient
 );
 
 export default router;

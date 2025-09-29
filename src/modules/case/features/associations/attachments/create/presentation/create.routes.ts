@@ -1,7 +1,6 @@
 // src/modules/cases/features/associations/attachments/create/presentation/create.routes.ts
 import { Router } from "express";
 import multer from "multer";
-import { asyncHandler } from "../../../../../../../middlewares/async_handler";
 import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
 import { CreateAttachmentController } from "./create.controller";
 
@@ -129,7 +128,7 @@ router.post(
   "/:id",
   authenticateToken,
   upload.single("file"),
-  asyncHandler(controller.create)
+  controller.create
 );
 
 export { router as createAttachmentRoutes };

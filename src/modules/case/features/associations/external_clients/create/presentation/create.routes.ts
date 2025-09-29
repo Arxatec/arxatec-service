@@ -2,7 +2,6 @@
 import { Router, Request } from "express";
 import multer from "multer";
 import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../../../middlewares/async_handler";
 import { CreateExternalClientController } from "./create.controller";
 
 const router = Router();
@@ -124,7 +123,7 @@ router.post(
   "/",
   authenticateToken,
   upload.single("avatar"),
-  asyncHandler((req, res) => ctrl.createExternalClient(req, res))
+  ctrl.createExternalClient
 );
 
 export default router;

@@ -1,6 +1,5 @@
 // src/modules/cases/features/associations/attachments/archive/presentation/archive.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../../../middlewares/async_handler";
 import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
 import { ArchiveAttachmentController } from "./archive.controller";
 
@@ -109,10 +108,6 @@ const controller = new ArchiveAttachmentController();
  *         description: "Internal Server Error"
  */
 
-router.patch(
-  "/:id/archive/:attId",
-  authenticateToken,
-  asyncHandler(controller.archive)
-);
+router.patch("/:id/archive/:attId", authenticateToken, controller.archive);
 
 export { router as archiveAttachmentRoutes };

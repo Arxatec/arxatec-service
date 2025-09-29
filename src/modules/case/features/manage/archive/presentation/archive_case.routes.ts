@@ -1,6 +1,5 @@
 // src/modules/cases/features/manage/archive/presentation/archive_case.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../../middlewares/async_handler";
 import { authenticateToken } from "../../../../../../middlewares/authenticate_token";
 import { ArchiveCaseController } from "./archive_case.controller";
 
@@ -138,6 +137,6 @@ const router = Router();
  *                 path: { type: string, example: "/api/v1/cases/archive/84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
  */
 
-router.patch("/:id", authenticateToken, asyncHandler(controller.archive));
+router.patch("/:id", authenticateToken, controller.archive);
 
 export { router as archiveCaseRoutes };

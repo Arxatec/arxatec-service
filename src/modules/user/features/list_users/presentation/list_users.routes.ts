@@ -1,6 +1,5 @@
 // src/modules/user/features/list_users/presentation/list_users.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../middlewares/async_handler";
 import { ListUsersController } from "./list_users.controller";
 import { authenticateToken } from "../../../../../middlewares/authenticate_token";
 
@@ -105,10 +104,6 @@ const controller = new ListUsersController();
  *         description: "Error interno del servidor"
  */
 
-router.get(
-  "/",
-  authenticateToken,
-  asyncHandler(controller.handle.bind(controller))
-);
+router.get("/", authenticateToken, controller.handle.bind(controller));
 
 export { router as listUsersRoutes };

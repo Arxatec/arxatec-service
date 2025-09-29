@@ -1,8 +1,7 @@
 // src/modules/cases/features/create_case/presentation/routes/create_case.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../../middlewares/async_handler";
-import { CreateCaseController } from "./create_case.controller";
 import { authenticateToken } from "../../../../../../middlewares/authenticate_token";
+import { CreateCaseController } from "./create_case.controller";
 
 const router = Router();
 const controller = new CreateCaseController();
@@ -178,10 +177,6 @@ const controller = new CreateCaseController();
  *         description: "Internal Server Error"
  */
 
-router.post(
-  "/",
-  authenticateToken,
-  asyncHandler(controller.handle.bind(controller))
-);
+router.post("/", authenticateToken, controller.handle.bind(controller));
 
 export { router as createCaseRoutes };

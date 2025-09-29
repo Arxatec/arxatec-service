@@ -1,7 +1,6 @@
 // src/modules/user/features/get_profile/presentation/get_profile.routes.ts
 import { Router } from "express";
 import { authenticateToken } from "../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../middlewares/async_handler";
 import { GetProfileController } from "./get_profile.controller";
 
 const router = Router();
@@ -92,6 +91,6 @@ const ctrl = new GetProfileController();
  *         description: "Error interno del servidor"
  */
 
-router.get("/", authenticateToken, asyncHandler(ctrl.handle.bind(ctrl)));
+router.get("/", authenticateToken, ctrl.handle.bind(ctrl));
 
 export { router as getProfileRoutes };

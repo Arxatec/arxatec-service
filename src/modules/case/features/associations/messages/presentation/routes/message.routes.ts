@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { authenticateToken } from "../../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../../middlewares/async_handler";
+import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
 import { MessageController } from "../controllers/message.controller";
 
 const router = Router();
@@ -112,7 +111,7 @@ const controller = new MessageController();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:id/messages", authenticateToken, asyncHandler(controller.send));
+router.post("/:id/messages", authenticateToken, controller.send);
 
 /**
  * @swagger
@@ -190,6 +189,6 @@ router.post("/:id/messages", authenticateToken, asyncHandler(controller.send));
  *       404:
  *         description: Case not found
  */
-router.get("/:id/messages/history", authenticateToken, asyncHandler(controller.getHistory));
+router.get("/:id/messages/history", authenticateToken, controller.getHistory);
 
 export { router as messageRoutes };

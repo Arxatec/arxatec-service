@@ -1,7 +1,6 @@
 // src/modules/user/features/edit_profile/presentation/edit_profile.routes.ts
 import { Router } from "express";
 import { authenticateToken } from "../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../middlewares/async_handler";
 import { EditProfileController } from "./edit_profile.controller";
 
 const router = Router();
@@ -108,6 +107,6 @@ const ctrl = new EditProfileController();
  *         description: "Error interno del servidor"
  */
 
-router.put("/", authenticateToken, asyncHandler(ctrl.handle.bind(ctrl)));
+router.put("/", authenticateToken, ctrl.handle.bind(ctrl));
 
 export { router as editProfileRoutes };

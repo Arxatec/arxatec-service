@@ -1,6 +1,5 @@
 // src/modules/cases/features/associations/attachments/list/presentation/list.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../../../middlewares/async_handler";
 import { authenticateToken } from "../../../../../../../middlewares/authenticate_token";
 import { ListAttachmentController } from "./list.controller";
 
@@ -104,6 +103,6 @@ const controller = new ListAttachmentController();
  *         description: "Internal Server Error"
  */
 
-router.get("/:id", authenticateToken, asyncHandler(controller.list));
+router.get("/:id", authenticateToken, controller.list);
 
 export { router as listAttachmentRoutes };

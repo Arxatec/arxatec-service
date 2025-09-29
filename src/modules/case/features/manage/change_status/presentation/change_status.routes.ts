@@ -1,7 +1,6 @@
 // src/modules/cases/features/manage/change_status/presentation/change_status.routes.ts
 import { Router } from "express";
 import { authenticateToken } from "../../../../../../middlewares/authenticate_token";
-import { asyncHandler } from "../../../../../../middlewares/async_handler";
 import { ChangeStatusController } from "./change_status.controller";
 
 const router = Router();
@@ -173,6 +172,6 @@ const ctrl = new ChangeStatusController();
  *                 path: { type: string, example: "/api/v1/cases/status/84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
  */
 
-router.patch("/:id", authenticateToken, asyncHandler(ctrl.patch));
+router.patch("/:id", authenticateToken, ctrl.patch);
 
 export { router as changeStatusRoutes };

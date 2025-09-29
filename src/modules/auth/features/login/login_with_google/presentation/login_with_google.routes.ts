@@ -1,6 +1,5 @@
 // src/modules/auth/features/login/login_with_google/presentation/login_with_google.routes.ts
 import { Router } from "express";
-import { asyncHandler } from "../../../../../../middlewares/async_handler";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import passport from "../../../../../../config/passport";
@@ -34,10 +33,7 @@ export const loginGoogleRouter = Router();
  *       200:
  *         description: "Login with Google successful"
  */
-loginGoogleRouter.post(
-  "/google",
-  asyncHandler((req, res) => postLoginWithGoogle(req, res))
-);
+loginGoogleRouter.post("/google", postLoginWithGoogle);
 
 /**
  * Redirect a Google (OIDC)

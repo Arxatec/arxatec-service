@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import routes from "./routes.js";
@@ -6,7 +6,7 @@ import http from "http";
 import { initSocket } from "./config/socket/index.js";
 import { redisClient } from "./config/redis/index.js";
 import { APP_URL, PORT } from "./config/env/index.js";
-import { displayWelcomeMessage } from "./utils/index.js";
+import { displayWelcomeMessage, handleServerError } from "./utils/index.js";
 import { customMorganFormat } from "./utils/cli/index.js";
 import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_error_handler.js";
 import { globalErrorHandler } from "./middlewares/global_error_handler/index.js";
@@ -38,6 +38,10 @@ mountSwagger(app);
 
 // API Routes
 app.use(routes);
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  return handleServerError(res, req, err);
+});
 
 // Multer error handler
 app.use(multerErrorHandler as express.ErrorRequestHandler);

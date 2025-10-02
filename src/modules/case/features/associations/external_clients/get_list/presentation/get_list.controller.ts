@@ -25,7 +25,7 @@ export class GetExternalClientsController {
           HttpStatusCodes.OK.code,
           "External clients",
           req.path,
-          { clients, meta, user: authUser }
+          { clients, pagination: meta, user: authUser }
         )
       );
   }

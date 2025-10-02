@@ -15,15 +15,22 @@ export class GetExternalClientDetailController {
 
     const client = await getExternalClientDetailService(id, userDetailId);
 
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          "External client detail",
-          req.path,
-          { client, user: authUser }
-        )
-      );
+    return res.status(HttpStatusCodes.OK.code).json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "External client detail",
+        req.path,
+        {
+          id: client.id,
+          profile_image: client.profile_image,
+          full_name: client.full_name,
+          email: client.email,
+          phone: client.phone,
+          dni: client.dni,
+          created_at: client.created_at,
+          archived: client.archived,
+        }
+      )
+    );
   }
 }

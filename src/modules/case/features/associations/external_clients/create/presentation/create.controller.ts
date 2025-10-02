@@ -7,7 +7,13 @@ import { CreateExternalClientService } from "./create.service";
 import { getAuthenticatedUser } from "../../../../../../../utils/authenticated_user";
 
 export class CreateExternalClientController {
-  constructor(private readonly service = new CreateExternalClientService()) {}
+  private readonly service: CreateExternalClientService;
+
+  // TODO: Here change
+  constructor() {
+    this.service = new CreateExternalClientService();
+    this.createExternalClient = this.createExternalClient.bind(this);
+  }
 
   async createExternalClient(req: Request, res: Response) {
     const dto = CreateExternalClientSchema.parse(req.body);

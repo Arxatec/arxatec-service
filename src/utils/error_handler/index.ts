@@ -27,6 +27,7 @@ export const handleServerError = (
   req: Request,
   error: unknown
 ) => {
+  console.log(error);
   if (error instanceof ZodError) {
     const payload = handleZodError(error, req);
     return res.status(payload.status).json(payload);

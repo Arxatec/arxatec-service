@@ -17,9 +17,9 @@ export const CreateCaseSchema = z.object({
     .min(20, "La descripción debe tener al menos 20 caracteres")
     .max(2000, "La descripción no puede superar los 2000 caracteres"),
 
-  category_id: z
-    .string({ required_error: "El ID de la categoría es obligatorio" })
-    .uuid("El ID de la categoría debe tener formato UUID"),
+  category: z
+    .string({ required_error: "La categoría es obligatoria" })
+    .min(1, "La categoría debe tener al menos 1 caracter"),
 
   urgency: z
     .enum(["alta", "media", "baja"], {
@@ -30,9 +30,9 @@ export const CreateCaseSchema = z.object({
     .default("media")
     .optional(),
 
-  status_id: z
-    .string({ required_error: "El ID del estado debe ser una cadena" })
-    .uuid("El ID del estado debe tener formato UUID")
+  status: z
+    .string({ required_error: "El estado es obligatorio" })
+    .min(1, "El estado debe tener al menos 1 caracter")
     .optional(),
 
   reference_code: z

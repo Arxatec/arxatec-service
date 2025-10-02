@@ -1,61 +1,60 @@
 // modules/cases/feature/shared/catalog/catalog.repository.ts
-import prisma from "../../../../../config/prisma_client";
-import { MESSAGES } from "../../../../../constants/messages/";
-
-const OPEN_ALIASES = ["open", "abierto", "registrado", "apertura", "open_case"];
-const TAKEN_ALIASES = [
-  "taken",
-  "asignado",
-  "tomado",
-  "en proceso",
-  "in_progress",
-];
-const CLOSED_ALIASES = ["closed", "cerrado", "archivado", "finalizado"];
-
-function norm(s?: string | null) {
-  return (s ?? "").trim().toLowerCase();
-}
+import { case_status, case_category } from "@prisma/client";
 
 export class CatalogRepository {
+  // Devuelve todos los estados disponibles del enum
   getAllStatuses() {
-    return prisma.case_statuses.findMany({ orderBy: { name: "asc" } });
+    return Object.values(case_status).map((status) => ({
+      value: status,
+      label: this.getStatusLabel(status),
+    }));
   }
 
+  // Devuelve todas las categorías disponibles del enum
   getAllCategories() {
-    return prisma.case_categories.findMany({ orderBy: { name: "asc" } });
+    return Object.values(case_category).map((category) => ({
+      value: category,
+      label: this.getCategoryLabel(category),
+    }));
   }
 
-  getStatusById(id: string) {
-    return prisma.case_statuses.findUnique({ where: { id } });
+  // Convierte el enum a un label legible
+  private getStatusLabel(status: case_status): string {
+    const labels: Record<case_status, string> = {
+      [case_status.abierto]: "Abierto",
+      [case_status.en_progreso]: "En Progreso",
+      [case_status.cerrado]: "Cerrado",
+      [case_status.archivado]: "Archivado",
+    };
+    return labels[status];
   }
 
-  getCategoryById(id: string) {
-    return prisma.case_categories.findUnique({ where: { id } });
+  // Convierte el enum a un label legible
+  private getCategoryLabel(category: case_category): string {
+    const labels: Record<case_category, string> = {
+      [case_category.civil]: "Civil",
+      [case_category.laboral]: "Laboral",
+      [case_category.familiar]: "Familiar",
+      [case_category.penal]: "Penal",
+    };
+    return labels[category];
   }
 
-  async getOpenAndTakenStatusIds() {
-    const statuses = await prisma.case_statuses.findMany({
-      select: { id: true, name: true },
-    });
-
-    const findByAliases = (aliases: string[]) =>
-      statuses.find((s) => aliases.includes(norm(s.name)));
-
-    const open = findByAliases(OPEN_ALIASES);
-    const taken = findByAliases(TAKEN_ALIASES);
-
-    if (!open || !taken) {
-      throw new Error(MESSAGES.CASE.NEED_MIN_2_STATUSES);
-    }
-    return { openStatusId: open.id, takenStatusId: taken.id };
+  // Devuelve los estados para casos abiertos y tomados
+  getOpenAndTakenStatusIds() {
+    return {
+      openStatusId: case_status.abierto,
+      takenStatusId: case_status.en_progreso,
+    };
   }
 
-  async getClosedStatusId() {
-    const statuses = await prisma.case_statuses.findMany({
-      select: { id: true, name: true },
-    });
-    const closed = statuses.find((s) => CLOSED_ALIASES.includes(norm(s.name)));
-    if (!closed) throw new Error("CLOSED_STATUS_NOT_FOUND");
-    return closed.id;
+  // Devuelve el estado para casos cerrados
+  getClosedStatusId() {
+    return case_status.cerrado;
+  }
+
+  // Devuelve el estado para casos archivados
+  getArchivedStatusId() {
+    return case_status.archivado;
   }
 }

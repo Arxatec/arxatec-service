@@ -45,11 +45,9 @@ export async function loginWithEmail(
   return {
     user: {
       id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
+      name: user.first_name + " " + user.last_name,
       email: user.email,
-      userType: userType,
-      role: null,
+      user_type: userType,
     },
     token,
   };

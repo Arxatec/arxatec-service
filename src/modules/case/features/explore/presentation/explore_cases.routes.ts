@@ -31,6 +31,11 @@ const ctrl = new ExploreCasesController();
  *         required: false
  *         description: Filtra por abogado.
  *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *         required: false
+ *         description: Busca en título y descripción de los casos.
+ *       - in: query
  *         name: page
  *         schema: { type: integer, minimum: 1, example: 1 }
  *         required: false
@@ -109,85 +114,5 @@ const ctrl = new ExploreCasesController();
  *         description: "Internal Server Error"
  */
 router.get("/", ctrl.explore);
-
-/**
- * List case categories
- * @openapi
- * /cases/categories:
- *   get:
- *     tags:
- *       - Cases - Explore
- *     summary: "List categories"
- *     description: "Devuelve las categorías disponibles para los casos."
- *     responses:
- *       '200':
- *         description: "OK"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status: { type: number, example: 200 }
- *                 message: { type: string, example: "OK" }
- *                 description: { type: string, example: "OK" }
- *                 timestamp: { type: string, example: "2025-09-16T16:10:00.000Z" }
- *                 path: { type: string, example: "/api/v1/cases/categories" }
- *                 data:
- *                   type: object
- *                   properties:
- *                     categories:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id: { type: string, format: uuid, example: "9e1b1a7f-1c2d-4a5b-9c7e-123456789abc" }
- *                           name: { type: string, example: "Contratos" }
- *                     user:
- *                       type: object
- *                       nullable: true
- *       '500':
- *         description: "Internal Server Error"
- */
-router.get("/", ctrl.categories);
-
-/**
- * List case statuses
- * @openapi
- * /cases/status:
- *   get:
- *     tags:
- *       - Cases - Explore
- *     summary: "List status"
- *     description: "Devuelve los estados disponibles para los casos."
- *     responses:
- *       '200':
- *         description: "OK"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status: { type: number, example: 200 }
- *                 message: { type: string, example: "OK" }
- *                 description: { type: string, example: "OK" }
- *                 timestamp: { type: string, example: "2025-09-16T16:10:00.000Z" }
- *                 path: { type: string, example: "/api/v1/cases/statuses" }
- *                 data:
- *                   type: object
- *                   properties:
- *                     statuses:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id: { type: string, format: uuid, example: "7a9f6a49-7c5a-43c7-8b1e-9c2c9b3b8e13" }
- *                           name: { type: string, example: "Abierto" }
- *                     user:
- *                       type: object
- *                       nullable: true
- *       '500':
- *         description: "Internal Server Error"
- */
-router.get("/", ctrl.statuses);
 
 export { router as exploreCasesRoutes };

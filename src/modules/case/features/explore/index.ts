@@ -6,7 +6,5 @@ const router = Router();
 const ctrl = new ExploreCasesController();
 
 router.get("/explore", ctrl.explore);
-router.get("/categories", ctrl.categories);
-router.get("/status", ctrl.statuses);
 
 export { router as exploreCasesRoutes };

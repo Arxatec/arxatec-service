@@ -47,7 +47,7 @@ enum service_type {
 }
 
 enum community_user_type {
-  moderator  
+  moderator
   member
 }
 
@@ -106,26 +106,33 @@ enum actor_type {
   client
 }
 
+enum case_category {
+  civil
+  laboral
+  familiar
+  penal
+}
+
 model users {
   id                 String      @id @default(uuid()) @db.Uuid
   first_name         String
   last_name          String
   email              String      @unique
   password           String
-  user_type          user_type?
+  user_type          user_type
   profile_image      String?
   phone              String?
   status             user_status
   creation_timestamp DateTime    @default(now())
 
-  lawyer_details   lawyer_details?
-  client_details   client_details?
-  admin_details    admin_details?
-  user_details     user_details?
+  lawyer_details lawyer_details?
+  client_details client_details?
+  admin_details  admin_details?
+  user_details   user_details?
 }
 
 model lawyer_details {
-  lawyer_id      String   @id @db.Uuid
+  lawyer_id      String @id @db.Uuid
   license_number String
   specialty      String
   experience     Int
@@ -148,32 +155,32 @@ model client_details {
 }
 
 model admin_details {
-  admin_id String @id @db.Uuid
+  admin_id String  @id @db.Uuid
   notes    String?
 
   user users @relation(fields: [admin_id], references: [id], onDelete: Cascade)
 }
 
 model user_details {
-  user_id    String   @id @db.Uuid
+  user_id    String    @id @db.Uuid
   gender     String?
   birth_date DateTime? @db.Date
 
-  user         users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  preference   preferences?
-  locations    locations?
+  user       users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  preference preferences?
+  locations  locations?
 
-  community_users     community_users[]
-  external_clients    external_clients[]
-  services_as_lawyer  services[]      @relation("LawyerServices")
-  services_as_client  services[]      @relation("ClientServices")
+  community_users    community_users[]
+  external_clients   external_clients[]
+  services_as_lawyer services[]         @relation("LawyerServices")
+  services_as_client services[]         @relation("ClientServices")
 
   articles articles[]
 }
 
 model preferences {
-  id                    String @id @default(uuid()) @db.Uuid
-  user_id               String @unique @db.Uuid
+  id                    String  @id @default(uuid()) @db.Uuid
+  user_id               String  @unique @db.Uuid
   communication_channel String?
   receive_notifications Boolean
   notification_channels String?
@@ -182,11 +189,11 @@ model preferences {
 }
 
 model locations {
-  id           String @id @default(uuid()) @db.Uuid
-  user_id      String @unique @db.Uuid
-  country      String @db.VarChar(100)
-  state        String @db.VarChar(100)
-  city         String @db.VarChar(100)
+  id           String  @id @default(uuid()) @db.Uuid
+  user_id      String  @unique @db.Uuid
+  country      String  @db.VarChar(100)
+  state        String  @db.VarChar(100)
+  city         String  @db.VarChar(100)
   latitude     Float
   longitude    Float
   full_address String? @db.VarChar(255)
@@ -225,9 +232,9 @@ model lawyer_service {
   payment_methods  String
   currency         String
 
-  lawyer_details  lawyer_details  @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
-  attorney_fees   attorney_fees[]
-  work_schedules  work_schedules[]
+  lawyer_details lawyer_details   @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
+  attorney_fees  attorney_fees[]
+  work_schedules work_schedules[]
 }
 
 model attorney_fees {
@@ -244,7 +251,7 @@ model attorney_fees {
 }
 
 model service_categories {
-  id          String @id @default(uuid()) @db.Uuid
+  id          String  @id @default(uuid()) @db.Uuid
   name        String
   description String?
 
@@ -268,14 +275,14 @@ model work_schedules {
 // ===============================
 
 model community_users {
-  id           String               @id @default(uuid()) @db.Uuid
-  user_id      String               @db.Uuid
-  community_id String               @db.Uuid
+  id           String              @id @default(uuid()) @db.Uuid
+  user_id      String              @db.Uuid
+  community_id String              @db.Uuid
   type         community_user_type
-  created_at   DateTime             @default(now())
+  created_at   DateTime            @default(now())
 
-  user         user_details  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  community    communities   @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  user         user_details      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  community    communities       @relation(fields: [community_id], references: [id], onDelete: Cascade)
   publications publications[]
   comments     comments[]
   replies      comment_replies[]
@@ -286,23 +293,23 @@ model community_users {
 }
 
 model communities {
-  id           String    @id @default(uuid()) @db.Uuid
-  name         String
-  description  String?
-  banner       String?
-  icon         String?
-  category_id  String? @db.Uuid 
-  created_at   DateTime  @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  banner      String?
+  icon        String?
+  category_id String?  @db.Uuid
+  created_at  DateTime @default(now())
 
-  community_users     community_users[]
-  community_category  community_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull)
-  community_markers   community_markers[]
-  community_rules     community_rules[]
-  publications        publications[]
+  community_users    community_users[]
+  community_category community_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  community_markers  community_markers[]
+  community_rules    community_rules[]
+  publications       publications[]
 }
 
 model community_categories {
-  id          String @id @default(uuid()) @db.Uuid
+  id          String  @id @default(uuid()) @db.Uuid
   name        String
   description String?
 
@@ -354,8 +361,8 @@ model comments {
   publication_id    String   @db.Uuid
   created_at        DateTime @default(now())
 
-  publication    publications    @relation(fields: [publication_id], references: [id], onDelete: Cascade)
-  community_user community_users @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
+  publication    publications      @relation(fields: [publication_id], references: [id], onDelete: Cascade)
+  community_user community_users   @relation(fields: [community_user_id], references: [id], onDelete: Cascade)
   replies        comment_replies[]
 
   @@index([publication_id])
@@ -468,43 +475,23 @@ model services {
 // CASES
 // ===============================
 
-model case_categories {
-  id          String @id @default(uuid()) @db.Uuid
-  name        String @unique
-  description String?
-
-  cases cases[]
-}
-
-model case_statuses {
-  id          String @id @default(uuid()) @db.Uuid
-  name        String @unique
-  description String?
-
-  cases cases[]
-}
-
 model cases {
-  id             String       @id @default(uuid()) @db.Uuid
-  service_id     String       @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
+  service_id     String        @db.Uuid
   title          String
   description    String
-  category_id    String       @db.Uuid
   urgency        case_urgency
-  status_id      String       @db.Uuid
+  category       case_category
+  status         case_status
   is_public      Boolean
-  reference_code String       @default(cuid())
-  created_at     DateTime     @default(now())
-  archived       Boolean      @default(false)
+  reference_code String        @default(cuid())
+  created_at     DateTime      @default(now())
+  archived       Boolean       @default(false)
 
-  service   services        @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  category  case_categories @relation(fields: [category_id], references: [id])
-  status    case_statuses   @relation(fields: [status_id], references: [id])
+  service   services         @relation(fields: [service_id], references: [id], onDelete: Cascade)
   histories case_histories[]
 
   @@index([service_id])
-  @@index([category_id])
-  @@index([status_id])
   @@index([reference_code])
 }
 
@@ -512,7 +499,7 @@ model case_histories {
   id         String   @id @default(uuid()) @db.Uuid
   case_id    String   @db.Uuid
   changed_by String   @db.Uuid
-  field      String   @db.VarChar(60) 
+  field      String   @db.VarChar(60)
   old_value  String
   new_value  String
   note       String?
@@ -568,7 +555,7 @@ model calls {
   created_at       DateTime    @default(now())
 
   category call_categories @relation(fields: [category_id], references: [id])
-  service  services       @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  service  services        @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   @@index([service_id])
   @@index([category_id])
@@ -600,15 +587,15 @@ model attachment_categories {
 }
 
 model attachments {
-  id          String   @id @default(uuid()) @db.Uuid
-  file_key    String        
+  id          String     @id @default(uuid()) @db.Uuid
+  file_key    String
   label       String
   description String?
-  category_id String   @db.Uuid
+  category_id String     @db.Uuid
   uploaded_by actor_type
-  created_at  DateTime @default(now())
-  service_id  String   @db.Uuid
-  archived    Boolean  @default(false)
+  created_at  DateTime   @default(now())
+  service_id  String     @db.Uuid
+  archived    Boolean    @default(false)
 
   service  services              @relation(fields: [service_id], references: [id], onDelete: Cascade)
   category attachment_categories @relation(fields: [category_id], references: [id])

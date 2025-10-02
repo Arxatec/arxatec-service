@@ -3,11 +3,12 @@ import { ExploreCasesRepository } from "../data/explore_cases.repository";
 import { Pagination } from "../../../../../utils/pagination";
 
 type ExploreFilters = {
-  category_id?: string;
-  status_id?: string;
+  category?: string;
+  status?: string;
   lawyerId?: string | null;
   is_public?: boolean;
   archived?: boolean;
+  search?: string;
 };
 
 export class ExploreCasesService {
@@ -27,7 +28,6 @@ export class ExploreCasesService {
     const safeFilters: ExploreFilters = {
       ...filters,
       is_public: true,
-      archived: false,
     };
 
     const [total, rows] = await Promise.all([

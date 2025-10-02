@@ -1,17 +1,17 @@
 // modules/cases/feature/shared/case_status/case_status.repository.ts
 import prisma from "../../../../../config/prisma_client";
+import { case_status } from "@prisma/client";
 
 export class CaseStatusRepository {
   async updateStatus(
     caseId: string,
-    newStatusId: string,
+    newStatus: case_status,
     changedBy: string,
-    oldStatus: string,
-    newStatus: string
+    oldStatus: case_status
   ) {
     await prisma.cases.update({
       where: { id: caseId },
-      data: { status_id: newStatusId },
+      data: { status: newStatus },
     });
 
     await prisma.case_histories.create({
@@ -75,5 +75,15 @@ export class CaseStatusRepository {
     });
 
     return found?.service ?? null;
+  }
+
+  // Método adicional para obtener el estado actual de un caso
+  async getCurrentStatus(caseId: string): Promise<case_status | null> {
+    const caseData = await prisma.cases.findUnique({
+      where: { id: caseId },
+      select: { status: true },
+    });
+
+    return caseData?.status ?? null;
   }
 }

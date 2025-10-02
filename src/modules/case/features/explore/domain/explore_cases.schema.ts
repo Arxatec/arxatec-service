@@ -2,15 +2,9 @@
 import { z } from "zod";
 
 export const ExploreCasesQuerySchema = z.object({
-  category_id: z
-    .string()
-    .uuid("El ID de la categoría debe tener formato UUID")
-    .optional(),
-
-  status_id: z
-    .string()
-    .uuid("El ID del estado debe tener formato UUID")
-    .optional(),
+  category: z.string().optional(),
+  status: z.string().optional(),
+  search: z.string().optional(),
 
   lawyer_id: z
     .string()

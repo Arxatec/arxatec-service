@@ -17,7 +17,7 @@ export async function createUser(
         email: normalizedEmail,
         password: data.password,
         status: "active",
-        user_type: "client",
+        user_type: data.user_type,
       },
     });
 

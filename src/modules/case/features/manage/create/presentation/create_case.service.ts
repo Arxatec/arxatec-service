@@ -6,7 +6,12 @@ import { CapacityPolicyService } from "../../../shared/capacity_policy/capacity_
 import { AppError } from "../../../../../../utils/errors";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import { MESSAGES } from "../../../../../../constants/messages/";
-import { service_type } from "@prisma/client";
+import {
+  case_category,
+  case_status,
+  case_urgency,
+  service_type,
+} from "@prisma/client";
 
 interface CurrentUser {
   id: string;
@@ -22,7 +27,7 @@ export class CreateCaseService {
 
   async execute(dto: CreateCaseDTO, user: CurrentUser) {
     const { openStatusId, takenStatusId } =
-      await this.catalog.getOpenAndTakenStatusIds();
+      this.catalog.getOpenAndTakenStatusIds();
 
     if (user.role === "client") {
       await this.policy.assertClientCanCreate(user.id);
@@ -58,20 +63,20 @@ export class CreateCaseService {
 
     let isPublic: boolean;
     let assignedLawyerUserId: string | undefined;
-    let statusId: string;
+    let status: case_status;
 
     if (user.role === "lawyer") {
       isPublic = false;
       assignedLawyerUserId = user.id;
-      statusId = dto.status_id ?? takenStatusId;
+      status = (dto.status as case_status) ?? takenStatusId;
     } else if (dto.selected_lawyer_id) {
       isPublic = false;
       assignedLawyerUserId = dto.selected_lawyer_id;
-      statusId = dto.status_id ?? takenStatusId;
+      status = (dto.status as case_status) ?? takenStatusId;
     } else {
       isPublic = true;
       assignedLawyerUserId = undefined;
-      statusId = dto.status_id ?? openStatusId;
+      status = (dto.status as case_status) ?? openStatusId;
     }
 
     const service = await this.repo.createService({
@@ -91,9 +96,9 @@ export class CreateCaseService {
       service: { connect: { id: service.id } },
       title: dto.title,
       description: dto.description,
-      category: { connect: { id: dto.category_id } },
-      urgency: dto.urgency ?? "media",
-      status: { connect: { id: statusId } },
+      category: dto.category as case_category,
+      urgency: (dto.urgency ?? "media") as case_urgency,
+      status: status,
       is_public: isPublic,
       reference_code: dto.reference_code,
     });
@@ -105,8 +110,8 @@ export class CreateCaseService {
         service_id: service.id,
         title: caseCreated.title,
         description: caseCreated.description,
-        category_id: caseCreated.category_id,
-        status_id: caseCreated.status_id,
+        category: caseCreated.category,
+        status: caseCreated.status,
         urgency: caseCreated.urgency,
         is_public: caseCreated.is_public,
         reference_code: caseCreated.reference_code ?? undefined,

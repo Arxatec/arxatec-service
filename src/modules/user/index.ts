@@ -7,7 +7,7 @@ import { listUsersRoutes } from "./features/list_users/presentation/list_users.r
 export const router = Router();
 
 router.use("/profile", editProfileRoutes);
-router.use("/get-profile", getProfileRoutes);
+router.use("/profile", getProfileRoutes);
 router.use("/list", listUsersRoutes);
 
 export { router as userRouter };

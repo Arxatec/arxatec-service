@@ -32,6 +32,7 @@ export async function verifyCodeRegistration(
     last_name: string;
     email: string;
     password: string;
+    user_type: string;
   } | null = null;
 
   try {
@@ -57,7 +58,8 @@ export async function verifyCodeRegistration(
     parsedUser.email.toLowerCase() !== normalizedEmail ||
     !parsedUser.first_name ||
     !parsedUser.last_name ||
-    !parsedUser.password
+    !parsedUser.password ||
+    !parsedUser.user_type
   ) {
     await removeTemporaryUser(normalizedEmail);
     throw new AppError(
@@ -70,6 +72,7 @@ export async function verifyCodeRegistration(
     await createUser({
       ...parsedUser,
       confirm_password: parsedUser.password,
+      user_type: parsedUser.user_type as "client" | "lawyer",
     });
   } catch (err: any) {
     if (err?.code === "P2002") {
@@ -84,5 +87,3 @@ export async function verifyCodeRegistration(
   await removeTemporaryUser(normalizedEmail);
   return { message: "User verified and registered successfully" };
 }
-
-

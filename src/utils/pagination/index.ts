@@ -13,14 +13,14 @@ function getPaginationParams(query: any) {
 }
 
 function buildPaginationMeta(total: number, page: number, limit: number) {
-  const totalPages = Math.ceil(total / limit) || 1;
+  const total_pages = Math.ceil(total / limit) || 1;
   return {
     total,
     page,
     limit,
-    totalPages,
-    hasNextPage: page < totalPages,
-    hasPrevPage: page > 1,
+    total_pages,
+    has_next_page: page < total_pages,
+    has_prev_page: page > 1,
   };
 }
 

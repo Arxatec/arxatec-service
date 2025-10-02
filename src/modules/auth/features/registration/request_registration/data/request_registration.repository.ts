@@ -50,6 +50,7 @@ export async function createTemporaryUser(
     first_name: data.first_name,
     last_name: data.last_name,
     email: normalizedEmail,
+    user_type: data.user_type,
     password: data.password,
   });
 

@@ -6,10 +6,9 @@ export type LoginRequest = z.infer<typeof LoginSchema>;
 export interface LoginResponse {
   user: {
     id: string;
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
-    userType: "admin" | "client" | "lawyer" | null;
+    user_type: "admin" | "client" | "lawyer" | null;
     role?: string | null;
   };
   token: string;

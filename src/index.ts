@@ -53,7 +53,7 @@ app.use((req, res) => {
     .json(
       buildHttpResponse(
         HttpStatusCodes.NOT_FOUND.code,
-        "Route not found",
+        "Ups, el servicio que buscas no existe, contacta al administrador para mas detalles.",
         req.path
       )
     );

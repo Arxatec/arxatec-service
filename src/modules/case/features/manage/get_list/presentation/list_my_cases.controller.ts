@@ -22,7 +22,7 @@ export class ListMyCasesController {
         req.path,
         {
           cases: result.items,
-          meta: result.meta,
+          pagination: result.meta,
           user,
         }
       )

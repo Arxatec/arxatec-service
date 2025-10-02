@@ -27,6 +27,9 @@ export const RequestRegistrationSchema = z
       })
       .min(8, "La confirmación de contraseña debe tener al menos 8 caracteres")
       .trim(),
+    user_type: z.enum(["client", "lawyer"], {
+      required_error: "El tipo de usuario es obligatorio",
+    }),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Las contraseñas no coinciden, vuelve a intentar por favor",

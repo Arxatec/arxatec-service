@@ -2,18 +2,18 @@
 import prisma from "../../../../../../../config/prisma_client";
 
 export const getExternalClientsRepository = {
-  countByLawyer(userDetailId: string, q?: string) {
+  countByLawyer(userDetailId: string, search?: string) {
     return prisma.external_clients.count({
       where: {
         user_detail_id: userDetailId,
         archived: false,
-        ...(q
+        ...(search
           ? {
               OR: [
-                { full_name: { contains: q, mode: "insensitive" } },
-                { email: { contains: q, mode: "insensitive" } },
-                { phone: { contains: q, mode: "insensitive" } },
-                { dni: { contains: q, mode: "insensitive" } },
+                { full_name: { contains: search, mode: "insensitive" } },
+                { email: { contains: search, mode: "insensitive" } },
+                { phone: { contains: search, mode: "insensitive" } },
+                { dni: { contains: search, mode: "insensitive" } },
               ],
             }
           : {}),
@@ -25,19 +25,19 @@ export const getExternalClientsRepository = {
     userDetailId: string,
     skip: number,
     take: number,
-    q?: string
+    search?: string
   ) {
     return prisma.external_clients.findMany({
       where: {
         user_detail_id: userDetailId,
         archived: false,
-        ...(q
+        ...(search
           ? {
               OR: [
-                { full_name: { contains: q, mode: "insensitive" } },
-                { email: { contains: q, mode: "insensitive" } },
-                { phone: { contains: q, mode: "insensitive" } },
-                { dni: { contains: q, mode: "insensitive" } },
+                { full_name: { contains: search, mode: "insensitive" } },
+                { email: { contains: search, mode: "insensitive" } },
+                { phone: { contains: search, mode: "insensitive" } },
+                { dni: { contains: search, mode: "insensitive" } },
               ],
             }
           : {}),

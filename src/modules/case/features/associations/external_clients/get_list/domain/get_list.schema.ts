@@ -12,7 +12,7 @@ export const GetExternalClientsQuerySchema = z.object({
     .regex(/^\d+$/, "El límite debe ser un número entero positivo")
     .optional(),
 
-  q: z
+  search: z
     .string()
     .trim()
     .min(1, "El parámetro de búsqueda no puede estar vacío")

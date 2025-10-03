@@ -10,7 +10,7 @@ import { UpdateExternalClientParamsSchema } from "../domain/update.params.schema
 export class UpdateExternalClientController {
   constructor(private readonly service = new UpdateExternalClientService()) {}
 
-  async updateExternalClient(req: Request, res: Response) {
+  updateExternalClient = async (req: Request, res: Response) => {
     const { id } = UpdateExternalClientParamsSchema.parse(req.params);
     const dto = UpdateExternalClientSchema.parse(req.body);
     const authUser = await getAuthenticatedUser(req);
@@ -34,5 +34,5 @@ export class UpdateExternalClientController {
           { client: result, user: authUser }
         )
       );
-  }
+  };
 }

@@ -4,15 +4,15 @@ import { Pagination } from "../../../../../../../utils/pagination";
 
 export const getExternalClientsService = async (
   userDetailId: string,
-  query: { page?: string; limit?: string; q?: string }
+  query: { page?: string; limit?: string; search?: string }
 ) => {
   const { page, limit, skip } = Pagination.getPaginationParams(query);
-  const total = await repo.countByLawyer(userDetailId, query.q);
+  const total = await repo.countByLawyer(userDetailId, query.search);
   const clients = await repo.findManyByLawyer(
     userDetailId,
     skip,
     limit,
-    query.q
+    query.search
   );
   const meta = Pagination.buildPaginationMeta(total, page, limit);
 

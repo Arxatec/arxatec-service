@@ -1,5 +1,5 @@
 // src/middlewares/authenticate_token/index.ts
-import type { RequestHandler } from "express";
+import type { Request, RequestHandler } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "../../config";
 import { HttpStatusCodes } from "../../constants";
@@ -10,6 +10,21 @@ interface TokenPayload {
   user_type: "admin" | "client" | "lawyer";
   email?: string;
 }
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email?: string;
+        user_type: "admin" | "client" | "lawyer";
+      };
+    }
+  }
+}
+
+export type CurrentUser = NonNullable<Express.Request["user"]>;
+export type AuthenticatedRequest = Request & { user: CurrentUser };
 
 export const authenticateToken: RequestHandler = (req, res, next) => {
   try {
@@ -41,7 +56,7 @@ export const authenticateToken: RequestHandler = (req, res, next) => {
 
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload & TokenPayload;
 
-    (req as any).user = {
+    req.user = {
       id: payload.id,
       email: payload.email,
       user_type: payload.user_type,

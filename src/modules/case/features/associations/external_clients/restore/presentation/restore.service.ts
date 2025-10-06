@@ -1,24 +1,27 @@
 // src/modules/case/features/associations/external_clients/restore/presentation/restore.service.ts
-import { RestoreExternalClientRepository } from "../data/restore.repository";
 import { AppError } from "../../../../../../../utils/errors";
 import { HttpStatusCodes } from "../../../../../../../constants/http_status_codes";
+import {
+  findByIdAndLawyer,
+  restoreExternalClient,
+} from "../data/restore.repository";
+import type { RestoreExternalClientResponse } from "../domain/restore.payload";
 
-export class RestoreExternalClientService {
-  constructor(private readonly repo = new RestoreExternalClientRepository()) {}
-
-  async restoreExternalClient(id: string, userDetailId: string) {
-    const client = await this.repo.findByIdAndLawyer(id, userDetailId);
-    if (!client) {
-      throw new AppError(
-        "Cliente externo no encontrado",
-        HttpStatusCodes.NOT_FOUND.code
-      );
-    }
-
-    if (client.archived) {
-      await this.repo.restore(id);
-    }
-
-    return { id, message: "Cliente externo restaurado correctamente" };
+export async function restoreExternalClientService(
+  id: string,
+  userDetailId: string
+): Promise<RestoreExternalClientResponse> {
+  const client = await findByIdAndLawyer(id, userDetailId);
+  if (!client) {
+    throw new AppError(
+      "Cliente externo no encontrado",
+      HttpStatusCodes.NOT_FOUND.code
+    );
   }
+
+  if (client.archived) {
+    await restoreExternalClient(id);
+  }
+
+  return { id, message: "Cliente externo restaurado correctamente" };
 }

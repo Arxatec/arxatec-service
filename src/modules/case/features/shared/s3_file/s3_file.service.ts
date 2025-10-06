@@ -5,16 +5,14 @@ import {
   getSignedUrl,
 } from "../../../../../infrastructure/aws";
 
-export class S3FileService {
-  upload(file: Express.Multer.File, keyPrefix: string) {
-    return uploadFile(file, keyPrefix);
-  }
+export async function uploadS3File(file: Express.Multer.File, keyPrefix: string) {
+  return uploadFile(file, keyPrefix);
+}
 
-  remove(key: string) {
-    return deleteFile(key);
-  }
+export async function removeS3File(key: string) {
+  return deleteFile(key);
+}
 
-  getUrl(key: string) {
-    return getSignedUrl(key);
-  }
+export async function getS3FileUrl(key: string) {
+  return getSignedUrl(key);
 }

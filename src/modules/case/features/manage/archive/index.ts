@@ -1,1 +1,1 @@
-export { archiveCaseRoutes } from "./presentation/archive_case.routes";
+export { router as archiveCaseRoutes } from "./presentation/archive_case.routes";

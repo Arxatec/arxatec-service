@@ -1,3 +1,4 @@
+//src/modules/auth/features/registration/request_registration/presentation/request_registration_service.ts
 import {
   RequestRegistrationRequest,
   RequestRegistrationResponse,

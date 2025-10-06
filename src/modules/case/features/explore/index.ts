@@ -1,10 +1,9 @@
 // src/modules/case/features/explore/index.ts
 import { Router } from "express";
-import { ExploreCasesController } from "./presentation/explore_cases.controller";
+import { router as exploreCasesRouter } from "./presentation/explore_cases.routes";
 
 const router = Router();
-const ctrl = new ExploreCasesController();
 
-router.get("/explore", ctrl.explore);
+router.use("/explore", exploreCasesRouter);
 
 export { router as exploreCasesRoutes };

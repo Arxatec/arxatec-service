@@ -1,18 +1,21 @@
 // src/modules/case/features/associations/external_clients/archive/presentation/archive.service.ts
-import { archiveExternalClientRepository as repo } from "../data/archive.repository";
 import { AppError } from "../../../../../../../utils/errors";
 import { HttpStatusCodes } from "../../../../../../../constants/http_status_codes";
+import {
+  findByIdAndLawyer,
+  archiveExternalClient,
+} from "../data/archive.repository";
 
-export const archiveExternalClientService = async (
+export async function archiveExternalClientService(
   id: string,
   userDetailId: string
-) => {
-  const client = await repo.findByIdAndLawyer(id, userDetailId, false);
+) {
+  const client = await findByIdAndLawyer(id, userDetailId, false);
   if (!client)
     throw new AppError(
       "Cliente externo no encontrado",
       HttpStatusCodes.NOT_FOUND.code
     );
-  await repo.archive(id);
+  await archiveExternalClient(id);
   return { id, message: "Cliente externo archivado exitosamente" };
-};
+}

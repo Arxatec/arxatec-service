@@ -1,1 +1,1 @@
-export { caseDetailRoutes } from "./presentation/case_detail.routes";
+export { router as caseDetailRoutes } from "./presentation/case_detail.routes";

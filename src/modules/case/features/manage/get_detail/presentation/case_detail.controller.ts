@@ -3,27 +3,21 @@ import { Request, Response } from "express";
 import { buildHttpResponse } from "../../../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import { requireClientOrLawyer } from "../../../../../../utils/authenticated_user";
-import { CaseDetailService } from "./case_detail.service";
 import { CaseDetailParamsSchema } from "../domain/case_detail.schema";
+import { getCaseDetailService } from "./case_detail.service";
 
-export class CaseDetailController {
-  constructor(private readonly service = new CaseDetailService()) {}
-
-  get = async (req: Request, res: Response) => {
-    const { id } = CaseDetailParamsSchema.parse(req.params);
-    const user = await requireClientOrLawyer(req as any);
-
-    const data = await this.service.execute(id, user);
-
-    return res.status(HttpStatusCodes.OK.code).json(
+export async function getCaseDetail(req: Request, res: Response) {
+  const { id } = CaseDetailParamsSchema.parse(req.params);
+  const user = await requireClientOrLawyer(req as any);
+  const data = await getCaseDetailService(id, user);
+  return res
+    .status(HttpStatusCodes.OK.code)
+    .json(
       buildHttpResponse(
         HttpStatusCodes.OK.code,
         HttpStatusCodes.OK.message,
         req.path,
-        {
-          case: data,
-        }
+        { case: data }
       )
     );
-  };
 }

@@ -4,7 +4,3 @@ import { z } from "zod";
 export const UpdateExternalClientParamsSchema = z.object({
   id: z.string().uuid("El ID del cliente externo debe tener formato UUID"),
 });
-
-export type UpdateExternalClientParamsDTO = z.infer<
-  typeof UpdateExternalClientParamsSchema
->;

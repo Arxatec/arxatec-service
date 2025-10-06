@@ -1,26 +1,22 @@
 // src/modules/lawyer/features/get_lawyers/presentation/get_lawyers.service.ts
-import { GetLawyersRepository } from "../data/get_lawyers.repository";
-import type { GetLawyersQueryDTO } from "../domain/get_lawyers.schema";
 import { Pagination } from "../../../../../utils/pagination";
+import { countLawyers, findLawyers } from "../data/get_lawyers.repository";
+import {
+  GetLawyersQueryRequest,
+  GetLawyersResponse,
+} from "../domain/get_lawyers.payload";
 
-type Filters = { search?: string };
+export async function getLawyersService(
+  query: GetLawyersQueryRequest
+): Promise<GetLawyersResponse> {
+  const { page, limit, skip } = Pagination.getPaginationParams(query);
+  const filters = { ...(query.search && { search: query.search }) };
 
-export class GetLawyersService {
-  constructor(private repo = new GetLawyersRepository()) {}
+  const [total, rows] = await Promise.all([
+    countLawyers(filters),
+    findLawyers(filters, skip, limit),
+  ]);
 
-  async getAll(query: GetLawyersQueryDTO) {
-    const { page, limit, skip } = Pagination.getPaginationParams(query);
-
-    const filters: Filters = {
-      ...(query.search && { search: query.search }),
-    };
-
-    const [total, rows] = await Promise.all([
-      this.repo.count(filters),
-      this.repo.find(filters, skip, limit),
-    ]);
-
-    const meta = Pagination.buildPaginationMeta(total, page, limit);
-    return { items: rows, meta };
-  }
+  const meta = Pagination.buildPaginationMeta(total, page, limit);
+  return { items: rows, meta };
 }

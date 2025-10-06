@@ -1,3 +1,4 @@
+import "express-async-errors"; //probando el import
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -9,7 +10,6 @@ import { APP_URL, PORT } from "./config/env/index.js";
 import { displayWelcomeMessage, handleServerError } from "./utils/index.js";
 import { customMorganFormat } from "./utils/cli/index.js";
 import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_error_handler.js";
-import { globalErrorHandler } from "./middlewares/global_error_handler/index.js";
 import { buildHttpResponse } from "./utils/build_http_response/index.js";
 import { HttpStatusCodes } from "./constants/http_status_codes/index.js";
 import { mountSwagger } from "./docs";
@@ -17,11 +17,8 @@ import passport from "./config/passport";
 
 const app = express();
 const server = http.createServer(app);
-
-// App URL fallback
 const appUrl: string = APP_URL ?? `http://localhost:${PORT}`;
 
-// Initialize sockets
 initSocket(server);
 
 // Middlewares
@@ -34,19 +31,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
 // Swagger
+
 mountSwagger(app);
+
+// Test route
+app.get("/ping", (_, res) => res.send("pong"));
 
 // API Routes
 app.use(routes);
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+// Multer (errores de subida)
+app.use(multerErrorHandler as express.ErrorRequestHandler);
+
+// Global error handler
+app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   return handleServerError(res, req, err);
 });
 
-// Multer error handler
-app.use(multerErrorHandler as express.ErrorRequestHandler);
-
-// 404
+// 404 al final
 app.use((req, res) => {
   return res
     .status(HttpStatusCodes.NOT_FOUND.code)
@@ -59,23 +61,14 @@ app.use((req, res) => {
     );
 });
 
-// Test route
-app.get("/ping", (_, res) => res.send("pong"));
-
-// Global Error Handler
-app.use(globalErrorHandler);
-
-// Start server
 const main = async () => {
   try {
     await redisClient.connect();
   } catch (e) {
     console.error("[Redis] No conectó:", e);
   }
-
   server.listen(PORT, () => {
     displayWelcomeMessage(appUrl);
   });
 };
-
 main();

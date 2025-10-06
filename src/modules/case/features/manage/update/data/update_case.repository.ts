@@ -1,66 +1,73 @@
 // src/modules/cases/features/manage/update_case/data/update_case.repository.ts
 import prisma from "../../../../../../config/prisma_client";
-import { Prisma } from "@prisma/client";
-import { CatalogRepository } from "../../../shared/catalog/catalog.repository";
+import { Prisma, case_status } from "@prisma/client";
 
-export class UpdateCaseRepository {
-  private readonly catalog = new CatalogRepository();
+export function getCaseById(caseId: string) {
+  return prisma.cases.findUnique({
+    where: { id: caseId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      category: true,
+      urgency: true,
+      status: true,
+      is_public: true,
+      archived: true,
+      reference_code: true,
+      service: { select: { id: true, client_id: true, lawyer_id: true } },
+    },
+  });
+}
 
-  getById(caseId: string) {
-    return prisma.cases.findUnique({
-      where: { id: caseId },
-      include: {
-        service: true,
-        category: true,
-        status: true,
-      },
-    });
-  }
+export async function updateCaseAtomic(args: {
+  caseId: string;
+  serviceId: string;
+  updatesCase: Prisma.casesUpdateInput;
+  assignLawyerUserId?: string;
+  externalClientId?: string;
+  makePrivateAndTaken?: boolean;
+  takenStatus?: case_status;
+}) {
+  const {
+    caseId,
+    serviceId,
+    updatesCase,
+    assignLawyerUserId,
+    externalClientId,
+    makePrivateAndTaken,
+    takenStatus,
+  } = args;
 
-  getAllStatuses() {
-    return this.catalog.getAllStatuses();
-  }
+  return prisma.$transaction(async (tx) => {
+    if (makePrivateAndTaken && assignLawyerUserId && takenStatus) {
+      await tx.services.update({
+        where: { id: serviceId },
+        data: { lawyer: { connect: { user_id: assignLawyerUserId } } },
+      });
+      Object.assign(updatesCase, { is_public: false, status: takenStatus });
+    }
 
-  getAllCategories() {
-    return this.catalog.getAllCategories();
-  }
+    if (externalClientId) {
+      await tx.services.update({
+        where: { id: serviceId },
+        data: { external_client: { connect: { id: externalClientId } } },
+      });
+    }
 
-  update(caseId: string, data: Prisma.casesUpdateInput) {
-    return prisma.cases.update({ where: { id: caseId }, data });
-  }
+    return tx.cases.update({ where: { id: caseId }, data: updatesCase });
+  });
+}
 
-  assignLawyerToService(serviceId: string, lawyerUserId: string) {
-    return prisma.services.update({
-      where: { id: serviceId },
-      data: {
-        lawyer: {
-          connect: { user_id: lawyerUserId },
-        },
-      },
-    });
-  }
-
-  assignExternalClientToService(serviceId: string, externalClientId: string) {
-    return prisma.services.update({
-      where: { id: serviceId },
-      data: {
-        external_client: {
-          connect: { id: externalClientId },
-        },
-      },
-    });
-  }
-
-  findExternalClientByIdForLawyer(
-    externalClientId: string,
-    lawyerUserId: string
-  ) {
-    return prisma.external_clients.findFirst({
-      where: {
-        id: externalClientId,
-        user_detail_id: lawyerUserId,
-        archived: false,
-      },
-    });
-  }
+export function lawyerOwnsExternalClient(
+  externalClientId: string,
+  lawyerUserId: string
+) {
+  return prisma.external_clients.findFirst({
+    where: {
+      id: externalClientId,
+      user_detail_id: lawyerUserId,
+      archived: false,
+    },
+  });
 }

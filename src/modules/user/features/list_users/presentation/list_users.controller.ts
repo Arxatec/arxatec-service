@@ -1,24 +1,22 @@
 // src/modules/user/features/list_users/presentation/list_users.controller.ts
-import { Response } from "express";
-import { ListUsersService } from "./list_users.service";
-import { buildHttpResponse } from "../../../../../utils/build_http_response";
+import { Request, Response } from "express";
+import { ListUsersQuerySchema } from "../domain/list_users.schema";
+import { listUsersService } from "./list_users.service";
 import { HttpStatusCodes } from "../../../../../constants/http_status_codes";
-import { getAuthenticatedUser } from "../../../../../utils/authenticated_user";
-import { AuthenticatedRequest } from "../../../../../middlewares/authenticate_token";
+import { buildHttpResponse } from "../../../../../utils/build_http_response";
 
-export class ListUsersController {
-  constructor(private readonly service = new ListUsersService()) {}
+export async function list(req: Request, res: Response) {
+  const query = ListUsersQuerySchema.parse(req.query);
+  const data = await listUsersService(query);
 
-  async handle(req: AuthenticatedRequest, res: Response) {
-    await getAuthenticatedUser(req);
-
-    const result = await this.service.execute(req.query);
-
-    return res.status(HttpStatusCodes.OK.code).json(
-      buildHttpResponse(HttpStatusCodes.OK.code, "Users list", req.path, {
-        users: result.items,
-        meta: result.meta,
-      })
+  return res
+    .status(HttpStatusCodes.OK.code)
+    .json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "Lista de usuarios obtenida correctamente",
+        req.path,
+        data
+      )
     );
-  }
 }

@@ -1,3 +1,4 @@
+//src/modules/auth/features/registration/request_registration/domain/request_registration.schema.ts
 import { z } from "zod";
 
 export const RequestRegistrationSchema = z

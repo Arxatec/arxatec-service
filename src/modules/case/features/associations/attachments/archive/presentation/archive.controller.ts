@@ -1,29 +1,24 @@
 // src/modules/cases/features/associations/attachments/archive/presentation/archive.controller.ts
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { buildHttpResponse } from "../../../../../../../utils/build_http_response";
 import { HttpStatusCodes } from "../../../../../../../constants/http_status_codes";
 import { requireClientOrLawyer } from "../../../../../../../utils/authenticated_user";
-import { ArchiveAttachmentService } from "./archive.service";
 import { ArchiveAttachmentParamsSchema } from "../domain/archive.schema";
+import { archiveAttachmentService } from "./archive.service";
 
-export class ArchiveAttachmentController {
-  constructor(private readonly svc = new ArchiveAttachmentService()) {}
+export async function archive(req: Request, res: Response): Promise<Response> {
+  const { id, attId } = ArchiveAttachmentParamsSchema.parse(req.params);
+  const user = await requireClientOrLawyer(req as any);
+  const result = await archiveAttachmentService(id, attId, user);
 
-  archive = async (req: Request, res: Response) => {
-    const { id, attId } = ArchiveAttachmentParamsSchema.parse(req.params);
-    const user = await requireClientOrLawyer(req as any);
-
-    const result = await this.svc.archive(id, attId, user);
-
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          "Attachment archived",
-          req.path,
-          { archivedAttachment: result, user }
-        )
-      );
-  };
+  return res
+    .status(HttpStatusCodes.OK.code)
+    .json(
+      buildHttpResponse(
+        HttpStatusCodes.OK.code,
+        "Attachment archived",
+        req.path,
+        { archivedAttachment: result, user }
+      )
+    );
 }

@@ -1,3 +1,4 @@
+//src/modules/auth/features/registration/request_registration/docs/index.ts
 /**
  * Request user registration
  * @openapi

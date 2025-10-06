@@ -1,1 +1,1 @@
-export { reopenCaseRoutes } from "./presentation/reopen_case.routes";
+export { router as reopenCaseRoutes } from "./presentation/reopen_case.routes";

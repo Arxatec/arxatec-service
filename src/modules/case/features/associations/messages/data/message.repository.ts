@@ -1,32 +1,42 @@
-// src/modules/cases/features/messages/data/message.repository.ts
-import { PrismaClient, Prisma } from "@prisma/client";
+// src/modules/case/features/messages/data/message.repository.ts
+import prisma from "../../../../../../config/prisma_client";
+import { messages } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
-export class MessageRepository {
-  async findCaseById(caseId: number) {
-    return prisma.cases.findUnique({
-      where: { id: caseId },
-      include: {
-        service: {
-          select: {
-            client_id: true,
-            lawyer_id: true,
-            id: true,
-          },
+export async function findCaseByIdRepo(caseId: string) {
+  return prisma.cases.findUnique({
+    where: { id: caseId },
+    include: {
+      service: {
+        select: {
+          id: true,
+          client_id: true,
+          lawyer_id: true,
         },
       },
-    });
-  }
+    },
+  });
+}
 
-  async createMessage(data: Prisma.MessagesCreateInput) {
-    return prisma.messages.create({ data });
-  }
+export async function createMessageRepo(data: {
+  serviceId: string;
+  content: string;
+  sentBy: "client" | "lawyer";
+}): Promise<messages> {
+  return prisma.messages.create({
+    data: {
+      service: { connect: { id: data.serviceId } },
+      content: data.content,
+      sent_by: data.sentBy,
+      is_read: false,
+    },
+  });
+}
 
-  async getMessagesByCaseId(caseId: number) {
-    return prisma.messages.findMany({
-      where: { service_id: caseId },  
-      orderBy: { created_at: "asc" },
-    });
-  }
+export async function getMessagesByServiceIdRepo(
+  serviceId: string
+): Promise<messages[]> {
+  return prisma.messages.findMany({
+    where: { service_id: serviceId },
+    orderBy: { created_at: "asc" },
+  });
 }

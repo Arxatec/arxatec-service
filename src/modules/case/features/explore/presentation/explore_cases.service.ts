@@ -1,42 +1,31 @@
 // src/modules/case/features/explore_cases/presentation/explore_cases.service.ts
-import { ExploreCasesRepository } from "../data/explore_cases.repository";
+import {
+  Filters,
+  count,
+  find,
+  getAllCategories,
+  getAllStatuses,
+} from "../data/explore_cases.repository";
 import { Pagination } from "../../../../../utils/pagination";
 
-type ExploreFilters = {
-  category?: string;
-  status?: string;
-  lawyerId?: string | null;
-  is_public?: boolean;
-  archived?: boolean;
-  search?: string;
-};
+export function listCategories() {
+  return getAllCategories();
+}
 
-export class ExploreCasesService {
-  constructor(private repo = new ExploreCasesRepository()) {}
+export function listStatuses() {
+  return getAllStatuses();
+}
 
-  getCategories() {
-    return this.repo.getAllCategories();
-  }
-
-  getStatuses() {
-    return this.repo.getAllStatuses();
-  }
-
-  async explore(filters: ExploreFilters, query: any) {
-    const { page, limit, skip } = Pagination.getPaginationParams(query);
-
-    const safeFilters: ExploreFilters = {
-      ...filters,
-      is_public: true,
-    };
-
-    const [total, rows] = await Promise.all([
-      this.repo.count(safeFilters),
-      this.repo.find(safeFilters, skip, limit),
-    ]);
-
-    const meta = Pagination.buildPaginationMeta(total, page, limit);
-
-    return { items: rows, meta };
-  }
+export async function exploreCases(
+  filters: Filters,
+  query: { page: number; limit: number }
+) {
+  const { page, limit, skip } = Pagination.getPaginationParams(query);
+  const safeFilters: Filters = { ...filters, is_public: true, archived: false };
+  const [total, rows] = await Promise.all([
+    count(safeFilters),
+    find(safeFilters, skip, limit),
+  ]);
+  const meta = Pagination.buildPaginationMeta(total, page, limit);
+  return { items: rows, meta };
 }

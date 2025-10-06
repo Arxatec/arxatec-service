@@ -1,0 +1,84 @@
+// src/modules/cases/features/manage/list_my_cases/docs/index.ts
+/**
+ * Get my cases
+ * @openapi
+ * /cases/me:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Cases - Manage
+ *     summary: "List cases of the authenticated user"
+ *     description: "Devuelve la lista de casos creados o asignados al usuario autenticado (**cliente** o **abogado**)."
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema: { type: integer, minimum: 1, example: 1 }
+ *         description: Número de página para la paginación (por defecto 1).
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema: { type: integer, minimum: 1, maximum: 100, example: 10 }
+ *         description: Cantidad de resultados por página (máximo 100).
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema: { type: string, minLength: 1, example: "demanda" }
+ *         description: Texto de búsqueda por título.
+ *       - in: query
+ *         name: category
+ *         required: false
+ *         schema: { type: string, example: "civil" }
+ *         description: Filtro por categoría.
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema: { type: string, example: "open" }
+ *         description: Filtro por estado.
+ *     responses:
+ *       '200':
+ *         description: "OK - Lista de casos obtenida"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: number, example: 200 }
+ *                 message: { type: string, example: "OK" }
+ *                 description: { type: string, example: "OK" }
+ *                 timestamp: { type: string, example: "2025-09-16T10:30:00.000Z" }
+ *                 path: { type: string, example: "/api/v1/cases/me" }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     cases:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: string, format: uuid, example: "b3a2b9b6-7d82-4f21-9c8e-123456789abc" }
+ *                           title: { type: string, example: "Demanda por incumplimiento" }
+ *                           status: { type: string, example: "open" }
+ *                           category: { type: string, example: "civil" }
+ *                           is_public: { type: boolean, example: true }
+ *                           created_at: { type: string, format: date-time, example: "2025-08-25T12:00:00.000Z" }
+ *                     meta:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: integer, example: 25 }
+ *                         page: { type: integer, example: 1 }
+ *                         limit: { type: integer, example: 10 }
+ *                         totalPages: { type: integer, example: 3 }
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: string, format: uuid, example: "user-01" }
+ *                         role: { type: string, enum: [client, lawyer], example: "client" }
+ *       '400':
+ *         description: "Bad Request - parámetros inválidos de paginación"
+ *       '401':
+ *         description: "Unauthorized - Token de autenticación inválido o no proporcionado"
+ *       '500':
+ *         description: "Internal Server Error"
+ */

@@ -129,6 +129,9 @@ model users {
   client_details client_details?
   admin_details  admin_details?
   user_details   user_details?
+
+  received_notifications notifications[] @relation("notifications_receiver")
+  sent_notifications     notifications[] @relation("notifications_sender")
 }
 
 model lawyer_details {
@@ -186,6 +189,24 @@ model preferences {
   notification_channels String?
 
   user_details user_details @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+}
+
+model notifications {
+  id           String            @id @default(uuid()) @db.Uuid
+  title        String
+  description  String
+  type         notification_type
+  url          String?
+  created_at   DateTime          @default(now())
+
+  receiver_id  String            @db.Uuid
+  sender_id    String?           @db.Uuid
+
+  receiver users  @relation("notifications_receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
+  sender   users? @relation("notifications_sender", fields: [sender_id], references: [id], onDelete: SetNull)
+
+  @@index([receiver_id], map: "idx_notifications_receiver")
+  @@index([created_at], map: "idx_notifications_created_at")
 }
 
 model locations {

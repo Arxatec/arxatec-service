@@ -5,4 +5,4 @@ export const CaseDetailParamsSchema = z.object({
   id: z.string().uuid("El ID del caso debe tener formato UUID"),
 });
 
-export type CaseDetailParamsDTO = z.infer<typeof CaseDetailParamsSchema>;
+export type CaseDetailParams = z.infer<typeof CaseDetailParamsSchema>;

@@ -17,7 +17,7 @@ export async function getCaseDetail(req: Request, res: Response) {
         HttpStatusCodes.OK.code,
         HttpStatusCodes.OK.message,
         req.path,
-        { case: data }
+        data
       )
     );
 }

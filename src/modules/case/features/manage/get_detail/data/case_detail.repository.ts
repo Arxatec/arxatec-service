@@ -11,18 +11,6 @@ export function getCaseById(id: string) {
           lawyer_id: true,
           client_id: true,
           external_client_id: true,
-          attachments: {
-            where: { archived: false },
-            select: {
-              id: true,
-              label: true,
-              category_id: true,
-              uploaded_by: true,
-              created_at: true,
-            },
-          },
-          messages: true,
-          consultations: true,
         },
       },
       histories: {

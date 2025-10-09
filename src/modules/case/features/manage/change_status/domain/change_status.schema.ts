@@ -6,9 +6,7 @@ export const ChangeStatusParamsSchema = z.object({
 });
 
 export const ChangeStatusSchema = z.object({
-  status_id: z
-    .string({ required_error: "El ID del estado es obligatorio" })
-    .uuid("El ID del estado debe tener formato UUID"),
+  status: z.string({ required_error: "El estado es obligatorio" }),
   note: z
     .string()
     .max(255, "La nota no puede superar los 255 caracteres")

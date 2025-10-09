@@ -16,7 +16,9 @@ function getInProgressStatuses(): case_status[] {
   return [case_status.en_progreso];
 }
 
-export async function countClientCasesByStatus(clientId: string): Promise<number> {
+export async function countClientCasesByStatus(
+  clientId: string
+): Promise<number> {
   const activeStatuses = getOpenOrInProgressStatuses();
   return prisma.cases.count({
     where: {
@@ -27,7 +29,9 @@ export async function countClientCasesByStatus(clientId: string): Promise<number
   });
 }
 
-export async function countLawyerCasesInProgress(lawyerId: string): Promise<number> {
+export async function countLawyerCasesInProgress(
+  lawyerId: string
+): Promise<number> {
   const inProgressStatuses = getInProgressStatuses();
   return prisma.cases.count({
     where: {
@@ -50,10 +54,10 @@ export async function assertClientCanCreate(clientId: string): Promise<void> {
 
 export async function assertLawyerCanTake(lawyerId: string): Promise<void> {
   const count = await countLawyerCasesInProgress(lawyerId);
-  if (count >= MAX_LAWYER_CASES) {
+  /* if (count >= MAX_LAWYER_CASES) {
     throw new AppError(
       CASE_MESSAGES.LIMIT_INPROGRESS_LAWYER,
       HttpStatusCodes.CONFLICT.code
     );
-  }
+  } */
 }

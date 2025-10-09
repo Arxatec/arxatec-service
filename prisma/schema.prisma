@@ -113,6 +113,13 @@ enum case_category {
   penal
 }
 
+enum attachment_category {
+  contrato
+  evidencia
+  notas
+  otros
+}
+
 model users {
   id                 String      @id @default(uuid()) @db.Uuid
   first_name         String
@@ -192,15 +199,15 @@ model preferences {
 }
 
 model notifications {
-  id           String            @id @default(uuid()) @db.Uuid
-  title        String
-  description  String
-  type         notification_type
-  url          String?
-  created_at   DateTime          @default(now())
+  id          String            @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  type        notification_type
+  url         String?
+  created_at  DateTime          @default(now())
 
-  receiver_id  String            @db.Uuid
-  sender_id    String?           @db.Uuid
+  receiver_id String  @db.Uuid
+  sender_id   String? @db.Uuid
 
   receiver users  @relation("notifications_receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
   sender   users? @relation("notifications_sender", fields: [sender_id], references: [id], onDelete: SetNull)
@@ -484,7 +491,6 @@ model services {
   cases         cases[]
   consultations consultations[]
   calls         calls[]
-  messages      messages[]
   attachments   attachments[]
 
   @@index([lawyer_id])
@@ -511,6 +517,7 @@ model cases {
 
   service   services         @relation(fields: [service_id], references: [id], onDelete: Cascade)
   histories case_histories[]
+  messages  messages[]
 
   @@index([service_id])
   @@index([reference_code])
@@ -585,44 +592,35 @@ model calls {
 
 model messages {
   id         String     @id @default(uuid()) @db.Uuid
-  service_id String     @db.Uuid
+  case_id    String     @db.Uuid
   content    String
   sent_by    actor_type
   is_read    Boolean
   created_at DateTime   @default(now())
 
-  service services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  case cases @relation(fields: [case_id], references: [id], onDelete: Cascade)
 
-  @@index([service_id, created_at])
+  @@index([case_id, created_at])
 }
 
 // ===============================
 // ATTACHMENTS
 // ===============================
 
-model attachment_categories {
-  id   String @id @default(uuid()) @db.Uuid
-  name String @unique
-
-  attachments attachments[]
-}
-
 model attachments {
-  id          String     @id @default(uuid()) @db.Uuid
+  id          String              @id @default(uuid()) @db.Uuid
   file_key    String
   label       String
   description String?
-  category_id String     @db.Uuid
+  category    attachment_category
   uploaded_by actor_type
-  created_at  DateTime   @default(now())
-  service_id  String     @db.Uuid
-  archived    Boolean    @default(false)
+  created_at  DateTime            @default(now())
+  service_id  String              @db.Uuid
+  archived    Boolean             @default(false)
 
-  service  services              @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  category attachment_categories @relation(fields: [category_id], references: [id])
+  service services @relation(fields: [service_id], references: [id], onDelete: Cascade)
 
   @@index([service_id])
-  @@index([category_id])
   @@index([uploaded_by])
 }
 

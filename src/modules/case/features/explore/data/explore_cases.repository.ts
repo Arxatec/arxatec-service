@@ -4,7 +4,6 @@ import prisma from "../../../../../config/prisma_client";
 
 export type Filters = {
   category?: case_category;
-  status?: case_status;
   is_public?: boolean;
   archived?: boolean;
   lawyerId?: string | null;
@@ -44,18 +43,11 @@ export function getAllStatuses() {
 }
 
 function buildWhere(filters: Filters) {
-  const {
-    category,
-    status,
-    is_public,
-    archived = false,
-    lawyerId,
-    search,
-  } = filters;
+  const { category, is_public, archived = false, lawyerId, search } = filters;
   return {
     archived,
+    status: case_status.en_progreso, // Solo casos en progreso
     ...(category ? { category } : {}),
-    ...(status ? { status } : {}),
     ...(is_public !== undefined ? { is_public } : {}),
     ...(lawyerId !== undefined
       ? { service: { lawyer_id: lawyerId ?? undefined } }

@@ -23,7 +23,7 @@ export async function list(req: Request, res: Response): Promise<Response> {
         HttpStatusCodes.OK.code,
         "Attachments listed",
         req.path,
-        { attachments: result.items, meta: result.meta, user }
+        { attachments: result.attachments, pagination: result.pagination }
       )
     );
 }

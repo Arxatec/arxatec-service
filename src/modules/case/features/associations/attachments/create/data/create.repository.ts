@@ -1,4 +1,5 @@
 // src/modules/cases/features/associations/attachments/create/data/create.repository.ts
+import { attachment_category } from "@prisma/client";
 import prisma from "../../../../../../../config/prisma_client";
 
 export type FindCaseResult = {
@@ -16,8 +17,8 @@ export function findCaseById(caseId: string): Promise<FindCaseResult> {
 }
 
 type AddAttachmentArgs = {
-  caseId: string;
-  category_id: string;
+  case_id: string;
+  category: keyof typeof attachment_category;
   label: string;
   description?: string;
   file_key: string;
@@ -26,7 +27,7 @@ type AddAttachmentArgs = {
 
 export async function addAttachment(args: AddAttachmentArgs) {
   const caseRecord = await prisma.cases.findUnique({
-    where: { id: args.caseId },
+    where: { id: args.case_id },
     select: { service_id: true },
   });
   if (!caseRecord) return null;
@@ -34,7 +35,7 @@ export async function addAttachment(args: AddAttachmentArgs) {
   return prisma.attachments.create({
     data: {
       service: { connect: { id: caseRecord.service_id } },
-      category: { connect: { id: args.category_id } },
+      category: args.category,
       label: args.label,
       description: args.description,
       file_key: args.file_key,

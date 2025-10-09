@@ -49,6 +49,7 @@ export function findMyCases(
       category: true,
       is_public: true,
       created_at: true,
+      urgency: true,
       description: true,
     },
     skip,

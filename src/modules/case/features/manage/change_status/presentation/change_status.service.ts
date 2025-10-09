@@ -37,7 +37,7 @@ export async function changeStatusService(
   const closedStatusId = getClosedStatusId();
 
   const current: case_status = found.status;
-  const next: case_status = resolveNextEnum(payload.status_id);
+  const next: case_status = resolveNextEnum(payload.status);
 
   if (current === closedStatusId) {
     throw new AppError(

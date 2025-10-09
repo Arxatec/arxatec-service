@@ -10,12 +10,12 @@ export type PaginationParams = {
 };
 
 export type PaginationMeta = {
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next_page: boolean;
+  has_prev_page: boolean;
 };
 
 function toInt(v: unknown): number | undefined {
@@ -42,18 +42,18 @@ function getPaginationParams(query: {
 }
 
 function buildPaginationMeta(
-  total: number,
-  page: number,
-  limit: number
+  totalArg: number,
+  pageArg: number,
+  limitArg: number
 ): PaginationMeta {
-  const totalPages = Math.max(Math.ceil(total / limit), 1);
+  const totalPages = Math.max(Math.ceil(totalArg / limitArg), 1);
   return {
-    totalItems: total,
-    totalPages,
-    currentPage: page,
-    pageSize: limit,
-    hasNextPage: page < totalPages,
-    hasPrevPage: page > 1,
+    page: pageArg,
+    limit: limitArg,
+    total: totalArg,
+    total_pages: totalPages,
+    has_next_page: pageArg < totalPages,
+    has_prev_page: pageArg > 1,
   };
 }
 

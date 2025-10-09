@@ -15,4 +15,5 @@ export const GetExternalClientsQuerySchema = z.object({
     .trim()
     .min(1, "El parámetro de búsqueda no puede estar vacío")
     .optional(),
+  all: z.string().optional(),
 });

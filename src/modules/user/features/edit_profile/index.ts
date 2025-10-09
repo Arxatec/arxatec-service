@@ -1,1 +1,1 @@
-export { editProfileRoutes } from "./presentation/edit_profile.routes";
+export { router as editProfileRoutes } from "./presentation/edit_profile.routes";

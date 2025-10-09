@@ -23,8 +23,7 @@ export async function getExternalClients(
   return res.status(HttpStatusCodes.OK.code).json(
     buildHttpResponse(HttpStatusCodes.OK.code, "External clients", req.path, {
       clients,
-      meta,
-      user: authUser,
+      pagination: meta,
     })
   );
 }

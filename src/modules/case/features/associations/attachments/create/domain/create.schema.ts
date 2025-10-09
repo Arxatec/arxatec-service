@@ -2,8 +2,8 @@
 import { z } from "zod";
 
 export const CreateAttachmentSchema = z.object({
-  caseId: z.string().uuid("El ID del caso debe tener formato UUID"),
-  category_id: z.string().uuid("El ID de la categoría debe tener formato UUID"),
+  case_id: z.string().uuid("El ID del caso debe tener formato UUID"),
+  category: z.string().min(1, "La categoría es obligatoria"),
   label: z
     .string()
     .min(1, "La etiqueta es obligatoria")

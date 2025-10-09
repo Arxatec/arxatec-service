@@ -4,17 +4,22 @@ import { HttpStatusCodes } from "../../../../../../../constants/http_status_code
 import { CASE_MESSAGES } from "../../../../../../../constants/messages/case";
 import type { CreateAttachmentRequest } from "../domain/create.payload";
 import { findCaseById, addAttachment } from "../data/create.repository";
-import { uploadS3File, getS3FileUrl } from "../../../../shared/s3_file/s3_file.service";
+import {
+  uploadS3File,
+  getS3FileUrl,
+} from "../../../../shared/s3_file/s3_file.service";
+import type { Multer } from "multer";
+import { attachment_category } from "@prisma/client";
 
 type CurrentUser = { id: string | number; role: "client" | "lawyer" };
 
 export async function createCaseAttachment(
-  caseId: string,
+  case_id: string,
   dto: Omit<CreateAttachmentRequest, "file_key">,
   file: Express.Multer.File,
   user: CurrentUser
 ) {
-  const caseData = await findCaseById(caseId);
+  const caseData = await findCaseById(case_id);
   if (!caseData) {
     throw new AppError(CASE_MESSAGES.NOT_FOUND, HttpStatusCodes.NOT_FOUND.code);
   }
@@ -25,14 +30,17 @@ export async function createCaseAttachment(
     (user.role === "lawyer" && String(lawyer_id) === String(user.id));
 
   if (!isOwner) {
-    throw new AppError(CASE_MESSAGES.ACCESS_DENIED, HttpStatusCodes.FORBIDDEN.code);
+    throw new AppError(
+      CASE_MESSAGES.ACCESS_DENIED,
+      HttpStatusCodes.FORBIDDEN.code
+    );
   }
 
   const uploaded = await uploadS3File(file, "private/cases");
 
   const created = await addAttachment({
-    caseId,
-    category_id: dto.category_id,
+    case_id,
+    category: dto.category as keyof typeof attachment_category,
     label: dto.label,
     description: dto.description,
     file_key: uploaded.key,

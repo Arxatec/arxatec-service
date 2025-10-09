@@ -23,7 +23,7 @@ export function countByLawyer(userDetailId: string, search?: string) {
 export function findManyByLawyer(
   userDetailId: string,
   skip: number,
-  take: number,
+  take?: number,
   search?: string
 ) {
   return prisma.external_clients.findMany({
@@ -43,6 +43,6 @@ export function findManyByLawyer(
     },
     orderBy: { created_at: "desc" },
     skip,
-    take,
+    take: take ?? undefined,
   });
 }

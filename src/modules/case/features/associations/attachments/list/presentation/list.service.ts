@@ -43,7 +43,7 @@ export async function listCaseAttachments(
       id: att.id,
       label: att.label,
       description: att.description ?? null,
-      category_id: att.category_id,
+      category: att.category,
       uploaded_by: att.uploaded_by,
       created_at: att.created_at,
       url: await getS3FileUrl(att.file_key),
@@ -51,5 +51,5 @@ export async function listCaseAttachments(
   );
 
   const meta = Pagination.buildPaginationMeta(total, page, limit);
-  return { items, meta };
+  return { attachments: items, pagination: meta };
 }

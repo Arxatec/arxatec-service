@@ -6,11 +6,11 @@ export type SendMessageRequest = z.infer<typeof SendMessageSchema>;
 
 export type MessageItem = {
   id: string;
-  serviceId: string;
   content: string;
   sent_by: "client" | "lawyer";
   is_read: boolean;
   created_at: Date;
+  sent_name: string;
 };
 
 export type SendMessageResponse = {
@@ -20,7 +20,12 @@ export type SendMessageResponse = {
 
 export type GetHistoryResponse = {
   message: string;
-  data: { messages: MessageItem[] };
+  data: {
+    messages: MessageItem[];
+  };
 };
 
-export type CurrentUser = { id: string; role: "client" | "lawyer" };
+export type CurrentUser = {
+  id: string;
+  user_type: "client" | "lawyer";
+};

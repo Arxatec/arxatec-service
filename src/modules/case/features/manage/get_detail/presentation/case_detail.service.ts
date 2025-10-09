@@ -30,25 +30,7 @@ export async function getCaseDetailService(id: string, user: CurrentUser) {
     urgency: found.urgency,
     is_public: found.is_public,
     created_at: found.created_at,
-    service: {
-      id: found.service!.id,
-      lawyer_id: found.service!.lawyer_id,
-      client_id: found.service!.client_id,
-      external_client_id: found.service!.external_client_id,
-    },
-    attachments: found.service!.attachments.map((a) => ({
-      id: a.id,
-      label: a.label,
-      category_id: a.category_id,
-      uploaded_by: a.uploaded_by,
-      created_at: a.created_at,
-    })),
-    histories: found.histories.map((h) => ({
-      id: h.id,
-      field: h.field,
-      old_value: h.old_value,
-      new_value: h.new_value,
-      created_at: h.created_at,
-    })),
+    client_id: found.service?.client_id || null,
+    external_client_id: found.service?.external_client_id || null,
   };
 }

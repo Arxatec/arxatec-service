@@ -23,6 +23,20 @@ export async function sendMessageService(
   dto: SendMessageRequest,
   user: CurrentUser
 ): Promise<SendMessageResponse> {
+  if (!dto.content || dto.content.trim().length === 0) {
+    throw new AppError(
+      "El contenido del mensaje no puede estar vacío",
+      HttpStatusCodes.BAD_REQUEST.code
+    );
+  }
+
+  if (dto.content.length > 2000) {
+    throw new AppError(
+      "El mensaje es demasiado largo (máximo 2000 caracteres)",
+      HttpStatusCodes.BAD_REQUEST.code
+    );
+  }
+
   const found = await findCaseByIdRepo(caseId);
   if (!found) {
     throw new AppError(CASE_MESSAGES.NOT_FOUND, HttpStatusCodes.NOT_FOUND.code);
@@ -34,14 +48,6 @@ export async function sendMessageService(
 
   const clientId = found.service?.client_id;
   const lawyerId = found.service?.lawyer_id;
-  const serviceId = found.service?.id;
-
-  if (!serviceId) {
-    throw new AppError(
-      "El caso no tiene un service asociado",
-      HttpStatusCodes.CONFLICT.code
-    );
-  }
 
   if (!lawyerId) {
     throw new AppError(
@@ -50,8 +56,8 @@ export async function sendMessageService(
     );
   }
 
-  const isClientAndOwner = user.role === "client" && clientId === user.id;
-  const isLawyerAndOwner = user.role === "lawyer" && lawyerId === user.id;
+  const isClientAndOwner = user.user_type === "client" && clientId === user.id;
+  const isLawyerAndOwner = user.user_type === "lawyer" && lawyerId === user.id;
 
   if (!isClientAndOwner && !isLawyerAndOwner) {
     throw new AppError(
@@ -61,15 +67,24 @@ export async function sendMessageService(
   }
 
   const created = await createMessageRepo({
-    serviceId,
+    caseId,
     content: dto.content,
-    sentBy: user.role,
+    sentBy: user.user_type,
   });
 
-  const receiverId = user.role === "client" ? lawyerId : clientId;
+  const receiverId = user.user_type === "client" ? lawyerId : clientId;
 
+  const caseRoom = `case:${caseId}`;
+
+  const fullName =
+    created.sent_by === "client"
+      ? `${found.service?.client?.user?.first_name || ""} ${
+          found.service?.client?.user?.last_name || ""
+        }`.trim()
+      : `${found.service?.lawyer?.user?.first_name || ""} ${
+          found.service?.lawyer?.user?.last_name || ""
+        }`.trim();
   if (receiverId) {
-    // Notificación al receptor
     await createNotificationService({
       title: CASE_MESSAGES.MESSAGE_SENT,
       description: `Nuevo mensaje en el caso “${found.title}”`,
@@ -79,21 +94,23 @@ export async function sendMessageService(
       url: `/case/${caseId}`,
     });
 
-    // Evento en tiempo real para el receptor
-    io.to(`user:${receiverId}`).emit("CASE_NEW_MESSAGE", {
-      caseId,
-      messageId: created.id,
+    io.to(caseRoom).emit("CASE_NEW_MESSAGE", {
+      id: created.id,
       content: created.content,
+      sent_by: created.sent_by as MessageItem["sent_by"],
+      is_read: created.is_read,
+      created_at: created.created_at,
+      sent_name: fullName,
     });
   }
 
   const message: MessageItem = {
     id: created.id,
-    serviceId: created.service_id,
     content: created.content,
     sent_by: created.sent_by as MessageItem["sent_by"],
     is_read: created.is_read,
     created_at: created.created_at,
+    sent_name: fullName,
   };
 
   return {
@@ -119,8 +136,8 @@ export async function getMessageHistoryService(
   const lawyerId = found.service?.lawyer_id;
   const serviceId = found.service?.id;
 
-  const isClientAndOwner = user.role === "client" && clientId === user.id;
-  const isLawyerAndOwner = user.role === "lawyer" && lawyerId === user.id;
+  const isClientAndOwner = user.user_type === "client" && clientId === user.id;
+  const isLawyerAndOwner = user.user_type === "lawyer" && lawyerId === user.id;
 
   if (!isClientAndOwner && !isLawyerAndOwner) {
     throw new AppError(
@@ -130,22 +147,36 @@ export async function getMessageHistoryService(
   }
 
   if (!serviceId) {
-    return { message: "Messages fetched successfully", data: { messages: [] } };
+    return {
+      message: "Messages fetched successfully",
+      data: {
+        messages: [],
+      },
+    };
   }
 
-  const rows = await getMessagesByServiceIdRepo(serviceId);
+  const [rows] = await Promise.all([getMessagesByServiceIdRepo(found.id)]);
 
-  const messages: MessageItem[] = rows.map((m) => ({
+  const messages = rows.map((m) => ({
     id: m.id,
-    serviceId: m.service_id,
     content: m.content,
     sent_by: m.sent_by as MessageItem["sent_by"],
     is_read: m.is_read,
     created_at: m.created_at,
+    sent_name:
+      m.sent_by === "client"
+        ? `${m.case?.service?.client?.user?.first_name || ""} ${
+            m.case?.service?.client?.user?.last_name || ""
+          }`.trim()
+        : `${m.case?.service?.lawyer?.user?.first_name || ""} ${
+            m.case?.service?.lawyer?.user?.last_name || ""
+          }`.trim(),
   }));
 
   return {
     message: "Messages fetched successfully",
-    data: { messages },
+    data: {
+      messages,
+    },
   };
 }

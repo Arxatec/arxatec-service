@@ -11,6 +11,26 @@ export async function findCaseByIdRepo(caseId: string) {
           id: true,
           client_id: true,
           lawyer_id: true,
+          client: {
+            select: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
+          lawyer: {
+            select: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -18,13 +38,13 @@ export async function findCaseByIdRepo(caseId: string) {
 }
 
 export async function createMessageRepo(data: {
-  serviceId: string;
+  caseId: string;
   content: string;
   sentBy: "client" | "lawyer";
 }): Promise<messages> {
   return prisma.messages.create({
     data: {
-      service: { connect: { id: data.serviceId } },
+      case: { connect: { id: data.caseId } },
       content: data.content,
       sent_by: data.sentBy,
       is_read: false,
@@ -32,11 +52,41 @@ export async function createMessageRepo(data: {
   });
 }
 
-export async function getMessagesByServiceIdRepo(
-  serviceId: string
-): Promise<messages[]> {
+export async function getMessagesByServiceIdRepo(caseId: string) {
   return prisma.messages.findMany({
-    where: { service_id: serviceId },
+    where: {
+      case_id: caseId,
+    },
     orderBy: { created_at: "asc" },
+    include: {
+      case: {
+        select: {
+          service: {
+            include: {
+              client: {
+                select: {
+                  user: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                    },
+                  },
+                },
+              },
+              lawyer: {
+                select: {
+                  user: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 }

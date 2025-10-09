@@ -8,10 +8,10 @@ import { CreateAttachmentSchema } from "../domain/create.schema";
 import { createCaseAttachment } from "./create.service";
 
 export async function upload(req: Request, res: Response): Promise<Response> {
-  const caseId = String(req.params.id);
+  const case_id = String(req.params.id);
 
   const dto = CreateAttachmentSchema.omit({ file_key: true }).parse({
-    caseId,
+    case_id,
     ...req.body,
   });
 
@@ -21,7 +21,7 @@ export async function upload(req: Request, res: Response): Promise<Response> {
 
   const user = await requireClientOrLawyer(req as any);
 
-  const result = await createCaseAttachment(caseId, dto, req.file, user);
+  const result = await createCaseAttachment(case_id, dto, req.file, user);
 
   return res
     .status(HttpStatusCodes.CREATED.code)

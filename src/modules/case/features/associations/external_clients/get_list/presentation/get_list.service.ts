@@ -12,10 +12,13 @@ export async function getExternalClientsService(
   query: GetExternalClientsRequest
 ): Promise<GetExternalClientsResponse> {
   const { page, limit, skip } = Pagination.getPaginationParams(query as any);
-
+  let take: number | undefined = limit;
+  if (Boolean(query.all) === true) {
+    take = undefined;
+  }
   const [total, rows] = await Promise.all([
     countByLawyer(userDetailId, query.search),
-    findManyByLawyer(userDetailId, skip, limit, query.search),
+    findManyByLawyer(userDetailId, skip, take, query.search),
   ]);
 
   const clients: ExternalClientListItem[] = rows.map((c) => ({

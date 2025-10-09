@@ -18,14 +18,12 @@ export async function explore(req: Request, res: Response) {
     ...(search && { search }),
   };
   const result = await exploreCases(filters, { page, limit });
-  const user = req.user ? await getAuthenticatedUser(req) : undefined;
-  return res
-    .status(HttpStatusCodes.OK.code)
-    .json(
-      buildHttpResponse(HttpStatusCodes.OK.code, "OK", req.path, {
-        cases: result.items,
-        pagination: result.meta,
-        ...(user && { user }),
-      })
-    );
+  const user = req.user ? await getAuthenticatedUser(req as any) : undefined;
+  return res.status(HttpStatusCodes.OK.code).json(
+    buildHttpResponse(HttpStatusCodes.OK.code, "OK", req.path, {
+      cases: result.items,
+      pagination: result.meta,
+      ...(user && { user }),
+    })
+  );
 }

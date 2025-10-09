@@ -26,9 +26,7 @@ export const CreateCaseSchema = z.object({
 
   category: z.nativeEnum(case_category, {
     required_error: "La categoría es obligatoria",
-    errorMap: () => ({
-      message: "La categoría seleccionada no es válida",
-    }),
+    invalid_type_error: "La categoría seleccionada no es válida",
   }),
 
   urgency: z

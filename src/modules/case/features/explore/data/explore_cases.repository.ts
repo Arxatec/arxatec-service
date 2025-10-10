@@ -46,7 +46,7 @@ function buildWhere(filters: Filters) {
   const { category, is_public, archived = false, lawyerId, search } = filters;
   return {
     archived,
-    status: case_status.en_progreso, // Solo casos en progreso
+    status: case_status.abierto, // Solo casos en progreso
     ...(category ? { category } : {}),
     ...(is_public !== undefined ? { is_public } : {}),
     ...(lawyerId !== undefined

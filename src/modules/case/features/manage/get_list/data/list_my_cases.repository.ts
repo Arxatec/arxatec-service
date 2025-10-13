@@ -51,6 +51,11 @@ export function findMyCases(
       created_at: true,
       urgency: true,
       description: true,
+      service: {
+        select: {
+          lawyer_id: true,
+        },
+      },
     },
     skip,
     take,

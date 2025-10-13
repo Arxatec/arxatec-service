@@ -1,14 +1,14 @@
-// src/modules/lawyer/features/get_lawyers/presentation/get_lawyers.controller.ts
+// src/modules/client/features/get_detail/presentation/get_detail.controller.ts
 import { Request, Response } from "express";
-import { GetLawyersQuerySchema } from "../domain/get_lawyers.schema";
-import { getLawyersService } from "./get_lawyers.service";
 import { getAuthenticatedUser } from "../../../../../utils/authenticated_user";
 import { AppError } from "../../../../../utils";
 import { HttpStatusCodes } from "../../../../../constants";
 import { buildHttpResponse } from "../../../../../utils/build_http_response";
+import { getDetailService } from "./get_detail.service";
 
-export async function list(req: Request, res: Response) {
+export async function getDetail(req: Request, res: Response) {
   const user = await getAuthenticatedUser(req);
+  const { id } = req.params;
   if (user.role !== "client") {
     throw new AppError(
       "Solo clientes pueden ver esta información",
@@ -16,13 +16,11 @@ export async function list(req: Request, res: Response) {
     );
   }
 
-  const query = GetLawyersQuerySchema.parse(req.query);
-  const result = await getLawyersService(query);
+  const result = await getDetailService(id);
 
   return res.status(HttpStatusCodes.OK.code).json(
     buildHttpResponse(HttpStatusCodes.OK.code, "OK", req.path, {
-      lawyers: result.items,
-      pagination: result.meta,
+      ...result,
     })
   );
 }

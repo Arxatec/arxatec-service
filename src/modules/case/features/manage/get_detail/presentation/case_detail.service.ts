@@ -32,5 +32,6 @@ export async function getCaseDetailService(id: string, user: CurrentUser) {
     created_at: found.created_at,
     client_id: found.service?.client_id || null,
     external_client_id: found.service?.external_client_id || null,
+    lawyer_id: found.service?.lawyer_id || null,
   };
 }

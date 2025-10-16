@@ -9,7 +9,7 @@
  *     tags:
  *       - Cases - Associations - External Clients
  *     summary: "List archived external clients"
- *     description: "Devuelve los clientes externos **archivados** del abogado autenticado."
+ *     description: "Devuelve los clientes externos **archiveds** del abogado autenticado."
  *     responses:
  *       '200':
  *         description: "Archived external clients"

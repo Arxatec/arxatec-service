@@ -8,7 +8,7 @@
  *     tags:
  *       - Cases - Manage
  *     summary: Reopen a closed case
- *     description: Reabre un caso archivado. Solo el cliente o el abogado asignado pueden hacerlo.
+ *     description: Reabre un caso archived. Solo el cliente o el abogado asignado pueden hacerlo.
  *     parameters:
  *       - in: path
  *         name: id

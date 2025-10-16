@@ -9,11 +9,11 @@ export const MAX_CLIENT_CASES = 5;
 export const MAX_LAWYER_CASES = 10;
 
 function getOpenOrInProgressStatuses(): case_status[] {
-  return [case_status.abierto, case_status.en_progreso];
+  return [case_status.open, case_status.in_progress];
 }
 
 function getInProgressStatuses(): case_status[] {
-  return [case_status.en_progreso];
+  return [case_status.in_progress];
 }
 
 export async function countClientCasesByStatus(

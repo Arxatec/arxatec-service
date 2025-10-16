@@ -130,14 +130,14 @@ function resolveNextEnum(statusIdAsUuid: string): case_status {
 
 function humanizeStatus(s: case_status): string {
   switch (s) {
-    case "abierto":
-      return "Abierto";
-    case "en_progreso":
+    case "open":
+      return "open";
+    case "in_progress":
       return "En Progreso";
-    case "cerrado":
-      return "Cerrado";
-    case "archivado":
-      return "Archivado";
+    case "closed":
+      return "closed";
+    case "archived":
+      return "archived";
     default:
       return s;
   }

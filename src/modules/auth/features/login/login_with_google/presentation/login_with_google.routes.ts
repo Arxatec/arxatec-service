@@ -75,28 +75,18 @@ loginGoogleRouter.get(
 loginGoogleRouter.get("/google/callback", (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, profile) => {
     if (err || !profile) {
-      return res
-        .status(HttpStatusCodes.UNAUTHORIZED.code)
-        .json(
-          buildHttpResponse(
-            HttpStatusCodes.UNAUTHORIZED.code,
-            "Unauthorized",
-            req.path,
-            { error: String(err ?? "OAuth failed") }
-          )
-        );
+      return res.redirect(
+        `${process.env.FRONT_URL}/oauth/callback?error=OAuthFailed`
+      );
     }
 
     const result = await loginWithGoogleCallback(profile);
-    return res
-      .status(HttpStatusCodes.OK.code)
-      .json(
-        buildHttpResponse(
-          HttpStatusCodes.OK.code,
-          "Login with Google successful",
-          req.path,
-          result
-        )
-      );
+
+    const url =
+      `${process.env.FRONT_URL}/oauth/callback` +
+      `?token=${encodeURIComponent(result.token)}` +
+      `&isNew=${result.isNewUser ? "1" : "0"}`;
+    console.log("[OAUTH REDIRECT →]", url);
+    return res.redirect(url);
   })(req, res, next);
 });

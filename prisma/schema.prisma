@@ -76,10 +76,10 @@ enum case_urgency {
 }
 
 enum case_status {
-  abierto
-  en_progreso
-  cerrado
-  archivado
+  open
+  in_progress
+  closed
+  archived
 }
 
 enum consultation_status {
@@ -119,6 +119,15 @@ enum attachment_category {
   notas
   otros
 }
+/// Estados del evento del calendario
+enum calendar_event_status {
+  pending
+  confirmed
+  rescheduled
+  cancelled
+  done
+}
+
 
 model users {
   id                 String      @id @default(uuid()) @db.Uuid
@@ -139,7 +148,11 @@ model users {
 
   received_notifications notifications[] @relation("notifications_receiver")
   sent_notifications     notifications[] @relation("notifications_sender")
+
+  calendar_events_as_client calendar_events[] @relation("calendar_event_client")
+  calendar_events_as_lawyer calendar_events[] @relation("calendar_event_lawyer")
 }
+
 
 model lawyer_details {
   lawyer_id      String @id @db.Uuid
@@ -151,7 +164,6 @@ model lawyer_details {
 
   user           users           @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
   lawyer_service lawyer_service?
-  events         events[]
 }
 
 model client_details {
@@ -427,32 +439,33 @@ model reactions {
 }
 
 // ===============================
-// EVENTS (agenda simple por abogado)
+// CALENDAR (agenda simple por abogado)
 // ===============================
+model calendar_events {
+  id               String                 @id @default(uuid())
+  title            String
+  description      String?
+  start_date       DateTime               @db.Timestamptz(6)
+  end_date         DateTime               @db.Timestamptz(6)
+  location         String?
+  reminder_minutes Int?
+  status           calendar_event_status  @default(pending)
 
-model events {
-  id          String   @id @default(uuid()) @db.Uuid
-  lawyer_id   String   @db.Uuid
-  title       String
-  description String?
-  start_time  DateTime @db.Time
-  end_time    DateTime @db.Time
+  case_id          String?                @db.Uuid 
+  client_id        String?                @db.Uuid   
+  lawyer_id        String                 @db.Uuid   
 
-  lawyer lawyer_details @relation(fields: [lawyer_id], references: [lawyer_id], onDelete: Cascade)
-  dates  event_dates[]
+  created_at       DateTime               @default(now())
+  updated_at       DateTime               @updatedAt
 
-  @@index([lawyer_id])
-}
+  case             cases?                 @relation("case_events", fields: [case_id], references: [id], onDelete: SetNull)
+  client           users?                 @relation("calendar_event_client", fields: [client_id], references: [id], onDelete: SetNull)
+  lawyer           users                  @relation("calendar_event_lawyer", fields: [lawyer_id], references: [id], onDelete: Cascade)
 
-model event_dates {
-  id       String   @id @default(uuid()) @db.Uuid
-  event_id String   @db.Uuid
-  date     DateTime @db.Date
-
-  event events @relation(fields: [event_id], references: [id], onDelete: Cascade)
-
-  @@unique([event_id, date])
-  @@index([event_id, date])
+  @@index([lawyer_id, start_date])
+  @@index([case_id, start_date])
+  @@index([client_id, start_date])
+  @@index([status, start_date])
 }
 
 // ===============================
@@ -503,21 +516,23 @@ model services {
 // ===============================
 
 model cases {
-  id             String        @id @default(uuid()) @db.Uuid
-  service_id     String        @db.Uuid
+  id             String            @id @default(uuid()) @db.Uuid
+  service_id     String            @db.Uuid
   title          String
   description    String
   urgency        case_urgency
   category       case_category
   status         case_status
   is_public      Boolean
-  reference_code String        @default(cuid())
-  created_at     DateTime      @default(now())
-  archived       Boolean       @default(false)
+  reference_code String            @default(cuid())
+  created_at     DateTime          @default(now())
+  archived       Boolean           @default(false)
 
-  service   services         @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  histories case_histories[]
-  messages  messages[]
+  service         services          @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  histories       case_histories[]
+  messages        messages[]
+
+  calendar_events calendar_events[] @relation("case_events")
 
   @@index([service_id])
   @@index([reference_code])

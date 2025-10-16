@@ -1,53 +1,55 @@
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import routes from "./routes.js";
+import routes from "./routes";
 import http from "http";
-import { initSocket } from "./config/socket/index.js";
-import { redisClient } from "./config/redis/index.js";
-import { APP_URL, PORT } from "./config/env/index.js";
-import { displayWelcomeMessage, handleServerError } from "./utils/index.js";
-import { customMorganFormat } from "./utils/cli/index.js";
-import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_error_handler.js";
-import { buildHttpResponse } from "./utils/build_http_response/index.js";
-import { HttpStatusCodes } from "./constants/http_status_codes/index.js";
+import { initSocket } from "./config/socket";
+import { redisClient } from "./config/redis";
+import { APP_URL, PORT } from "./config/env";
+import { displayWelcomeMessage, handleServerError } from "./utils";
+import { customMorganFormat } from "./utils/cli";
+import { multerErrorHandler } from "./middlewares/multer_error_handler/multer_error_handler";
+import { buildHttpResponse } from "./utils/build_http_response";
+import { HttpStatusCodes } from "./constants/http_status_codes";
 import { mountSwagger } from "./docs";
 import passport from "./config/passport";
 
 const app = express();
 const server = http.createServer(app);
-const appUrl: string = APP_URL ?? `http://localhost:${PORT}`;
+const appUrl = APP_URL ?? `http://localhost:${PORT}`;
 
 initSocket(server);
 
 // Middlewares
 app.use(morgan(customMorganFormat));
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 // Passport
 app.use(passport.initialize());
 
 // Swagger
-
 mountSwagger(app);
 
-// Test route
+// Health
 app.get("/ping", (_, res) => res.send("pong"));
 
 // API Routes
 app.use(routes);
 
-// Multer (errores de subida)
+// Multer errors
 app.use(multerErrorHandler as express.ErrorRequestHandler);
 
 // Global error handler
-app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   return handleServerError(res, req, err);
 });
 
-// 404 al final
+// 404
 app.use((req, res) => {
   return res
     .status(HttpStatusCodes.NOT_FOUND.code)
@@ -70,4 +72,5 @@ const main = async () => {
     displayWelcomeMessage(appUrl);
   });
 };
+
 main();

@@ -24,13 +24,23 @@ export async function listMyCasesService(
   ]);
 
   const items = rows.map(
-    ({ id, title, status, category, is_public, created_at, service }) => ({
+    ({
       id,
       title,
       status,
       category,
       is_public,
       created_at,
+      service,
+      urgency,
+    }) => ({
+      id,
+      title,
+      status,
+      category,
+      is_public,
+      created_at,
+      urgency,
       lawyer_id: service.lawyer_id,
     })
   );

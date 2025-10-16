@@ -144,7 +144,8 @@ export async function createLawyerWithCasesAndClients() {
   const casesCreated: any[] = [];
   for (let i = 0; i < LAWYER_CASES_LIST.length; i++) {
     const caseData = LAWYER_CASES_LIST[i];
-    const externalClient = createdExternalClients[i % createdExternalClients.length];
+    const externalClient =
+      createdExternalClients[i % createdExternalClients.length];
 
     // Create service for this case
     const service = await prisma.services.create({
@@ -162,7 +163,11 @@ export async function createLawyerWithCasesAndClients() {
         title: caseData.title,
         description: caseData.description,
         urgency: caseData.urgency as "alta" | "media" | "baja",
-        category: caseData.category as "civil" | "laboral" | "familiar" | "penal",
+        category: caseData.category as
+          | "civil"
+          | "laboral"
+          | "familiar"
+          | "penal",
         status: caseData.status as
           | "abierto"
           | "en_progreso"

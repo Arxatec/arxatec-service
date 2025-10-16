@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: arxatec_user
       POSTGRES_PASSWORD: arxatec_password
     ports:
-      - "5432:5432"
+      - "5443:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -18,7 +18,7 @@ services:
     image: redis:7-alpine
     container_name: arxatec_redis
     ports:
-      - "6379:6379"
+      - "6381:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped

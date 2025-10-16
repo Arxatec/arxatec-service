@@ -17,5 +17,5 @@ export async function archiveExternalClientService(
       HttpStatusCodes.NOT_FOUND.code
     );
   await archiveExternalClient(id);
-  return { id, message: "Cliente externo archivado exitosamente" };
+  return { id, message: "Cliente externo archived exitosamente" };
 }

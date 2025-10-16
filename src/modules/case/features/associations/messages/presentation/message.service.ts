@@ -43,7 +43,7 @@ export async function sendMessageService(
   }
 
   if (found.archived) {
-    throw new AppError("El caso está archivado", HttpStatusCodes.CONFLICT.code);
+    throw new AppError("El caso está archived", HttpStatusCodes.CONFLICT.code);
   }
 
   const clientId = found.service?.client_id;
@@ -129,7 +129,7 @@ export async function getMessageHistoryService(
   }
 
   if (found.archived) {
-    throw new AppError("El caso está archivado", HttpStatusCodes.CONFLICT.code);
+    throw new AppError("El caso está archived", HttpStatusCodes.CONFLICT.code);
   }
 
   const clientId = found.service?.client_id;

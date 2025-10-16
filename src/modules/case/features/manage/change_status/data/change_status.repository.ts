@@ -66,7 +66,7 @@ export async function changeStatusTx(params: {
   const { caseId, newStatus, changedBy, oldStatus, note } = params;
 
   return prisma.$transaction(async (tx) => {
-    const isPrivate = newStatus === "en_progreso";
+    const isPrivate = newStatus === "in_progress";
     await tx.cases.update({
       where: { id: caseId },
       data: { status: newStatus, is_public: !isPrivate },

@@ -8,7 +8,6 @@ import { loginWithFacebookLegacy } from "./login_with_facebook.service";
 export const postLoginWithFacebook = async (req: Request, res: Response) => {
   const dto = LoginFacebookSchema.parse(req.body);
   const result = await loginWithFacebookLegacy(dto);
-
   return res
     .status(HttpStatusCodes.OK.code)
     .json(

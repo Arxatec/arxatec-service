@@ -36,7 +36,7 @@
  *                       type: object
  *                       properties:
  *                         id: { type: string, format: uuid, example: "84ea6d2a-d171-48d0-af0f-74c8a5b2eb29" }
- *                         message: { type: string, example: "Cliente externo archivado exitosamente" }
+ *                         message: { type: string, example: "Cliente externo archived exitosamente" }
  *                     user:
  *                       type: object
  *                       properties:

@@ -15,22 +15,23 @@ const repo: LoginFacebookRepository = new LoginFacebookRepositoryImpl();
 export async function loginWithFacebookLegacy(
   data: LoginFacebookDTO
 ): Promise<LoginFacebookResponseDTO> {
-  const url = `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${data.facebookToken}`;
+  const url = `https://graph.facebook.com/me?fields=id,first_name,last_name,name,email,picture&access_token=${data.facebookToken}`;
   const { data: userInfo } = await axios.get(url);
+  let email: string | undefined = userInfo?.email?.toLowerCase();
+  const firstName: string = userInfo?.first_name ?? "";
+  const lastName: string = userInfo?.last_name ?? "";
+  const profileImage: string = userInfo?.picture?.data?.url ?? "";
+  if (!email) email = `fb-${userInfo?.id}@example.local`;
 
-  if (!userInfo?.email) {
-    throw new Error("Invalid Facebook token");
-  }
-
-  let user = await repo.getByEmail(userInfo.email.toLowerCase());
+  let user = await repo.getByEmail(email);
   let isNewUser = false;
 
   if (!user) {
     user = await repo.createFromFacebook({
-      email: userInfo.email.toLowerCase(),
-      firstName: userInfo.first_name || "",
-      lastName: userInfo.last_name || "",
-      profileImage: userInfo.picture?.data?.url || "",
+      email,
+      firstName,
+      lastName,
+      profileImage,
     });
     isNewUser = true;
   }
@@ -55,18 +56,26 @@ export async function loginWithFacebookLegacy(
 export async function loginWithFacebookCallback(
   profile: any
 ): Promise<LoginFacebookResponseDTO> {
-  const email =
+  let email: string | undefined =
     profile?.emails?.[0]?.value?.toLowerCase() ??
-    profile?._json?.email ??
-    undefined;
-
-  if (!email) throw new Error("Invalid Facebook profile: email missing");
-
-  const firstName =
+    profile?._json?.email?.toLowerCase();
+  const firstName: string =
     profile?.name?.givenName ?? profile?._json?.first_name ?? "";
-  const lastName = profile?.name?.familyName ?? profile?._json?.last_name ?? "";
-  const profileImage =
+  const lastName: string =
+    profile?.name?.familyName ?? profile?._json?.last_name ?? "";
+  const profileImage: string =
     profile?.photos?.[0]?.value ?? profile?._json?.picture?.data?.url ?? "";
+
+  if (!email && (profile as any)?._accessToken) {
+    try {
+      const r = await axios.get("https://graph.facebook.com/me?fields=email", {
+        headers: { Authorization: `Bearer ${(profile as any)._accessToken}` },
+      });
+      if (r.data?.email) email = String(r.data.email).toLowerCase();
+    } catch {}
+  }
+
+  if (!email) email = `fb-${profile?.id}@example.local`;
 
   let user = await repo.getByEmail(email);
   let isNewUser = false;

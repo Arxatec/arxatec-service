@@ -9,6 +9,7 @@ import { listMyCasesRoutes } from "./get_list";
 import { caseHistoryRoutes } from "./history";
 import { reopenCaseRoutes } from "./reopen";
 import { updateCaseRoutes } from "./update";
+import { deleteCaseRoutes } from "./delete_case";
 
 export const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/me", listMyCasesRoutes);
 router.use("/history", caseHistoryRoutes);
 router.use("/reopen", reopenCaseRoutes);
 router.use("/update", updateCaseRoutes);
+router.use("/delete", deleteCaseRoutes);
 
 export { router as manageRouter };

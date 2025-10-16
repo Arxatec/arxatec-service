@@ -52,7 +52,7 @@
  *       '404':
  *         description: "Not Found (caso no existe)"
  *       '409':
- *         description: "Conflict (ya estaba archivado)"
+ *         description: "Conflict (ya estaba archived)"
  *       '500':
  *         description: "Internal Server Error"
  */

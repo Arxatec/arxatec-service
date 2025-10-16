@@ -31,14 +31,14 @@ export const CASE_MESSAGES = {
 
   /* ──────────────── Actualización/Edición ──────────────── */
   UPDATED_SUCCESS: "El caso ha sido actualizado con éxito.",
-  CANNOT_EDIT_ARCHIVED: "Los casos archivados no pueden ser editados.",
-  CANNOT_EDIT_CLOSED: "Los casos cerrados no pueden ser editados.",
+  CANNOT_EDIT_ARCHIVED: "Los casos archiveds no pueden ser editados.",
+  CANNOT_EDIT_CLOSED: "Los casos closeds no pueden ser editados.",
   NEXT_STATUS_ONLY: "Solo se permite avanzar al siguiente estado.",
   INVALID_TRANSITION_LAWYER:
     "Un abogado solo puede avanzar o retroceder un paso en el flujo del caso.",
 
   /* ──────────────── Estado ──────────────── */
-  ALREADY_CLOSED: "El caso ya está cerrado.",
+  ALREADY_CLOSED: "El caso ya está closed.",
   STATUS_CHANGED: "Estado del caso actualizado con éxito.",
 
   INVALID_STATUS: "Transición de estado inválida.",
@@ -52,14 +52,14 @@ export const CASE_MESSAGES = {
     "Has alcanzado el límite de casos activos en progreso.",
 
   /* ──────────────── Archivo ──────────────── */
-  ARCHIVED_SUCCESS: "El caso ha sido archivado.",
-  ALREADY_ARCHIVED: "El caso ya está archivado.",
+  ARCHIVED_SUCCESS: "El caso ha sido archived.",
+  ALREADY_ARCHIVED: "El caso ya está archived.",
 
   /* ──────────────── Adjuntos ──────────────── */
   ONLY_IMAGE_FILES_ALLOWED:
     "Solo se permiten archivos de imagen (jpg, png, webp...).",
   ATTACHMENT_ADDED: "Adjunto subido con éxito.",
-  ATTACHMENT_ARCHIVED: "Adjunto archivado con éxito.",
+  ATTACHMENT_ARCHIVED: "Adjunto archived con éxito.",
   ATTACHMENT_NOT_FOUND: "Adjunto no encontrado.",
   ATTACHMENT_ACCESS_DENIED: "No tienes permiso para modificar este adjunto.",
   ATTACHMENT_DUPLICATE:

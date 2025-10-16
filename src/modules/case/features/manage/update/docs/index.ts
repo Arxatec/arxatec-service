@@ -10,9 +10,9 @@
  *     summary: Update case
  *     description: >
  *       Actualiza un caso. `is_public` y `status` se derivan por reglas.
- *       Cliente puede asignar abogado solo si el caso está público y sin abogado (pasa a privado y `en_progreso`).
+ *       Cliente puede asignar abogado solo si el caso está público y sin abogado (pasa a privado y `in_progress`).
  *       Cliente no puede cambiar `external_client_id`. Abogado no puede cambiar `selected_lawyer_id`.
- *       Abogado puede cambiar `external_client_id` a uno propio (no archivado).
+ *       Abogado puede cambiar `external_client_id` a uno propio (no archived).
  *     parameters:
  *       - in: path
  *         name: id
@@ -30,8 +30,8 @@
  *               category: { type: string, enum: [civil, laboral, familiar, penal] }
  *               urgency: { type: string, enum: [alta, media, baja] }
  *               reference_code: { type: string, maxLength: 50 }
- *               selected_lawyer_id: { type: string, format: uuid, description: "Solo CLIENTE; público→privado y `en_progreso` si no tiene abogado." }
- *               external_client_id: { type: string, format: uuid, description: "Solo ABOGADO; debe pertenecerle y no estar archivado." }
+ *               selected_lawyer_id: { type: string, format: uuid, description: "Solo CLIENTE; público→privado y `in_progress` si no tiene abogado." }
+ *               external_client_id: { type: string, format: uuid, description: "Solo ABOGADO; debe pertenecerle y no estar archived." }
  *     responses:
  *       '200': { description: Case updated }
  *       '400': { description: Bad Request }

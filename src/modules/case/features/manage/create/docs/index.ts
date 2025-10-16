@@ -12,10 +12,10 @@
  *       Crea un caso. No envíes `is_public` ni `status`: se derivan por reglas.
  *       Reglas:
  *       - Cliente:
- *         - Sin `selected_lawyer_id` → público y estado `abierto`.
- *         - Con `selected_lawyer_id` → privado y estado `en_progreso`.
+ *         - Sin `selected_lawyer_id` → público y estado `open`.
+ *         - Con `selected_lawyer_id` → privado y estado `in_progress`.
  *       - Abogado:
- *         - Requiere `external_client_id` propio (no archivado) → privado y estado `en_progreso`.
+ *         - Requiere `external_client_id` propio (no archived) → privado y estado `in_progress`.
  *     requestBody:
  *       required: true
  *       content:

@@ -8,7 +8,7 @@
  *     tags:
  *       - Cases - Manage
  *     summary: "Change case status"
- *     description: "Cambia el estado de un caso. Reglas de flujo: **abierto → en_progreso → cerrado**. El cliente solo puede avanzar al siguiente; el abogado puede avanzar/retroceder un paso y cerrar solo si es el abogado asignado."
+ *     description: "Cambia el estado de un caso. Reglas de flujo: **open → in_progress → closed**. El cliente solo puede avanzar al siguiente; el abogado puede avanzar/retroceder un paso y cerrar solo si es el abogado asignado."
  *     parameters:
  *       - in: path
  *         name: id
@@ -26,7 +26,7 @@
  *               status_id:
  *                 type: string
  *                 description: ID (o valor del enum) del nuevo estado.
- *                 example: "en_progreso"
+ *                 example: "in_progress"
  *               note:
  *                 type: string
  *                 maxLength: 255

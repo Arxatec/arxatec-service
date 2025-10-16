@@ -52,11 +52,7 @@ export async function createClientWithCases() {
       description: caseItem.description,
       urgency: caseItem.urgency as "alta" | "media" | "baja",
       category: caseItem.category as "civil" | "laboral" | "familiar" | "penal",
-      status: caseItem.status as
-        | "abierto"
-        | "en_progreso"
-        | "cerrado"
-        | "archivado",
+      status: caseItem.status as "open" | "in_progress" | "closed" | "archived",
       is_public: index % 2 === 0,
     };
   });
@@ -169,10 +165,10 @@ export async function createLawyerWithCasesAndClients() {
           | "familiar"
           | "penal",
         status: caseData.status as
-          | "abierto"
-          | "en_progreso"
-          | "cerrado"
-          | "archivado",
+          | "open"
+          | "in_progress"
+          | "closed"
+          | "archived",
         is_public: i % 3 === 0, // Some cases are public
       },
     });

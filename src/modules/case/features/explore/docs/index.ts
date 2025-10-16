@@ -6,14 +6,14 @@
  *     tags:
  *       - Cases - Explore
  *     summary: Explore public cases
- *     description: Lista casos públicos no archivados con filtros y paginación.
+ *     description: Lista casos públicos no archiveds con filtros y paginación.
  *     parameters:
  *       - in: query
  *         name: category
  *         schema: { type: string, enum: [civil, laboral, familiar, penal] }
  *       - in: query
  *         name: status
- *         schema: { type: string, enum: [abierto, en_progreso, cerrado, archivado] }
+ *         schema: { type: string, enum: [open, in_progress, closed, archived] }
  *       - in: query
  *         name: lawyer_id
  *         schema: { type: string, format: uuid }

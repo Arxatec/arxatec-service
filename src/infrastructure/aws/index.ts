@@ -1,3 +1,4 @@
+//src/infrastructure/aws/
 import {
   S3Client,
   PutObjectCommand,

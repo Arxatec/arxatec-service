@@ -27,8 +27,8 @@
  *             properties:
  *               title: { type: string, minLength: 5, maxLength: 120 }
  *               description: { type: string, minLength: 20, maxLength: 2000 }
- *               category: { type: string, enum: [civil, laboral, familiar, penal] }
- *               urgency: { type: string, enum: [alta, media, baja] }
+ *               category: { type: string, enum: [civil, labor, family, criminal] }
+ *               urgency: { type: string, enum: [high, medium, low] }
  *               reference_code: { type: string, maxLength: 50 }
  *               selected_lawyer_id: { type: string, format: uuid, description: "Solo CLIENTE; público→privado y `in_progress` si no tiene abogado." }
  *               external_client_id: { type: string, format: uuid, description: "Solo ABOGADO; debe pertenecerle y no estar archived." }

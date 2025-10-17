@@ -99,7 +99,7 @@ export async function createCaseService(
     title: dto.title,
     description: dto.description,
     category: dto.category as case_category,
-    urgency: (dto.urgency ?? "media") as case_urgency,
+    urgency: (dto.urgency ?? "medium") as case_urgency,
     status,
     is_public: isPublic,
     reference_code: dto.reference_code,

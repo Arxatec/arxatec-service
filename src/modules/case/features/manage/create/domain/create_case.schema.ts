@@ -35,7 +35,7 @@ export const CreateCaseSchema = z.object({
         message: "El nivel de urgencia seleccionado no es válido",
       }),
     })
-    .default("media")
+    .default("medium")
     .optional(),
 
   status: z

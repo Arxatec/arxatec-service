@@ -34,7 +34,7 @@
  *                 example: 2025-10-12T10:00:00Z
  *               location:
  *                 type: string
- *                 example: Juzgado Penal Lima
+ *                 example: Juzgado criminal Lima
  *               reminder_minutes:
  *                 type: integer
  *                 example: 30

@@ -48,7 +48,7 @@
  *                         type: object
  *                         properties:
  *                           id: { type: string, format: uuid, example: "7a9f6a49-7c5a-43c7-8b1e-9c2c9b3b8e13" }
- *                           label: { type: string, example: "Contrato firmado" }
+ *                           label: { type: string, example: "contract firmado" }
  *                           description: { type: string, nullable: true, example: "Versión final" }
  *                           category_id: { type: string, format: uuid, example: "9e1b1a7f-1c2d-4a5b-9c7e-123456789abc" }
  *                           uploaded_by: { type: string, enum: [client, lawyer], example: "client" }

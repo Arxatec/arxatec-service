@@ -27,9 +27,9 @@ function getStatusLabel(status: case_status): string {
 function getCategoryLabel(category: case_category): string {
   const labels: Record<case_category, string> = {
     [case_category.civil]: "Civil",
-    [case_category.laboral]: "Laboral",
-    [case_category.familiar]: "Familiar",
-    [case_category.penal]: "Penal",
+    [case_category.labor]: "labor",
+    [case_category.family]: "family",
+    [case_category.criminal]: "criminal",
   };
   return labels[category];
 }

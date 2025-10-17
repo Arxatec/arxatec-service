@@ -38,11 +38,11 @@
  *                 maxLength: 2000
  *               category:
  *                 type: string
- *                 enum: [civil, laboral, familiar, penal]
+ *                 enum: [civil, labor, family, criminal]
  *               urgency:
  *                 type: string
- *                 enum: [alta, media, baja]
- *                 default: media
+ *                 enum: [high, medium, low]
+ *                 default: medium
  *               reference_code:
  *                 type: string
  *                 maxLength: 50

@@ -12,10 +12,10 @@ export async function getExternalClientsService(
   query: GetExternalClientsRequest
 ): Promise<GetExternalClientsResponse> {
   const { page, limit, skip } = Pagination.getPaginationParams(query as any);
+
   let take: number | undefined = limit;
-  if (Boolean(query.all) === true) {
-    take = undefined;
-  }
+  if (Boolean(query.all) === true) take = undefined;
+
   const [total, rows] = await Promise.all([
     countByLawyer(userDetailId, query.search),
     findManyByLawyer(userDetailId, skip, take, query.search),
@@ -30,6 +30,15 @@ export async function getExternalClientsService(
     profile_image: c.profile_image,
   }));
 
-  const meta = Pagination.buildPaginationMeta(total, page, limit);
+  const raw = Pagination.buildPaginationMeta(total, page, limit);
+  const meta = {
+    total: raw.totalItems,
+    total_pages: raw.totalPages,
+    page: raw.currentPage,
+    limit: raw.pageSize,
+    has_next_page: raw.hasNextPage,
+    has_prev_page: raw.hasPrevPage,
+  };
+
   return { clients, meta };
 }

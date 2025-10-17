@@ -10,7 +10,7 @@
  *     parameters:
  *       - in: query
  *         name: category
- *         schema: { type: string, enum: [civil, laboral, familiar, penal] }
+ *         schema: { type: string, enum: [civil, labor, family, criminal] }
  *       - in: query
  *         name: status
  *         schema: { type: string, enum: [open, in_progress, closed, archived] }

@@ -36,7 +36,7 @@
  *                 start_date: 2025-10-13T09:00:00Z
  *                 end_date: 2025-10-13T10:30:00Z
  *                 status: rescheduled
- *                 location: Juzgado Penal Lima
+ *                 location: Juzgado criminal Lima
  *                 reminder_minutes: 45
  *     responses:
  *       '200':

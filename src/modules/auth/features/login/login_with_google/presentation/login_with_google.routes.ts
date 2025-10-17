@@ -1,7 +1,5 @@
 // src/modules/auth/features/login/login_with_google/presentation/login_with_google.routes.ts
 import { Router } from "express";
-import { buildHttpResponse } from "../../../../../../utils/build_http_response";
-import { HttpStatusCodes } from "../../../../../../constants/http_status_codes";
 import passport from "../../../../../../config/passport";
 import {
   postLoginWithGoogle,

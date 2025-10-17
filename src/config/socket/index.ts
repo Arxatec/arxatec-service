@@ -15,34 +15,30 @@ export const initSocket = (server: HttpServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log(`🔌 Cliente conectado: ${socket.id}`);
+    console.log(`Cliente conectado: ${socket.id}`);
 
     socket.on("join_user_channel", (userId: string | number) => {
       const room = `user:${userId}`;
       socket.join(room);
-      console.log(
-        `✅ Socket ${socket.id} se unió al canal de usuario: ${room}`
-      );
+      console.log(`Socket ${socket.id} se unió al canal de usuario: ${room}`);
 
-      // Confirmar que se unió correctamente
       socket.emit("joined_channel", { room, userId });
     });
 
     socket.on("join_case_channel", (caseId: string) => {
       const room = `case:${caseId}`;
       socket.join(room);
-      console.log(`✅ Socket ${socket.id} se unió al canal del caso: ${room}`);
+      console.log(`Socket ${socket.id} se unió al canal del caso: ${room}`);
 
-      // Confirmar que se unió correctamente
       socket.emit("joined_case_channel", { room, caseId });
     });
 
     socket.on("disconnect", (reason) => {
-      console.log(`❌ Cliente desconectado: ${socket.id}, razón: ${reason}`);
+      console.log(`Cliente desconectado: ${socket.id}, razón: ${reason}`);
     });
 
     socket.on("error", (error) => {
-      console.error(`🚨 Error en socket ${socket.id}:`, error);
+      console.error(`Error en socket ${socket.id}:`, error);
     });
   });
 };

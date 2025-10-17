@@ -70,9 +70,9 @@ enum notification_type {
 }
 
 enum case_urgency {
-  alta
-  media
-  baja
+  high
+  medium
+  low
 }
 
 enum case_status {
@@ -83,15 +83,15 @@ enum case_status {
 }
 
 enum consultation_status {
-  pendiente
-  respondida
-  cerrada
+  pending
+  answered
+  closed
 }
 
 enum consultation_priority {
-  alta
-  media
-  baja
+  high
+  medium
+  low
 }
 
 enum call_status {
@@ -108,18 +108,18 @@ enum actor_type {
 
 enum case_category {
   civil
-  laboral
-  familiar
-  penal
+  labor
+  family
+  criminal
 }
 
 enum attachment_category {
-  contrato
-  evidencia
-  notas
-  otros
+  contract
+  evidence
+  notes
+  others
 }
-/// Estados del evento del calendario
+
 enum calendar_event_status {
   pending
   confirmed
@@ -127,7 +127,6 @@ enum calendar_event_status {
   cancelled
   done
 }
-
 
 model users {
   id                 String      @id @default(uuid()) @db.Uuid
@@ -153,7 +152,6 @@ model users {
   calendar_events_as_lawyer calendar_events[] @relation("calendar_event_lawyer")
 }
 
-
 model lawyer_details {
   lawyer_id      String @id @db.Uuid
   license_number String
@@ -161,7 +159,9 @@ model lawyer_details {
   experience     Int
   biography      String
   linkedin       String
-
+  address        String?  
+  location_lat   Float?   
+  location_lng   Float?   
   user           users           @relation(fields: [lawyer_id], references: [id], onDelete: Cascade)
   lawyer_service lawyer_service?
 }
@@ -310,10 +310,6 @@ model work_schedules {
   @@index([lawyer_id, day])
 }
 
-// ===============================
-// COMMUNITY
-// ===============================
-
 model community_users {
   id           String              @id @default(uuid()) @db.Uuid
   user_id      String              @db.Uuid
@@ -438,9 +434,6 @@ model reactions {
   @@index([target_id, target_type])
 }
 
-// ===============================
-// CALENDAR (agenda simple por abogado)
-// ===============================
 model calendar_events {
   id               String                 @id @default(uuid())
   title            String
@@ -467,10 +460,6 @@ model calendar_events {
   @@index([client_id, start_date])
   @@index([status, start_date])
 }
-
-// ===============================
-// EXTERNAL CLIENTS + SERVICES
-// ===============================
 
 model external_clients {
   id             String   @id @default(uuid()) @db.Uuid
@@ -511,10 +500,6 @@ model services {
   @@index([external_client_id])
 }
 
-// ===============================
-// CASES
-// ===============================
-
 model cases {
   id             String            @id @default(uuid()) @db.Uuid
   service_id     String            @db.Uuid
@@ -552,10 +537,6 @@ model case_histories {
 
   @@index([case_id, created_at])
 }
-
-// ===============================
-// CONSULTATIONS & CALLS & MESSAGES
-// ===============================
 
 model consultations {
   id            String                @id @default(uuid()) @db.Uuid
@@ -618,10 +599,6 @@ model messages {
   @@index([case_id, created_at])
 }
 
-// ===============================
-// ATTACHMENTS
-// ===============================
-
 model attachments {
   id          String              @id @default(uuid()) @db.Uuid
   file_key    String
@@ -638,10 +615,6 @@ model attachments {
   @@index([service_id])
   @@index([uploaded_by])
 }
-
-// ===============================
-// SUBSCRIBERS
-// ===============================
 
 model arxatec_subscribers {
   id         String   @id @default(uuid()) @db.Uuid

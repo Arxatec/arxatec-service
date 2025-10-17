@@ -21,7 +21,7 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
     )
   );
 } else {
-  console.warn("[Auth] Google OAuth no configurado. Falta clientID o secret.");
+  console.warn("[Auth] Google OAuth no configurado. Fhigh clientID o secret.");
 }
 
 export default passport;

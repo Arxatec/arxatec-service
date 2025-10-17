@@ -24,7 +24,7 @@ if (FACEBOOK_CLIENT_ID && FACEBOOK_CLIENT_SECRET && FACEBOOK_CALLBACK_URL) {
   );
 } else {
   console.warn(
-    "[Auth] Facebook OAuth no configurado. Falta app id/secret/callback."
+    "[Auth] Facebook OAuth no configurado. Fhigh app id/secret/callback."
   );
 }
 

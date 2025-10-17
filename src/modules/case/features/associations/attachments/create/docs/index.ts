@@ -25,7 +25,7 @@
  *             required: [category_id, label, file]
  *             properties:
  *               category_id: { type: string, format: uuid, example: "9e1b1a7f-1c2d-4a5b-9c7e-123456789abc" }
- *               label: { type: string, minLength: 1, maxLength: 100, example: "Contrato firmado" }
+ *               label: { type: string, minLength: 1, maxLength: 100, example: "contract firmado" }
  *               description: { type: string, maxLength: 255, example: "Versión final con firmas" }
  *               file: { type: string, format: binary }
  *     responses:

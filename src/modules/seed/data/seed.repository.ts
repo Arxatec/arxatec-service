@@ -20,7 +20,7 @@ export async function createClientWithCases() {
       client_details: {
         create: {
           budget_range: "$500 - $1000",
-          urgency_level: "media",
+          urgency_level: "medium",
           requirement_type: "consulta legal",
           occupation: "Ingeniero",
         },
@@ -50,8 +50,8 @@ export async function createClientWithCases() {
       service_id: service.id,
       title: caseItem.title,
       description: caseItem.description,
-      urgency: caseItem.urgency as "alta" | "media" | "baja",
-      category: caseItem.category as "civil" | "laboral" | "familiar" | "penal",
+      urgency: caseItem.urgency as "high" | "medium" | "low",
+      category: caseItem.category as "civil" | "labor" | "family" | "criminal",
       status: caseItem.status as "open" | "in_progress" | "closed" | "archived",
       is_public: index % 2 === 0,
     };
@@ -86,7 +86,6 @@ export async function createClientWithCases() {
 }
 
 export async function createLawyerWithCasesAndClients() {
-  // Create lawyer user
   const lawyer = await prisma.users.create({
     data: {
       first_name: "Dr. Carlos",
@@ -99,10 +98,10 @@ export async function createLawyerWithCasesAndClients() {
       lawyer_details: {
         create: {
           license_number: "CAL-2024-12345",
-          specialty: "Derecho Civil, Penal y Laboral",
+          specialty: "Derecho Civil, criminal y labor",
           experience: 15,
           biography:
-            "Abogado especializado en derecho civil, penal y laboral con más de 15 años de experiencia. Graduado de la Universidad Nacional Mayor de San Marcos con maestría en Derecho Procesal.",
+            "Abogado especializado en derecho civil, criminal y labor con más de 15 años de experiencia. Graduado de la Universidad Nacional Mayor de San Marcos con maestría en Derecho Procesal.",
           linkedin: "https://linkedin.com/in/carlos-rodriguez-abogado",
         },
       },
@@ -119,7 +118,6 @@ export async function createLawyerWithCasesAndClients() {
     },
   });
 
-  // Create external clients
   const externalClientsData = EXTERNAL_CLIENTS_LIST.map((client) => ({
     user_detail_id: lawyer.user_details!.user_id,
     full_name: client.full_name,
@@ -136,14 +134,12 @@ export async function createLawyerWithCasesAndClients() {
     where: { user_detail_id: lawyer.user_details!.user_id },
   });
 
-  // Create services and cases for each external client
   const casesCreated: any[] = [];
   for (let i = 0; i < LAWYER_CASES_LIST.length; i++) {
     const caseData = LAWYER_CASES_LIST[i];
     const externalClient =
       createdExternalClients[i % createdExternalClients.length];
 
-    // Create service for this case
     const service = await prisma.services.create({
       data: {
         type: "case",
@@ -152,28 +148,26 @@ export async function createLawyerWithCasesAndClients() {
       },
     });
 
-    // Create case
     const caseRecord = await prisma.cases.create({
       data: {
         service_id: service.id,
         title: caseData.title,
         description: caseData.description,
-        urgency: caseData.urgency as "alta" | "media" | "baja",
+        urgency: caseData.urgency as "high" | "medium" | "low",
         category: caseData.category as
           | "civil"
-          | "laboral"
-          | "familiar"
-          | "penal",
+          | "labor"
+          | "family"
+          | "criminal",
         status: caseData.status as
           | "open"
           | "in_progress"
           | "closed"
           | "archived",
-        is_public: i % 3 === 0, // Some cases are public
+        is_public: i % 3 === 0,
       },
     });
 
-    // Create case history
     await prisma.case_histories.create({
       data: {
         case_id: caseRecord.id,
